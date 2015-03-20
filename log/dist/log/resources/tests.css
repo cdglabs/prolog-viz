@@ -1,0 +1,102 @@
+testCases {
+  display: block;
+  background: #f8f8f8 !important;
+  border-radius: 4pt;
+  margin: 4pt;
+  padding: 4pt;
+  border: 1px solid #eee;
+}
+
+testStats {
+  float: right;
+}
+
+testStats > numPasses::before {
+  content: 'passed ';
+}
+
+testStats > numTests::before {
+  content: ' / ';
+}
+
+testStats > numTests::after {
+  content: ' tests';
+}
+
+testCase {
+  display: inline-block;
+  vertical-align: top;
+  margin: 3pt;
+  padding: 3pt;
+  border-radius: 4pt;
+  box-shadow: 2px 2px 3px 0px rgba(0, 0, 0, .4);
+}
+
+testCase {
+  border: 1px solid #66AA66;
+  background: #88FF88;
+}
+
+testCase.failed {
+  border: 1px solid #66AA66;
+  background: #FF8888;
+}
+
+testCase * {
+  display: block;
+}
+
+testCase summary {
+  color: slateblue;
+  font-weight: bold;
+  outline: none;
+}
+
+testCase.failed summary {
+  color: #f8f800;
+}
+
+testCase.failed expected {
+  display: block;
+}
+
+testCase expected {
+  display: none;
+}
+
+testCase code,
+testCase ast,
+testCase translation,
+testCase actual,
+testCase exception,
+testCase expected {
+  font-family: Monaco, monospace;
+  white-space: pre;
+}
+
+testCase code::after,
+testCase ast::after,
+testCase translation::after {
+  font-size: 12pt;
+  vertical-align: top;
+  content: '\2B07';
+  display: block;
+}
+
+testCase expected::before,
+testCase exception::before {
+  display: block;
+  font: normal 13px/1.55 "PT Sans", "Helvetica", "Arial", sans-serif;
+  font-weight: bold;
+  vertical-align: top;
+}
+
+testCase expected::before {
+  margin-top: 10pt;
+  content: 'expected:';
+}
+
+testCase exception::before {
+  content: 'exception:';
+}
+

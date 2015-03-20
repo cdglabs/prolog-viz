@@ -1,0 +1,221 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #999;
+  font: normal 14px/1.55 "PT Sans", "Helvetica", "Arial", sans-serif;
+  color: #333;
+  width: 100%;
+  text-align: left;
+}
+
+everything {
+  display: block;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 1000px;
+  background: white;
+  -moz-box-shadow: 0 2px 2px rgba(0,0,0,0.5);
+  -webkit-box-shadow: 0 2px 2px rgba(0,0,0,0.5);
+}
+
+@media print {
+  everything {
+    padding: 0;
+    margin: 0;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+  }
+}
+
+header {
+  font: normal 14px/1.55 "PT Sans", "Helvetica", "Arial", sans-serif;
+  width: 730px;
+  padding-top: 20px;
+  margin-left: 60px;
+  margin-right: auto;
+  text-align: right;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+  line-height: 0.9;
+}
+
+header > part {
+  display: block;
+  font-size: 26px;
+  font-weight: bold;
+  color: #bcbcbc;
+}
+
+header > descr {
+  font-size: 45px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #583799;
+}
+
+header > detail {
+  display: block;
+  _text-transform: lowercase;
+  font-size: 22px;
+}
+
+section,
+abstract {
+  display: block;
+  position: relative;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: 60px;
+  margin-right: auto;
+}
+
+abstract {
+  margin-top: 30px;
+  width: 730px;
+  line-height: 1.4;
+}
+
+section {
+  padding-top: 48px;
+  width: 730px;
+}
+
+sectionHeader {
+  text-align: center;
+  position: absolute;
+  width: inherit;
+  height: 16px;
+  top: 0px;
+  border-bottom: 1px solid #ccc;
+}
+
+sectionHeader > span {
+  font: bold 25px "PT Sans", "Helvetica", "Arial", sans-serif;
+  color: #222;
+  background-color: #fff;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+p {
+  margin-bottom: 12px;
+}
+
+ul, ol {
+  margin-left: 24px;
+}
+
+sidebar {
+  position: absolute;
+  font: normal 12px/1.55 "PT Sans", "Helvetica", "Arial", sans-serif;
+  width: 190px;
+  left: 735px;
+  color: #aaa;
+}
+
+sidebar b {
+  color: #999;
+}
+
+sidebar code {
+  font-size: 11px;
+  color: #696969;
+}
+
+code, codeBlock {
+  white-space: pre;
+  font: normal 14px/1.25 "Lucida Console", Monaco, monospace;
+  color: #343434;
+}
+
+a code {
+  color: #00a;
+}
+
+codeBlock {
+  display: block;
+  padding: 0 8px;
+  margin: 15px;
+  margin-left: 25px;
+}
+
+a {
+  text-decoration: none;
+  color: #0000aa;
+}
+
+b {
+  color: black;
+}
+
+li {
+  margin-top: 2px;
+  margin-bottom: 6px;
+}
+
+table.syntax {
+  margin-left: auto;
+  margin-right: auto;
+  font-family: "Times Roman", serif;
+  font-style: italic;
+}
+
+table.syntax tr > th,
+table.syntax tr > td {
+  padding-right: 8px;
+  line-height: 1.5;
+}
+
+table.syntax tr > td {
+  padding-bottom: 15px;
+}
+
+table.syntax tr > td:first-child {
+  text-align: right;
+}
+
+text,
+table.syntax th {
+  font: normal 15px/1.55 "PT Sans", "Helvetica", "Arial", sans-serif;
+  text-align: center;
+}
+
+table.syntax th {
+  color: #888;
+}
+
+table.syntax set {
+  font-style: normal;
+}
+
+multival {
+  display: block;
+  position: relative;
+  padding-left: 5px;
+  margin-left: 5px;
+}
+
+multival:before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 0;
+  border: 1px solid #aaa;
+  border-right: 0px;
+  width: 3px;
+  height: 100%;
+}
+
+due {
+  display: block;
+  text-align: center;
+  padding: 4pt;
+  background: yellow;
+}
+

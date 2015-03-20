@@ -1,0 +1,566 @@
+<html>
+  <head>
+    <title>HW6: Logic Programming Language</title>
+
+    <link rel="stylesheet" href="resources/codemirror.css"></link>
+    <link rel="stylesheet" href="resources/common.css"></link>
+    <link rel="stylesheet" href="resources/tests.css"></link>
+    <link rel="stylesheet" href="resources/playground.css"></link>
+
+    <script src="resources/helpers.js"></script>
+    <script src="resources/lang.js"></script>
+    <script src="resources/tests.js"></script>
+    <script src="resources/IndentingOutputStream.js"></script>
+    <script src="resources/playground.js"></script>
+    <script src="resources/beautify.js"></script>
+
+    <script src="resources/jquery-2.1.1.min.js"></script>
+    <script src="resources/codemirror.js"></script>
+
+    <script type="text/ohm-js">
+
+L {
+  Program
+    = Rule* Query
+
+  Rule  -- rule
+    = Clause ':-' Clauses '.'  -- body
+    | Clause '.'               -- noBody
+
+  Query  -- query
+    = Clauses '?'
+
+  Clause  -- clause
+    = symbol '(' Term (',' Term)* ')'  -- args
+    | symbol                           -- noArgs
+
+  Clauses
+    = Clause (',' Clause)*
+
+  Term
+    = Clause | variable
+
+  variable  -- variable
+    = upper alnum*
+
+  symbol  -- symbol
+    = lower alnum*
+
+  tokens
+    = (variable | symbol | _)*
+}
+
+    </script>
+    <script src="resources/ohm.min.js"></script>
+
+    <script src="L.js"></script>
+    <script src="prelude.js"></script>
+    <script src="prettyPrint.js"></script>
+    <script src="plumbing.js"></script>
+  </head>
+  <body>
+    <everything>
+      <header>
+        <part>Part IV:</part>
+        <descr>Logic Programming</descr>
+        <detail>(interpreter)</detail>
+      </header>
+      <abstract>
+        In Part IV of this class, we'll "prototype" a logic programming language that is similar to
+        <a href="http://en.wikipedia.org/wiki/Prolog">Prolog</a>. We'll do this with an interpreter, just as you did for
+        the functional language in <a href="../func/index.html">Homeworks #1 and #2</a>.
+      </abstract>
+      <section>
+        <sectionHeader>
+          <span>Introduction</span>
+        </sectionHeader>
+        <p>
+          Alan Kay likes to talk about moving from "how" to "what" in programming. That is, we'd like the programmer
+          to merely specify <i>what</i> is desired and have the computer automagically make it so, as opposed to
+          requiring he/she to detail every step required to get there. In a nutshell, this move from "how"
+          to "what" is the story of progress in programming languages over time. Even low-level languages like
+          C provide several forms of "what" as compared with assembly language, e.g., "let there be a variable
+          called <code>x</code>," "return back to my caller," etc.
+        </p>
+        <p>
+          Prolog can in some ways be viewed as the idea of a "what" language taken to its <i>logical</i>
+          <sidebar>(Pun intended.)</sidebar> <i>conclusion</i>: programming by specifying. In Prolog, a programmer
+          simply specifies an <i>ontology</i>: a set of entities and their relationships to one another, defined as a
+          set of logical rules. In class, for example, we saw a simple Prolog program whose entities were CS courses at
+          UCLA with a prerequisite relationship defined among them. All computation is performed by answering queries
+          about what is true according to this ontology. Prolog answers queries by searching for a <i>proof</i> (or
+          <i>derivation</i>) using the rules of the ontology.
+        </p>
+        <p>
+          Unfortunately, Prolog does not put programming language designers out of business. By forcing everything to
+          be a "what" and all computation to proceed via search, many kinds of tasks are unnatural to implement and/or
+          require careful structuring to ensure that Prolog's search will terminate. Further, tasks often require
+          the use of imperative features to obtain reasonable performance.*
+          <sidebar>* So don't worry, you can still invent the ultimate "what" language!</sidebar>
+        </p>
+        <p>
+          Nonetheless, Prolog continues to be an inspiration for what declarative programming might be. Further,
+          subsets of Prolog, notably <a href="http://en.wikipedia.org/wiki/Datalog">Datalog</a>, which requires the
+          arguments to predicates to be simple atoms rather than arbitrary terms, have been quite successful in a
+          variety of domains, e.g., access control, program analysis, and data analytics. Datalog provides many of
+          the benefits of Prolog but without the fragility: all Datalog programs are guaranteed to terminate,
+          and the semantics of a Datalog program is completely independent of the underlying search strategy that is
+          used by an implementation.
+        </p>
+      </section>
+      <section>
+        <sectionHeader>
+          <span>Homework #6: A Logic Programming Language</span>
+        </sectionHeader>
+        <p>
+          <due>
+            <b>Due at 11:30pm on Sunday, March 15.</b>
+            Turn in just your <code>log.js</code> file through the course page on CCLE.
+          </due>
+        </p>
+        <p>
+          In this homework assignment, you will "prototype" a Prolog-like programming language.
+          This section introduces the classes that will be part of your prototype and shows how our parser maps
+          the concrete syntax of our logic programming language to instances of those classes.
+        </p>
+        <p>
+          <h3>Syntax</h3>
+          Here's what the concrete syntax of our logic programming language looks like, and how we'll represent it as
+          abstract syntax in JavaScript. Whereas in previous assignments we represented AST nodes as JavaScript arrays,
+          this time we have a "class" for each kind of AST node. This will make it easier for you to add behavior to
+          the AST nodes, as we'll see later.
+        </p>
+        <p>
+          <style>
+            code, codeBlock {
+              font-size: 12px;
+            }
+            ul {
+              margin-top: 4pt;
+            }
+            li > ul {
+              margin-top: 0;
+            }
+            li {
+              margin-top: 4pt;
+              margin-bottom: 0;
+            }
+            table.syntax th {
+              padding-bottom: 4pt;
+            }
+            table.syntax td:nth-child(2) {
+              padding-right: 10pt;
+            }
+            mm {
+              font-family: "Times Roman", serif !important;
+              font-style: italic !important;
+            }
+          </style>
+          <table class="syntax">
+            <tr>
+              <th></th>
+              <th>Concrete Syntax</th>
+              <th>JS AST</th>
+            </tr>
+            <tr>
+              <td>p ::=</td>
+              <td>
+                r<sub>1</sub> r<sub>2</sub> &hellip; c<sub>1</sub>, c<sub>2</sub> &hellip; <code>?</code>
+              </td>
+              <td>
+                <sidebar>
+                  A program is any number of <i>rules</i> and <i>query</i>, which consists of one or
+                  more <i>clauses</i> followed by a question mark.
+                </sidebar>
+                <code>new Program([</code>r<sub>1</sub><code>, </code>r<sub>2</sub><code>, &hellip;], [</code>c<sub>1</sub><code>, </code>c<sub>2</sub><code>, &hellip;])</code>
+              </td>
+            </tr>
+            <tr>
+              <td>r ::=</td>
+              <td>
+                <multival>
+                  <div>c<code>.</code></div>
+                  <div>c<code> :- </code>c<sub>1</sub><code>, </code>c<sub>2</sub><code>, </code>&hellip; <code>.</code></div>
+                </multival>
+              </td>
+              <td>
+                <div><code>new Rule(</code>c<code>)</code></div>
+                <div><code>new Rule(</code>c<code>, [</code>c<sub>1</sub><code>, </code>c<sub>2</sub><code>, &hellip;])</code></div>
+              </td>
+            </tr>
+            </tr>
+              <td>c ::=</td>
+              <td>
+                <multival>
+                  <div>x<code>(</code>t<sub>1</sub><code>, </code>t<sub>2</sub><code>, &hellip;)</code></div>
+                  <div>x</div>
+                </multival>
+              </td>
+              <td>
+                <div><code>new Clause(</code>x<code>, [</code>t<sub>1</sub><code>, </code>t<sub>2</sub><code>, &hellip;])</code></div>
+                <div>
+                  <sidebar>An <i>atom</i> (e.g., <code>cs237a</code>) is just a clause with no arguments.</sidebar>
+                  <code>new Clause(</code>x<code>)</code>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                t ::=
+              </td>
+              <td>
+                <multival>
+                  <div>c</div>
+                  <div>X</div>
+                </multival>
+              </td>
+              <td>
+                <div>
+                  <text>(see above)</text>
+                </div>
+                <div><code>new Var(</code>X<code>)</code></div>
+              </td>
+            </tr>
+            <tr>
+              <td>x ::=</td>
+              <td colspan="2">
+                <text>an identifier that starts with a lower-case letter</text>
+              </td>
+            </tr>
+            <tr>
+              <td>X ::=</td>
+              <td colspan="2">
+                <text>an identifier that starts with an upper-case letter</text>
+              </td>
+            </tr>
+          </table>
+        </p>
+        <p>
+          <h3>The AST "Classes"</h3>
+          The classes we will be using to represent programs are declared in a file called
+          <code><a href="prelude.js">prelude.js</a></code>.</li> Here's a complete list of their constructors and
+          instance variables.
+          <ul>
+            <li>
+              <code>new Program(rules, query)</code>
+              <ul>
+                <li><code>rules</code> : an array of <code>Rule</code>s</li>
+                <li><code>query</code> : an array of one or more <code>Clause</code>s</li>
+              </ul>
+            </li>
+            <li>
+              <code>new Rule(head, body)</code>
+              <ul>
+                <li><code>head</code> : a <code>Clause</code></li>
+                <li><code>body</code> : an array of <code>Clause</code>s<br>
+                <li>The <code>body</code> argument is optional &mdash; <code>new Rule(head)</code> is equivalent to
+                  <code>new Rule(head, [])</code></li>
+              </ul>
+            </li>
+            <li>
+              <code>new Clause(name, args)</code>
+              <ul>
+                <li><code>name</code> : a string</li>
+                <li><code>args</code> : an array of <i>terms</i>
+                  (a <i>term</i> is either a <code>Clause</code> or a <code>Var</code>)</li>
+                <li>The <code>args</code> argument is optional &mdash; <code>new Clause(name)</code> is equivalent to
+                  <code>new Clause(name, [])</code></li>
+              </ul>
+            </li>
+            <li>
+              <code>new Var(</code><mm>X</mm><code>)</code>
+              <ul>
+                <li><code>name</code> = <mm>X</mm> : a string</li>
+              </ul>
+            </li>
+          </ul>
+        </p>
+      </section>
+      <section>
+        <sectionHeader>
+          <span>Part I: Manipulating Variables</span>
+        </sectionHeader>
+        <p>
+	  In the first part of this assignment, you will implement a couple of helper methods that will come in
+          handy for your interpreter.
+        </p>
+        <h3>Freshening Up</h3>
+        <p>
+	  Implement a method on <code>Rule</code>s called <code>makeCopyWithFreshVarNames()</code>.
+          This method should return a copy of its receiver in which all variable names have been replaced with
+          fresh variable names. As we discussed in class, you will want to call this method before unifying a goal with
+          the head of a rule so that the variable names in the rule don't accidentally get confused with the
+          variable names in the goal (and in the surrounding context).
+        </p>
+        <h3>Applying Substitutions</h3>
+        <p>
+	  Unification produces a <i>substitution</i>, which is a mapping from variables to <i>terms</i>.*
+          <sidebar>
+            As shown in the grammar above, a <i>term</i> is either a variable or a clause. Note that the arguments to
+            a clause are themselves arbitrary terms.
+          </sidebar>
+          In your interpreter, substitutions will be represented as instances of the <code>Subst</code> class, which
+          is declared in <code><a href="prelude.js">prelude.js</a></code>. <code>Subst</code>s support the
+          following methods:
+          <ul>
+	    <li><code>lookup(varName)</code> returns the term associated with <code>varName</code> in the substitution,
+              or <code>undefined</code> if <code>varName</code> is not associated with a term.</li>
+	    <li><code>bind(varName, term)</code> updates the substitution in place to associate <code>varName</code> with
+              <code>term</code>, and returns the substitution.</li>
+	    <li><code>clone()</code> returns a copy of the substitution.
+	  </ul>
+        </p>
+        <p>
+	  As mentioned in class, a substitution should always be in <i>solved form</i>: any variable that appears in its domain should
+          not appear in its range. You will have to figure out how to maintain this invariant in your interpreter. To make this task
+          easier, implement a method on terms &mdash; i.e., <code>Var</code>s and <code>Clause</code>s &mdash; called
+          <code>rewrite(s)</code> such that <code>t.rewrite(s)</code> returns the result of applying the substitution
+          <code>s</code> to term <code>t</code>. In other words, <code>rewrite</code> will replace any variables in <code>t</code>
+          with their values according to <tt>s</tt>, and leave any variables that are not mapped in <code>s</code> alone.
+          (Note that the result of <code>t.rewrite(s)</code> is a new term &mdash; the <code>rewrite</code> method should not
+          modify its receiver.)
+        </p>
+        <h3>Unit Tests</h3>
+        <p>
+          Please do all your work in a file called <a href="log.js"><code>log.js</code></a>. Each time
+          you refresh this page, that file is loaded by our test harness to run unit tests for each part of the
+          assignment.
+        </p>
+        <script src="log.js"></script>
+        <script>
+
+// Replace the `equals` function that is used by the test harness
+// to make it work with objects.
+
+function __equals__(x, y) {
+  if (x === y) {
+    return true;
+  } else if (x instanceof Array) {
+    return arrayEquals(x, y);
+  } else if (x && typeof x === "object" &&
+             y && typeof x === "object") {
+    for (var k in x) {
+      if (!__equals__(x[k], y[k])) {
+        return false;
+      }
+    }
+    for (var k in y) {
+      if (!(k in x)) {
+        return false;
+      }
+    }
+    return true;
+  } else {
+    return false;
+  }
+}
+
+var equals = __equals__;
+
+        </script>
+        <script src="tests-part1.js"></script>
+        <p>
+          You can add your own test cases to this list by editing
+          <a href="tests-part1.js"><code>tests-part1.js</code></a>.
+        </p>
+      </section>
+      <section>
+        <sectionHeader>
+          <span>Part II: Unification</span>
+        </sectionHeader>
+        <p>
+	  As discussed in class, the heart of a Prolog interpreter is <i>unification</i>. Implement a method on <code>Subst</code>
+          called <code>unify(term1, term2)</code> that adds to the given substitution whatever bindings are necessary in order to unify
+          the given terms. If unification succeeds, <code>unify</code> should return the updated substitution;  otherwise it should
+          throw an exception like this:<codeBlock>throw new Error("unification failed")</codeBlock>
+          The resulting substitution should be in solved form; the <code>rewrite</code> method that you implemented above should come
+          in handy.
+        </p>
+        <p>
+          Here is the pseudocode for unification that we saw in class.
+          <sidebar>
+            Recall that unification produces the <i>most general unifier</i> of two terms, which is always unique. Intuitively,
+            <code>s</code> is the most general unifier of <code>t1</code> and <code>t2</code> if any other unifier <code>s'</code> of
+            those terms is simply a more constrained version of <code>s</code>, i.e. it has all the constraints of <code>s</code> plus
+            potentially more. For example, <code>{X:a,Y:a}</code> is a more constrained version of <code>{X:Y}</code>.
+          </sidebar>
+          Your implementation will be conceptually similar, except it will imperatively update a given substitution as it goes rather
+          than returning a new substitution.
+          <style>
+            pseudocode {
+              display: inline-block;
+            }
+            pcline {
+              display: block;
+              margin: 2pt 3pt;
+            }
+            pcline > indented {
+              display: inline-block;
+              margin-left: 20pt;
+            }
+          </style>
+          <center>
+            <pseudocode style="font-family: 'Times Roman', serif; font-size: 13pt; text-align: left;">
+              <pcline>
+                <mm>X</mm> = <mm>X</mm> &rightarrow; { }
+              </pcline>
+              <pcline>
+                <mm>X</mm> = <mm>t</mm> &rightarrow; { <mm>X</mm>: <mm>t</mm> }<br>
+              </pcline>
+              <pcline>
+                <mm>t</mm> = <mm>X</mm> &rightarrow; { <mm>X</mm>: <mm>t</mm> }<br>
+              </pcline>
+              <pcline>
+                <mm>x</mm><code>(</code><mm>t<sub>1</sub></mm><code>, </code><mm>t<sub>2</sub></mm><code>, </code>&hellip;<code>, </code><mm>t<sub>n</sub></mm><code>)</code> = <mm>x</mm><code>(</code><mm>t<sub>1</sub>'</mm><code>, </code><mm>t<sub>2</sub>'</mm><code>, </code>&hellip;<code>, </code><mm>t<sub>n</sub>'</mm><code>)</code> &rightarrow; <mm>s<sub>1</sub></mm> &cup; <mm>s<sub>2</sub></mm> &cup; &hellip; &cup; <mm>s<sub>n</sub></mm><br>
+                <indented>
+                  <mm>t<sub>1</sub></mm> = <mm>t<sub>1</sub>'</mm> &rightarrow; <mm>s<sub>1</sub></mm><br>
+                  <mm>s<sub>1</sub></mm>(<mm>t<sub>2</sub></mm>) = <mm>s<sub>1</sub></mm>(<mm>t<sub>2</sub>'</mm>) &rightarrow; <mm>s<sub>2</sub></mm><br>
+                  &hellip;<br>
+                  <mm>s<sub>1</sub></mm>(<mm>s<sub>2</sub></mm>(&hellip;(<mm>s<sub>n-1</sub></mm>(<mm>t<sub>n</sub></mm>))&hellip;)) =
+                  <mm>s<sub>1</sub></mm>(<mm>s<sub>2</sub></mm>(&hellip;(<mm>s<sub>n-1</sub></mm>(<mm>t<sub>n</sub>'</mm>))&hellip;))
+                  &rightarrow; <mm>s<sub>n</sub></mm>
+                </indented>
+              </pcline>
+            </pseudocode>
+          </center>
+        </p>
+        <h3>Unit Tests</h3>
+        <script src="tests-part2.js"></script>
+        <p>
+          You can add your own test cases to this list by editing
+          <a href="tests-part2.js"><code>tests-part2.js</code></a>.
+        </p>
+      </section>
+      <section>
+        <sectionHeader>
+          <span>Part III: Solver (putting it all together)</span>
+        </sectionHeader>
+        <p>
+          Finally, implement <code>Program</code>'s <code>solve()</code> method, which produces the solutions for a given program.
+          The solutions should be returned as an <i>iterator</i> of substitutions, each representing a solution to the
+          query in the program.
+        </p>
+        <p>
+          Here, an iterator is just an object that has a <code>next()</code> method. This method will either return an instance of
+          <code>Subst</code>, or a <i>falsy</i> value to tell the caller that there are no more solutions. Of course, solutions
+          should be produced in the same order as they are in Prolog. Our test harness and playground will use your iterator to
+          obtain and print solutions.
+        </p>
+        <p>
+          <b>Note</b>: The produced substitutions can include more variables than those that appear in the query; our provided
+          <code>evalAST</code> method (see <a href="plumbing.js"><code>plumbing.js</code></a>) filters each substitution to find and
+          print only the variables that appear in the query.
+        </p>
+        <p>
+          To handle programs that have an infinite (or just a very large) number of solutions, you should produce solutions
+          <i>lazily</i>, i.e., you should only actually search for the next solution when <code>next()</code> is called on your returned
+          iterator. So your <code>solve</code> method will really just produce an iterator that "knows" how to search for the next
+          solution whenever it is asked for one. This will require you to maintain some state to represent the current point in your
+          search, so that a call to <code>next()</code> can pick up where the previous call left off, including accounting for the need
+          to backtrack. <i>Hint: Aren't lexically scoped closures awesome?</i>
+        </p>
+        <script>
+
+// Replace the `equals` function that is used by the test harness
+// to make it work with iterators.
+
+function equals(x, y) {
+  var N = 5;
+  return __equals__(getUpTo(N, x), getUpTo(N, y));
+}
+
+function getUpTo(n, iter) {
+  if (!iter.next || !iter.rewind) {
+    throw new Error("expected wrapped iterator but got " + JSON.stringify(iter));
+  }
+  iter.rewind();
+  var solns = [];
+  while (solns.length < n) {
+    var soln = iter.next();
+    if (soln) {
+      solns.push(soln);
+    } else {
+      break;
+    }
+  }
+  return solns;
+}
+
+// This function is used to make the expected results for the unit tests
+
+function makeIterator(/* soln1, soln2, ... */) {
+  var args = Array.prototype.slice.call(arguments).map(function(soln) {
+    var subst = new Subst();
+    Object.keys(soln).forEach(function(name) {
+      subst.bind(name, soln[name]);
+    });
+    return subst;
+  });
+  var idx = 0;
+  return {
+    next: function() {
+      return idx >= args.length ? false : args[idx++];
+    },
+    rewind: function() {
+      idx = 0;
+    }
+  };
+}
+
+        </script>
+        <h3>Unit Tests</h3>
+        <script src="tests-part3.js"></script>
+        <p>
+          You can add your own test cases to this list by editing
+          <a href="tests-part3.js"><code>tests-part3.js</code></a>.
+        </p>
+      </section>
+      <section>
+        <sectionHeader>
+          <span>Playground</span>
+        </sectionHeader>
+        <script>
+
+insertPlayground(
+    L,
+    'person(alice).\n' +
+    'person(bob).\n' +
+    'person(X)?'
+);
+
+        </script>
+      </section>
+      <section>
+        <sectionHeader>
+          <span>Extra Credit</span>
+        </sectionHeader>
+        <p>
+          <ul>
+            <li>
+              Modify the <a id="pageSourceAnchor">parser</a> to add number literals to our language, then extend your
+              prototype with support for arithmetic via the <code>is/2</code> predicate. E.g.,
+              <code>is(X, +(15, *(3, 9)))</code> should succeed with <code>X</code> bound to <code>42</code>. For
+              extra style points, make it possible for the arithmetic operators to be written in infix notation, with
+              the standard precedences.
+              <script>pageSourceAnchor.setAttribute("href", "view-source:" + window.location.href);</script>
+            </li>
+            <li>Extend your prototype with support for negation and
+              <a href="http://en.wikipedia.org/wiki/Cut_%28logic_programming%29"><i>cut</i></a>.</li>
+            <li>Prolog has pretty great support for meta-programming. Are you familiar with the database manipulation
+              predicates <a href="http://www2.hawaii.edu/~nreed/ics313/lectures/LPN11.pdf"><code>assert/1</code> and
+              <code>retract/1</code></a>? What about the
+              <a href="http://www.swi-prolog.org/pldoc/man?predicate=clause/2"><code>clause/2</code></a> predicate?
+              Lots of opportunities for interesting extra-credit projects here! Highly recommended reading: Ron
+              Ferguson's <a href="http://tinlizzie.org/~awarth/prolog-ferguson81.pdf">Prolog: A Step Toward the
+              Ultimate Computer Language</a>.</li>
+            <li>Do the <a href="http://en.wikipedia.org/wiki/Occurs_check">occurs check</a> in 
+              <code>Subst.prototype.unify</code>, then explain what it's for and how it works.</li>
+            <li>Prolog finds solutions to a query by doing a depth-first search. Experiment with a different search
+              strategy, e.g., breadth-first. What are the benefits and disadvantages of your alternative semantics?</li>
+          </ul>
+        </p>
+      </section>
+    </everything>
+  </body>
+</html>
+

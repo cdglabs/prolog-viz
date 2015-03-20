@@ -1,0 +1,85 @@
+table.playground { }
+
+table.playground .CodeMirror {
+  display: inline-block;
+  clear: both;
+  border: 1px solid #ddd;
+  border-radius: 4pt;
+  font-family: Monaco;
+  line-height: 1.15;
+  background: #fcfcfc;
+}
+
+.number {
+}
+
+.keyword, .symbol {
+  _color: #955ba6;
+  _color: cornflowerblue;
+  color: slateblue;
+}
+
+.ident, .variable {
+  color: maroon;
+}
+
+.comment {
+  color: green;
+}
+
+table.playground > tr > td {
+  vertical-align: top;
+  padding: 4pt;
+}
+
+table.playground > tr > td:first-child {
+  text-align: right;
+  font-weight: bold;
+}
+
+table.playground > tr:first-child .CodeMirror {
+  background: #fff;
+}
+
+parseError {
+  display: block;
+  white-space: pre-wrap;
+  color: maroon;
+  background: yellow;
+  padding: 0 4px;
+  padding: 4px;
+  opacity: 1;
+  max-height: 100pt;
+
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.button {
+  display: inline-block;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  border-radius: 4pt;
+  -moz-box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  padding: 5px 10px 5px;
+  text-decoration: none;
+  cursor: pointer;
+  margin-top: 4pt;
+  color: cornflowerblue;
+  background: #f7f7f7;
+  text-align: center;
+}
+
+.button:hover,
+.button:focus {
+  background: #f0f0f0;
+}
+
+.button:active {
+  -moz-box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
+  -webkit-box-shadow: none;
+}
+
