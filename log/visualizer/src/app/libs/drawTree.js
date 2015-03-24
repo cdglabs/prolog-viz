@@ -12,7 +12,7 @@ var margin = {
   left: 300
 };
 
-ns.create = function(el, env) {
+ns.create = function(el, env, currentEnv) {
 
   width = getTreeHeight(env) * 180 + 300;
   height = getTreeWidth(env) * 75 ;
@@ -39,12 +39,16 @@ ns.create = function(el, env) {
   svg.append('g')
     .attr('class', 'd3-tooltips');
 
-  this.update(el, env);
+  this.update(el, env, currentEnv);
+};
+
+ns.update = function(el, env, currentEnv) {
+  this._drawTree(el, env, currentEnv);
 };
 
 
-ns._drawTree = function(el, root) {
-  console.log(root);
+ns._drawTree = function(el, root, currentEnv) {
+  console.log(currentEnv);
 
   var svg = d3.select(el).select('.d3-tree');
   var diagonal = d3.svg.diagonal()
@@ -112,7 +116,14 @@ ns._drawTree = function(el, root) {
 
   node.append("circle")
     .attr("r", circleRadius)
-    .attr("class", "circle")
+    // .attr("class", "circle")
+    .attr("class", function(d) {
+      if (currentEnv && d.envId === currentEnv.envId) {
+        return "current circle";
+      } else {
+        return "circle";
+      }
+    })
     .style("fill", function(d) {
       if (Array.isArray(d.goals) && d.goals.length === 0) {
         return "Lime";
@@ -123,7 +134,6 @@ ns._drawTree = function(el, root) {
         return "Yellow";
       }
     })
-
     .on("mouseover", function(d) {
       return tooltip
         .style("visibility", "visible")
@@ -142,10 +152,6 @@ ns._drawTree = function(el, root) {
     });
 
 
-};
-
-ns.update = function(el, env) {
-  this._drawTree(el, env);
 };
 
 function escapeHtml(unsafe) {

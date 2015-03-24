@@ -3,6 +3,7 @@ var Router = require('react-router');
 var assign = require('object-assign');
 
 var Input = require('../components/Input.jsx');
+var Info = require('../components/Info.jsx');
 var Control = require('../components/Control.jsx')
 var Visualization = require('../components/Visualization.jsx');
 
@@ -44,6 +45,7 @@ var Demo = React.createClass({
       <div className="demo-page">
         <div className="leftPanel">
           <Input/>
+          <Info/>
           <Control/>
         </div>
         <div className="rightPanel">

@@ -308,22 +308,22 @@ Subst.prototype.unify = function(term1, term2) {
 // Part III: Program.prototype.solve()
 // -----------------------------------------------------------------------------
 
+var envCount = 0;
 function Env(goals, rules, subst) {
-  this.goals = goals.slice();
-  this.subst = subst.clone();
-  this.rules = rules.map(function(rule, i) {
-              return rule.makeCopyWithFreshVarNames('_'+i);
-            });
+  this.envId = envCount;
+  envCount++;
+  this.goals = goals ? goals.slice() : [];
+  this.subst = subst ? subst.clone() : undefined;
+  this.rules = rules ? rules.map(function(rule, i) {
+    return rule.makeCopyWithFreshVarNames("'");
+    // return rule.makeCopyWithFreshVarNames('_'+i);
+  }) : undefined;
   this.children = [];
   this.parent = undefined;
 }
 
 Env.prototype.addChild = function(env) {
   this.children.push(env);
-  // if (this.children.length > this.rules.length) {
-  //   console.log(this.children);
-  //   throw new Error("More children than rules");
-  // }
   if (env) {
     env.parent = this;
   }
@@ -334,22 +334,27 @@ Env.prototype.addChild = function(env) {
 Env.prototype.copyWithoutParent = function() {
   var clone = Object.create(this);
   clone.parent = null;
+  clone.envId = this.envId;
   clone.goals = this.goals.map(function(goal) {
     return goal.toString();
   });
-  clone.subst = {};
-  for (var key in this.subst.bindings) {
-    clone.subst[key] = this.subst.bindings[key].toString();
-  }
-  clone.rules = this.rules.map(function(rule) {
-    var ret = rule.head.toString();
-    if (rule.body.length > 0) {
-      ret += " :- "+rule.body.map(function(term) {
-        return term.toString();
-      });
+  if (this.subst) {
+    clone.subst = {};
+    for (var key in this.subst.bindings) {
+      clone.subst[key] = this.subst.bindings[key].toString();
     }
-    return ret;
-  });
+  }
+  if (this.rules) {
+    clone.rules = this.rules.map(function(rule) {
+      var ret = rule.head.toString();
+      if (rule.body.length > 0) {
+        ret += " :- "+rule.body.map(function(term) {
+          return term.toString();
+        });
+      }
+      return ret;
+    });
+  }
   clone.solution = this.solution;
 
   clone.children = clone.children.map(function(child) {
@@ -364,7 +369,6 @@ Env.prototype.copyWithoutParent = function() {
 Env.prototype.toString = function() {
   return JSON.stringify(this.copyWithoutParent());
 };
-
 
 var count = 0;
 Program.prototype.solve = function() {
@@ -402,20 +406,16 @@ Program.prototype.solve = function() {
     if (!env || env.constructor.name !== "Env") {
       return false;
     }
-    // console.log("current goal: "+JSON.stringify(env.goals));
-    // console.log("current envs: "+JSON.stringify(rootEnv));
 
     if (currentEnv === env && currentEnv !== rootEnv) {
-      return solve(currentEnv.parent)
+      return solve(currentEnv.parent);
     } else {
       currentEnv = env;
     }
-    // console.log("currentEnv: "+currentEnv);
 
     var goals = env.goals;
     var rules = env.rules;
     if (goals.length === 0) {
-
       var solution = env.subst.filter(self.getQueryVarNames()).toString();//JSON.stringify(env.subst.filter(self.getQueryVarNames()));
       // console.log("solution found: "+JSON.stringify(solution));
       env.solution = solution;
@@ -435,15 +435,22 @@ Program.prototype.solve = function() {
           env.addChild(newEnv);
 
           var ret = JSON.parse(rootEnv.toString());
-          trace.push(ret);
+          trace.push({
+            rootEnv: ret,
+            currentEnv: JSON.parse(newEnv.toString())
+          });
 
           return solve(newEnv);
         } catch(e) {
           // backtrace
-          env.addChild(null);
+          var newEnv = new Env(["nothing"]);
+          env.addChild(newEnv);
 
           var ret = JSON.parse(rootEnv.toString());
-          trace.push(ret);
+          trace.push({
+            rootEnv: ret,
+            currentEnv: JSON.parse(newEnv.toString())
+          });
         }
       }
 
@@ -478,7 +485,10 @@ Program.prototype.solve = function() {
           idx = Math.max(0, idx-1);
         },
         getEnv: function() {
-          return traceCopy[idx];
+          return traceCopy[idx].rootEnv;
+        },
+        getCurrentEnv: function() {
+          return traceCopy[idx].currentEnv;
         },
         getMax: function() {
           return max;

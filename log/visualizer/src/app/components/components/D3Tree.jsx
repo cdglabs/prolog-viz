@@ -14,7 +14,7 @@ var FeedbackTree = React.createClass({
   componentDidUpdate: function() {
     var el = this.getDOMNode();
     if (this.props.data) {
-      d3Tree.create(el, this.props.data);
+      d3Tree.create(el, this.props.data, this.props.currentEnv);
 
       // d3Tree.update(el, this.props.data);
     }

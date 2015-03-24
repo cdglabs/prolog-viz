@@ -97,9 +97,11 @@ var Visualization = React.createClass({
 
     if (this.state.traceIter) {
       var rootEnv = this.state.traceIter.getEnv();
+      var currentEnv = this.state.traceIter.getCurrentEnv();
       if (rootEnv) {
         var treeProps = {
-          data: rootEnv
+          data: rootEnv,
+          currentEnv: currentEnv
         };
         tree = <Tree {...treeProps}/>;
       }

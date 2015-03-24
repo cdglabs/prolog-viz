@@ -57,9 +57,7 @@ var Control = React.createClass({
   },
 
   onSliderChange: function(e, value) {
-    console.log(value);
     EditorActionCreators.setStep(value);
-
   },
 
   onSliderStart: function(e, value) {
