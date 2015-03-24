@@ -386,6 +386,11 @@ Program.prototype.solve = function() {
 
   var trace = [];
 
+  trace.push({
+    rootEnv: JSON.parse(rootEnv.toString()),
+    currentEnv: JSON.parse(currentEnv.toString())
+  });
+
   // skip duplicated solutions
   var solutions = [];
 
@@ -413,11 +418,25 @@ Program.prototype.solve = function() {
       currentEnv = env;
     }
 
+
+      // trace.push({
+      //   rootEnv: JSON.parse(rootEnv.toString()),
+      //   currentEnv: JSON.parse(currentEnv.toString())
+      // });
+
+
+
     var goals = env.goals;
     var rules = env.rules;
     if (goals.length === 0) {
+      if (env.parent) {
+        trace.push({
+          rootEnv: JSON.parse(rootEnv.toString()),
+          currentEnv: JSON.parse(env.parent.toString())
+        });
+      }
+
       var solution = env.subst.filter(self.getQueryVarNames()).toString();//JSON.stringify(env.subst.filter(self.getQueryVarNames()));
-      // console.log("solution found: "+JSON.stringify(solution));
       env.solution = solution;
       if (solutions.indexOf(solution) < 0) {
         solutions.push(solution);
@@ -434,9 +453,8 @@ Program.prototype.solve = function() {
           var newEnv = new Env(newGoals, rules, subst);
           env.addChild(newEnv);
 
-          var ret = JSON.parse(rootEnv.toString());
           trace.push({
-            rootEnv: ret,
+            rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(newEnv.toString())
           });
 
@@ -446,14 +464,26 @@ Program.prototype.solve = function() {
           var newEnv = new Env(["nothing"]);
           env.addChild(newEnv);
 
-          var ret = JSON.parse(rootEnv.toString());
+          var rootEnvAfter = JSON.parse(rootEnv.toString());
           trace.push({
-            rootEnv: ret,
+            rootEnv: rootEnvAfter,
             currentEnv: JSON.parse(newEnv.toString())
           });
+          trace.push({
+            rootEnv: rootEnvAfter,
+            currentEnv: JSON.parse(env.toString())
+          });
+
+
         }
       }
 
+      if (env.parent) {
+        trace.push({
+          rootEnv: JSON.parse(rootEnv.toString()),
+          currentEnv: JSON.parse(env.parent.toString())
+        });
+      }
       return solve(env.parent);
     }
   };
