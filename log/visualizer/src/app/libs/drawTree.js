@@ -12,7 +12,9 @@ var margin = {
   left: 300
 };
 
-ns.create = function(el, env, currentEnv) {
+ns.create = function(el, props) {
+
+  var env = props.rootEnv;
 
   width = getTreeHeight(env) * 180 + 300;
   height = getTreeWidth(env) * 75 ;
@@ -39,16 +41,44 @@ ns.create = function(el, env, currentEnv) {
   svg.append('g')
     .attr('class', 'd3-tooltips');
 
-  this.update(el, env, currentEnv);
+  this.update(el, props);
 };
 
-ns.update = function(el, env, currentEnv) {
-  this._drawTree(el, env, currentEnv);
+ns.update = function(el, props) {
+  this._drawTree(el, props);
 };
 
 
-ns._drawTree = function(el, root, currentEnv) {
-  console.log(currentEnv);
+ns._drawTree = function(el, props) {
+  var root = props.rootEnv;
+  var currentEnv = props.currentEnv;
+  var currentRule = props.currentRule;
+
+  // remove failed nodes
+
+  if (!props.showFailure) {
+    root = (function copyWithoutFailedNodes(env) {
+      if (Array.isArray(env.goals) && env.goals.length === 1 && env.goals[0] === "nothing") {
+        return null;
+      } else {
+        // var env = env.cop
+        if (env.children) {
+          env.children = env.children.map(function(child) {
+            return copyWithoutFailedNodes(child);
+          }).filter(function(child) {
+            return child !== null;
+          });
+        }
+        return env;
+      }
+    })(root);
+    console.log("not showing");
+
+  } else {
+    console.log("showing");
+
+  }
+
 
   var svg = d3.select(el).select('.d3-tree');
   var diagonal = d3.svg.diagonal()

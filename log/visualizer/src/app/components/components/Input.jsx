@@ -12,7 +12,8 @@ function getStateFromStores() {
   return {
     text : EditorStore.getText(),
     L: EditorStore.getInterpreter(),
-    program: EditorStore.getProgram()
+    program: EditorStore.getProgram(),
+    traceIter: EditorStore.getTraceIter(),
   };
 }
 
@@ -26,8 +27,6 @@ var Input = React.createClass({
   componentDidMount: function() {
     EditorStore.addChangeListener(this._onChange);
     // this.refs.codeMirror.editor.on('cursorActivity', this.handleCursorActivity);
-
-
   },
 
   componentWillUnmount: function() {
@@ -39,67 +38,7 @@ var Input = React.createClass({
    */
   _onChange: function() {
     var newState = getStateFromStores();
-
-    var L = newState.L;
-    if (L) {
-      var syntaxHighlight = L.grammar && L.grammar.semanticAction({
-        number: function(_) {
-          conc.doc.markText(
-            conc.doc.posFromIndex(this.interval.startIdx),
-            conc.doc.posFromIndex(this.interval.endIdx),
-            { className: "number" }
-          );
-        },
-        ident: function(_, _) {
-          conc.doc.markText(
-            conc.doc.posFromIndex(this.interval.startIdx),
-            conc.doc.posFromIndex(this.interval.endIdx),
-            { className: "ident" }
-          );
-        },
-        keyword: function(_) {
-          conc.doc.markText(
-            conc.doc.posFromIndex(this.interval.startIdx),
-            conc.doc.posFromIndex(this.interval.endIdx),
-            { className: "keyword" }
-          );
-        },
-        variable: function(_, _) {
-          conc.doc.markText(
-            conc.doc.posFromIndex(this.interval.startIdx),
-            conc.doc.posFromIndex(this.interval.endIdx),
-            { className: "variable" }
-          );
-        },
-        symbol: function(_, _) {
-          conc.doc.markText(
-            conc.doc.posFromIndex(this.interval.startIdx),
-            conc.doc.posFromIndex(this.interval.endIdx),
-            { className: "symbol" }
-          );
-        },
-        comment: function(_) {
-          conc.doc.markText(
-            conc.doc.posFromIndex(this.interval.startIdx),
-            conc.doc.posFromIndex(this.interval.endIdx),
-            { className: "comment" }
-          );
-        },
-        _list: ohm.actions.map,
-        _terminal: function() {},
-        _default: ohm.actions.passThrough
-      });
-    }
-
-
-    // var p = newState.program;
-    //
-    // if (p) {
-    //   console.log(p.solve().next());
-    // }
-
     this.setState(newState);
-
   },
 
   propTypes: {
@@ -107,8 +46,75 @@ var Input = React.createClass({
   },
 
   componentDidUpdate: function() {
-    if (this.state.highlightedNode) {
-      this.highlight(this.state.highlightedNode.interval, 'highlightRule');
+    var traceIter = this.state.traceIter;
+    if (traceIter) {
+      var trace = traceIter.getCurrentTrace();
+      if (trace.currentRule) {
+        switch(trace.status) {
+          case "BEFORE":
+            this.highlight(trace, 'highlightRuleBefore');
+            break;
+          case "SUCCESS":
+            this.highlight(trace, 'highlightRuleSuccess');
+            break;
+          case "FAILURE":
+            this.highlight(trace, 'highlightRuleFailure');
+            break;
+          default:
+            this.highlight(undefined, 'highlightRule');
+        }
+      } else {
+        this.highlight(undefined, 'highlightRule');
+      }
+    }
+  },
+
+  highlight: function(trace, className) {
+    var cm = this.refs.codeMirror.editor;
+    cm.getAllMarks().forEach(function(m) { m.clear(); });
+
+    var interval = trace && trace.currentRule ? trace.currentRule.interval : undefined;
+
+    if (cm && interval) {
+      var startPos = cm.posFromIndex(interval.startIdx),
+          endPos = cm.posFromIndex(interval.endIdx);
+      cm.markText(startPos, endPos, { className: className });
+
+      this.highlightWidget(trace, endPos.line);
+    } else {
+      this.highlightWidget();
+
+      // console.log("code mirror not available");
+    }
+
+  },
+
+  highlightWidget: function(trace, line) {
+    var cm = this.refs.codeMirror.editor;
+    if (this.lineWidget) {
+      cm.removeLineWidget(this.lineWidget);
+    }
+
+    if (!trace) {
+      return;
+    }
+
+    var msg = "";
+    if (trace.goal) {
+      msg += trace.goal.toString();
+    }
+    if (trace.subst) {
+      msg += " -> "+trace.subst.toString();
+    }
+
+    if (cm && msg) {
+      var msgEl = document.createElement("div");
+      msgEl.className = "errorMsg";
+      msgEl.appendChild(document.createTextNode(msg));
+
+      this.lineWidget = cm.addLineWidget(line, msgEl, {coverGutter: false, noHScroll: true});
+    } else {
+      // console.log("code mirror not available");
     }
   },
 

@@ -62,6 +62,11 @@
 //
 // }
 
+.controls {
+  position: fixed;
+  bottom: 1em;
+}
+
 .inputFont {
   .monoFont;
   font-size: 18px;
@@ -158,9 +163,16 @@
 // }
 
 @selectionColor: #B5D5FF;
-.highlightRule {
-  background-color: @selectionColor;
+.highlightRuleSuccess {
+  background-color: @light-green-600;
 }
+.highlightRuleFailure {
+  background-color: @red-600;
+}
+.highlightRuleBefore {
+  background-color: @yellow-600;
+}
+
 .highlightApplication {
   background-color: CornflowerBlue;
   color: white;
@@ -178,35 +190,6 @@
 .pexpr.whitespace .prim {
   /* HACK! This is not the right way to deal with whitespace. */
   width: 10px;
-}
-
-.failureMessage {
-  color: @amber-300;
-  .monoFont;
-}
-
-.failure {
-  .monoFont;
-}
-
-
-
-#options {
-  background-color: white;
-  border-radius: 3px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-  padding: 2px 6px 1px 6px;
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-}
-#options label {
-  position: relative;
-  top: 1px;
-}
-#options input[type=checkbox] {
-  position: relative;
-  top: -1px;
 }
 
 .tooltip {

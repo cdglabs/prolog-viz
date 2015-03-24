@@ -7,8 +7,8 @@ var Prolog = function(grammar) {
   var g = grammar;//ohm.grammar("L");
   var toAST = g.synthesizedAttribute({
     Program:       function(rules, query)        { return new Program(toAST(rules), toAST(query)); },
-    Rule_body:     function(head, _, body, _)    { return new Rule(toAST(head), toAST(body)); },
-    Rule_noBody:   function(head, _)             { return new Rule(toAST(head)); },
+    Rule_body:     function(head, _, body, _)    { return new Rule(toAST(head), toAST(body), this.interval); },
+    Rule_noBody:   function(head, _)             { return new Rule(toAST(head), undefined, this.interval); },
     Query:         function(c, _)                { return toAST(c); },
     Clause_args:   function(sym, _, a, _, as, _) { return new Clause(toAST(sym), [toAST(a)].concat(toAST(as))); },
     Clause_noArgs: function(sym)                 { return new Clause(toAST(sym)); },
@@ -158,9 +158,10 @@ function Program(rules, query) {
   this.query = query;
 }
 
-function Rule(head, optBody) {
+function Rule(head, optBody, interval) {
   this.head = head;
   this.body = optBody || [];
+  this.interval = interval;
 }
 
 function Clause(name, optArgs) {
@@ -228,7 +229,7 @@ Rule.prototype.makeCopyWithFreshVarNames = function(suffix) {
   var body = this.body.map(function(c) {
     return makeCopyOfClauseWithFreshVarNames(c, random);
   });
-  return new Rule(head, body);
+  return new Rule(head, body, this.interval);
 };
 
 Clause.prototype.rewrite = function(subst) {
@@ -385,7 +386,6 @@ Program.prototype.solve = function() {
   var currentEnv = rootEnv;
 
   var trace = [];
-
   trace.push({
     rootEnv: JSON.parse(rootEnv.toString()),
     currentEnv: JSON.parse(currentEnv.toString())
@@ -418,14 +418,6 @@ Program.prototype.solve = function() {
       currentEnv = env;
     }
 
-
-      // trace.push({
-      //   rootEnv: JSON.parse(rootEnv.toString()),
-      //   currentEnv: JSON.parse(currentEnv.toString())
-      // });
-
-
-
     var goals = env.goals;
     var rules = env.rules;
     if (goals.length === 0) {
@@ -448,14 +440,48 @@ Program.prototype.solve = function() {
         var rule = rules[env.children.length];
         var subst = env.subst.clone();
         try {
+          trace.push({
+            rootEnv: JSON.parse(rootEnv.toString()),
+            currentEnv: JSON.parse(env.toString()),
+            currentRule: rule,
+            status: "BEFORE",
+            goal: goal
+          });
+
           subst.unify(goal, rule.head);
+
+          // show unification succeeded
+          trace.push({
+            rootEnv: JSON.parse(rootEnv.toString()),
+            currentEnv: JSON.parse(env.toString()),
+            currentRule: rule,
+            status: "SUCCESS",
+            goal: goal
+          });
+
+          // show subsitution
+          trace.push({
+            rootEnv: JSON.parse(rootEnv.toString()),
+            currentEnv: JSON.parse(env.toString()),
+            currentRule: rule,
+            status: "SUCCESS",
+            goal: goal,
+            subst: subst
+          });
+
           var newGoals = resolution(rule.body, goals, subst);
           var newEnv = new Env(newGoals, rules, subst);
           env.addChild(newEnv);
 
+
+
+          // show new goal
           trace.push({
             rootEnv: JSON.parse(rootEnv.toString()),
-            currentEnv: JSON.parse(newEnv.toString())
+            currentEnv: JSON.parse(newEnv.toString()),
+            currentRule: rule,
+            status: "SUCCESS",
+            goal: newGoals
           });
 
           return solve(newEnv);
@@ -467,14 +493,16 @@ Program.prototype.solve = function() {
           var rootEnvAfter = JSON.parse(rootEnv.toString());
           trace.push({
             rootEnv: rootEnvAfter,
-            currentEnv: JSON.parse(newEnv.toString())
+            currentEnv: JSON.parse(newEnv.toString()),
+            currentRule: rule,
+            status: "FAILURE",
+            goal: goal
           });
+          // backtrace
           trace.push({
             rootEnv: rootEnvAfter,
             currentEnv: JSON.parse(env.toString())
           });
-
-
         }
       }
 
@@ -514,11 +542,8 @@ Program.prototype.solve = function() {
         backward: function() {
           idx = Math.max(0, idx-1);
         },
-        getEnv: function() {
-          return traceCopy[idx].rootEnv;
-        },
-        getCurrentEnv: function() {
-          return traceCopy[idx].currentEnv;
+        getCurrentTrace: function() {
+          return traceCopy[idx];
         },
         getMax: function() {
           return max;

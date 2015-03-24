@@ -67,12 +67,11 @@ var Info = React.createClass({
     var info = <p>Failed to unify.</p>;
     var traceIter = this.state.traceIter;
     if (traceIter) {
-      var currentEnv = traceIter.getCurrentEnv();
-      // console.log(currentEnv);
-      if (currentEnv) {
+      var trace = traceIter.getCurrentTrace();
+      if (trace && trace.currentEnv) {
         info = <div>
-            <p>goals: {JSON.stringify(currentEnv.goals)}</p>
-            <p>subst: {JSON.stringify(currentEnv.subst)}</p>
+            <p>goals: {JSON.stringify(trace.currentEnv.goals)}</p>
+            <p>subst: {JSON.stringify(trace.currentEnv.subst)}</p>
                 </div>;
       }
     }

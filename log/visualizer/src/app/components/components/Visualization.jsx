@@ -1,5 +1,7 @@
 var React = require('react');
 var Classable = require('../../mixins/classable.js');
+var mui = require('material-ui');
+var Toggle = mui.Toggle;
 
 var assign = require('object-assign');
 
@@ -23,7 +25,8 @@ var Visualization = React.createClass({
 
   getInitialState: function() {
     return assign(getStateFromStores(), {
-      inputs: []
+      inputs: [],
+      showFailure: false
     });
   },
 
@@ -55,6 +58,12 @@ var Visualization = React.createClass({
 
   onEditorTextChange: function(e) {
     EditorActionCreators.changeArgsText(e.target.value);
+  },
+
+  onShowFailureChange: function(e, on) {
+    this.setState({
+      showFailure: on
+    });
   },
 
   render: function() {
@@ -96,13 +105,11 @@ var Visualization = React.createClass({
     var tree = <h1>A tree goes here</h1>;
 
     if (this.state.traceIter) {
-      var rootEnv = this.state.traceIter.getEnv();
-      var currentEnv = this.state.traceIter.getCurrentEnv();
-      if (rootEnv) {
-        var treeProps = {
-          data: rootEnv,
-          currentEnv: currentEnv
-        };
+      var trace = this.state.traceIter.getCurrentTrace();
+      if (trace) {
+        var treeProps = assign(trace, {
+          showFailure: this.state.showFailure
+        });
         tree = <Tree {...treeProps}/>;
       }
     }
@@ -112,8 +119,10 @@ var Visualization = React.createClass({
         <div className={classes}>
           {tree}
         </div>
+        <div className="controls">
+          <Toggle name="toggleName1" value="toggleValue1" label="Show failed nodes" onToggle={this.onShowFailureChange}/>
+        </div>
       </div>
-
       );
     }
 });
