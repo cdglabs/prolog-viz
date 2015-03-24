@@ -1,0 +1,57 @@
+.input {
+  color: @grey-900;
+  line-height: 1.6;
+
+  width: 100%;
+
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+
+  padding: 2em 1em;
+
+  // .content {
+  //   padding: 1em;
+  //
+  // }
+
+  .left, .right {
+    .monoFont;
+    font-size: 24px;
+
+    // -webkit-flex: 1;
+    // flex: 1;
+    // -webkit-flex: 1;
+    // flex: 1 1 50px;
+
+  }
+
+  //  {
+  //
+  // }
+
+  .mid {
+    -webkit-flex: 1 0.5 200px;
+    flex: 1 0.5 200px;
+  }
+
+}
+
+.input, .printer {
+  .CodeMirror {
+    .monoFont;
+    line-height: 120%;
+    font-size: 18px;
+    border: 1px solid #eee;
+    // height: auto;
+    // height: 100%;
+
+    // .CodeMirror ::selection  {
+    //   background-color: #B5D5FF !important;
+    // }
+  }
+  .CodeMirror-focused .CodeMirror-selected { background: @selectionColor; }
+  .CodeMirror ::selection { background: @selectionColor; }
+  .CodeMirror ::-moz-selection { background: @selectionColor; }
+}

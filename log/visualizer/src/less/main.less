@@ -1,0 +1,73 @@
+/* material-ui */
+@import "../../node_modules/material-ui/src/less/scaffolding.less";
+@import "./material-ui-custom-overrides.less";
+@import "../../node_modules/material-ui/src/less/components.less";
+
+@import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono);
+
+/* custom font icons */
+@import (less) "./font-icons/style.css";
+
+// page animations: https://github.com/codrops/PageTransitions
+// @import (less) "animations.css";
+
+// purecss
+// @import (less) "../../node_modules/purecss/pure.css";
+// @import (less) "../../node_modules/purecss/grids-responsive.css";
+
+@import "master.less";
+@import "demo-page.less";
+@import "visualization.less";
+@import "input.less";
+@import "control.less";
+
+
+// code mirror
+@import (less) "../../node_modules/codemirror/lib/codemirror.css";
+// @import (less) "../../node_modules/codemirror/theme/monokai.css";
+
+body {
+  margin: 0;
+}
+
+// ReactCSSTransitionGroup
+@widthDuration: 0.2s;
+@targetWidth: 50px;
+
+.example-enter {
+  width: 0px;
+  transition: width @widthDuration ease-in;
+}
+
+.example-enter.example-enter-active {
+  width: @targetWidth;
+}
+
+.example-leave {
+  width: @targetWidth;
+  transition: width @widthDuration ease-out;
+}
+
+.example-leave.example-leave-active {
+  width: 0px;
+}
+
+// Mixin
+@ease-out-function: cubic-bezier(0.23, 1, 0.32, 1);
+
+.ease-out(@duration: 450ms; @property: all; @delay: 0ms) {
+  transition: @property @duration @ease-out-function @delay;
+  -webkit-transition: @property @duration @ease-out-function @delay;
+}
+
+.pulsate(@animation-name; @start-size: 0.75; @end-size: 1; @duration: 1.5s) {
+  @keyframes ~"@{animation-name}" {
+    0%, 100% {
+      transform: scale(@start-size);
+    }
+    50% {
+      transform: scale(@end-size);
+    }
+  }
+  animation: @animation-name @duration ease 0s infinite;
+}

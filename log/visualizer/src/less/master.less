@@ -1,0 +1,36 @@
+.master {
+  height: 100vh;
+  width: 100vw;
+
+  overflow: hidden;
+
+  .demo-page {
+    margin-top: @app-bar-height;
+
+    // margin-top: @navHeight;
+    height: calc(~"100% - "@app-bar-height);;
+  }
+
+
+
+}
+.mui-app-canvas {
+
+height: 100%;
+
+.mui-app-bar {
+  .github-icon-button {
+    float: right;
+    margin-right: -16px;
+  }
+}
+}
+
+a {
+  color: @accent-1-color;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

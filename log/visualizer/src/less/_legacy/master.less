@@ -1,0 +1,37 @@
+
+
+
+// CSSTransition
+.example-enter {
+  position: absolute;
+  opacity: 0.3;
+
+  transition-duration: 0.3s;
+  transition-property: opacity;
+  transition-timing-function: ease;
+  // -webkit-transform: translate3d(0,-100%,0);
+  // z-index: 100;
+}
+
+.example-enter.example-enter-active {
+  // -webkit-transform: translate3d(0,0,0);
+  opacity: 1;
+}
+
+.example-leave {
+  position: absolute;
+
+  transition-duration: .3s;
+  transition-property: opacity;
+  transition-timing-function: ease;
+  -webkit-transform: translate3d(0,0,0);
+  opacity: 1;
+}
+
+.example-leave.example-leave-active {
+  // -webkit-transform: translate3d(0,15%,0);
+  opacity: 0.01;
+  // opacity: 0.01;
+  // transform: translateY(-100%);
+  // animation: transform .6s  ease ;
+}
