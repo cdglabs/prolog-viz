@@ -84,7 +84,7 @@ var Control = React.createClass({
     var traceIter = this.state.traceIter;
     if (traceIter) {
       step = traceIter.getStep();
-      maxStep = traceIter.getMax();
+      maxStep = traceIter.getMax()-1;
     }
 
     var sliderProps = {
@@ -107,7 +107,7 @@ var Control = React.createClass({
         </div>
         <div className="buttons">
           <FlatButton className="left" label="Back" onTouchTap={this.backward}/>
-          <p className="mid">Step {step} of {maxStep}</p>
+          <p className="mid">Step {step+1} of {maxStep+1}</p>
           <FlatButton className="right" label="Forward" onTouchTap={this.forward}/>
         </div>
       </div>

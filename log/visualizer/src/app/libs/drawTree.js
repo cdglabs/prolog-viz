@@ -103,6 +103,9 @@ ns._drawTree = function(el, root) {
       return (d.children && d.children.length !== 0) ? "end" : "start";
     })
     .text(function(d) {
+      if (Array.isArray(d.goals) && d.goals.length === 1 && d.goals[0] === "nothing") {
+        return "";
+      }
       return "solve: "+JSON.stringify(d.goals);
     });
 
