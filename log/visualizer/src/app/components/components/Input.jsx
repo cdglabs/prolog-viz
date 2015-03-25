@@ -52,9 +52,13 @@ var Input = React.createClass({
       if (trace.currentRule) {
         switch(trace.status) {
           case "BEFORE":
+          case "REWRITING_HEAD":
             this.highlight(trace, 'highlightRuleBefore');
             break;
           case "SUCCESS":
+          case "SUBST":
+          case "REWRITING_BODY":
+          case "NEW_GOAL":
             this.highlight(trace, 'highlightRuleSuccess');
             break;
           case "FAILURE":
@@ -100,11 +104,54 @@ var Input = React.createClass({
     }
 
     var msg = "";
+
+    // if (trace.rewrittenHead && !trace.rewrittenBody) {
+    //   msg += trace.rewrittenHead.toString()+"\n";
+    // }
+    //
+    // if (trace.rewrittenHead && trace.rewrittenBody) {
+    //   msg += trace.rewrittenHead.toString()+" :- "+trace.rewrittenBody.toString()+"\n";
+    // }
+
+    if (trace.currentRule) {
+      msg += trace.currentRule.toString() + " -- Renamed rule\n";
+    }
+
     if (trace.goal) {
       msg += trace.goal.toString();
     }
     if (trace.subst) {
       msg += " -> "+trace.subst.toString();
+    }
+
+    msg += " -- "
+    switch(trace.status) {
+      case "BEFORE":
+        msg += "Matching goal";
+        break;
+      case "REWRITING_HEAD":
+        msg += "Rewriting goal";
+        break;
+      case "SUBST":
+        msg += "Subsituting";
+        break;
+      case "REWRITING_BODY":
+        msg += "Rewriting body";
+        break;
+      case "NEW_GOAL":
+        if (trace.goal.toString().length > 0) {
+          msg += "New goal";
+        } else {
+          msg += "Found a solution";
+        }
+        break;
+      case "SUCCESS":
+        msg += "Unification Succeeded";
+        break;
+      case "FAILURE":
+        msg += "Unification Failed";
+        break;
+      default:
     }
 
     if (cm && msg) {

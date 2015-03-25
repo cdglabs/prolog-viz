@@ -61,21 +61,25 @@ ns._drawTree = function(el, props) {
       if (Array.isArray(env.goals) && env.goals.length === 1 && env.goals[0] === "nothing") {
         return null;
       } else {
-        // var env = env.cop
+        var newChildren = [];
         if (env.children) {
-          env.children = env.children.map(function(child) {
+          newChildren = env.children.map(function(child) {
             return copyWithoutFailedNodes(child);
           }).filter(function(child) {
             return child !== null;
           });
         }
+        newChildren = newChildren || [];
+
+        var env = Object.create(env);
+        env.children = newChildren;
         return env;
       }
     })(root);
-    console.log("not showing");
+    // console.log("not showing");
 
   } else {
-    console.log("showing");
+    // console.log("showing");
 
   }
 

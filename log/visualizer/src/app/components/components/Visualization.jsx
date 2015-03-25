@@ -71,37 +71,6 @@ var Visualization = React.createClass({
       // "prin": true
     });
 
-    var args = this.state.args;
-    var text = this.state.text;
-
-    // console.log(JSON.stringify(args));
-
-    var preview = "Preview not available.";
-    var results = "Results not available.";
-    var numArgsString = "";// "("+args.length+"/"+formatNodes.length+")";
-
-    if (args && text) {
-      var argsString = this.state.argsText.length === 0 ? "" : ", "+this.state.argsText;
-      preview = "printf(\""+text+"\""+argsString+");";
-
-      try {
-        results = eval(preview);
-      } catch(e) {
-        console.log(e);
-        results = e.toString();
-      }
-    }
-
-    var props = {
-      lineWrapping: true,
-      viewportMargin: Infinity,
-      // lineNumbers: true,
-      onChange: this.onEditorTextChange,
-      defaultValue: this.state.argsText,
-      placeholder: "Insert arguments here..."
-    };
-
-
     var tree = <h1>A tree goes here</h1>;
 
     if (this.state.traceIter) {

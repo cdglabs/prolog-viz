@@ -347,13 +347,7 @@ Env.prototype.copyWithoutParent = function() {
   }
   if (this.rules) {
     clone.rules = this.rules.map(function(rule) {
-      var ret = rule.head.toString();
-      if (rule.body.length > 0) {
-        ret += " :- "+rule.body.map(function(term) {
-          return term.toString();
-        });
-      }
-      return ret;
+      return rule.toString();
     });
   }
   clone.solution = this.solution;
@@ -448,31 +442,55 @@ Program.prototype.solve = function() {
             goal: goal
           });
 
-          subst.unify(goal, rule.head);
-
-          // show unification succeeded
+          var goalBeforeUnification = goal.rewrite(subst);
           trace.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
-            status: "SUCCESS",
-            goal: goal
+            rewrittenHead: rule.head.rewrite(subst),
+            status: "REWRITING_HEAD",
+            goal: goalBeforeUnification
           });
+
+          subst.unify(goal, rule.head);
 
           // show subsitution
           trace.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
-            status: "SUCCESS",
-            goal: goal,
+            rewrittenHead: rule.head.rewrite(subst),
+            status: "SUBST",
+            goal: goalBeforeUnification,
             subst: subst
           });
+
+          // show unification succeeded
+          trace.push({
+            rootEnv: JSON.parse(rootEnv.toString()),
+            currentEnv: JSON.parse(env.toString()),
+            currentRule: rule,
+            rewrittenHead: rule.head.rewrite(subst),
+
+            status: "SUCCESS",
+            goal: goal.rewrite(subst)
+          });
+
+
 
           var newGoals = resolution(rule.body, goals, subst);
           var newEnv = new Env(newGoals, rules, subst);
           env.addChild(newEnv);
 
+          // trace.push({
+          //   rootEnv: JSON.parse(rootEnv.toString()),
+          //   currentEnv: JSON.parse(newEnv.toString()),
+          //   currentRule: rule,
+          //   rewrittenHead: rule.head.rewrite(subst),
+          //   rewrittenBody: rule.body,
+          //   status: "REWRITING_BODY",
+          //   goal: goal.rewrite(subst)
+          // });
 
 
           // show new goal
@@ -480,12 +498,13 @@ Program.prototype.solve = function() {
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(newEnv.toString()),
             currentRule: rule,
-            status: "SUCCESS",
-            goal: newGoals
+            status: "NEW_GOAL",
+            goal: newGoals // this is a array
           });
 
           return solve(newEnv);
         } catch(e) {
+          console.log(e);
           // backtrace
           var newEnv = new Env(["nothing"]);
           env.addChild(newEnv);
@@ -496,7 +515,7 @@ Program.prototype.solve = function() {
             currentEnv: JSON.parse(newEnv.toString()),
             currentRule: rule,
             status: "FAILURE",
-            goal: goal
+            goal: goal.rewrite(subst)
           });
           // backtrace
           trace.push({
@@ -625,6 +644,16 @@ Var.prototype.recordVarNames = function(varNames) {
 // };
 
 // --------------------------------------------------------------
+
+Rule.prototype.toString = function() {
+  var ret = this.head.toString();
+  if (this.body.length > 0) {
+    ret += " :- "+this.body.map(function(term) {
+      return term.toString();
+    });
+  }
+  return ret;
+};
 
 Clause.prototype.toString = function() {
   return this.args.length === 0 ?
