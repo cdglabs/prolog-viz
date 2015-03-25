@@ -2,69 +2,28 @@
   width: 100%; 
   overflow: auto;
 }
-// .visualization {
-//   // * { .ease-out(); }
-//   padding: 0em 1em;
-//
-//   // margin-top: 30px;
-//   // position: relative;
-//
-//   // prevent inline-block from wrapping
-//   // white-space: nowrap;
-//
-//   display: -webkit-flex;
-//   display: flex;
-//
-//   -webkit-flex-direction: row;
-//   -webkit-flex-wrap: wrap;
-//   // -webkit-justify-content:  space-around;
-//
-//   flex-direction: row;
-//   flex-wrap: wrap;
-//   // justify-content:  space-around;
-//
-//   .topLevelNode {
-//     margin-top: 45px;
-//     position: relative;
-//     -webkit-flex: 0 1 auto;
-//     flex: 0 1 auto;
-//     // margin-right: 0.5em;
-//
-//     // -webkit-flex: 1 0 auto;
-//     // -webkit-transition: -webkit-flex 250ms linear;
-//     // transition: flex 250ms linear;
-//   }
-//
-//   .inputCharWrapper {
-//     margin: auto;
-//     overflow: visible;
-//     height: 0;
-//     -webkit-flex: 1 1 auto;
-//     flex: 1 1 auto;
-//     text-align: center;
-//
-//     .inputFont;
-//     .placeholder {
-//       display: inline-block;
-//       visibility: hidden;
-//     }
-//     .inputChar {
-//       position: absolute;
-//       top: -25px;
-//
-//       visibility: visible;
-//       // transform: translateX(-50%);
-//       // text-align: center;
-//       // overflow: visible;
-//       // z-index: 10;
-//     }
-//   }
-//
-// }
+.visualization {
+  // * { .ease-out(); }
+  padding: 0em 1em;
+
+  // margin-top: 30px;
+  // position: relative;
+
+  // prevent inline-block from wrapping
+  // white-space: nowrap;
+
+  // display: flex;
+
+  // flex-direction: row;
+  // flex-wrap: nowrap;
+  // justify-content:  space-around;
+
+}
 
 .controls {
   position: fixed;
   bottom: 1em;
+  // width: 100%;
 }
 
 .inputFont {
@@ -75,30 +34,49 @@
 .monoFont {
   font-family: Droid Sans Mono, Monaco, Menlo, sans-serif;
 }
-
-.pexpr {
+.rule .nothing {
+  // height: 0;
+}
+.rule {
 
   // align the top edge
-  vertical-align: top;
+  // vertical-align: middle;
 
   cursor: pointer;
-  // color: #333;
   color: @grey-900;
-  display: inline-block;
-  -webkit-flex-grow: 1;
-  flex-grow: 1;
+  display: flex;
   .monoFont;
-  // font-weight: 400;
-  // font-style: normal;
   font-size: 12px;
-  overflow: hidden;
-  white-space: nowrap;
+  // overflow: hidden;
 
-  .pexpr.failed > .label {
+
+
+  .rule.failed > .label {
     background-color: rgba(219, 82, 75, 0.6);
     border-right: 1px solid rgb(219, 82, 75);
     border-left: 1px solid rgb(219, 82, 75);
   }
+
+  .ruleLabel {
+    flex: 0 0 auto;
+    // display: block;
+
+  }
+
+  .labelWrapper {
+    flex: 0 0 auto;
+
+
+  }
+
+  .ruleLabels {
+    flex: 0 0 auto;
+
+    display: flex;
+    flex-direction: column;
+
+  }
+
   .label {
     // background-color: #efefef;
     // border-left: 1px solid #ccc;
@@ -108,8 +86,13 @@
     // margin: 1px 0;
     padding: 1px 2px 1px 2px;
     position: relative;
-    text-align: center;
+    // text-align: center;
     z-index: 0;
+    word-wrap: nowrap;
+    flex: 0 0 auto;
+
+    // max-width: 300px;
+
   }
   .label:after {
     background-color: @grey-200;
@@ -125,42 +108,64 @@
   .label:hover:after {
     background-color: @grey-300;
   }
-  .label.prim {
-    background-color: transparent;
-    border-left: none;
-    border-right: none;
-    color: @green-800;
-  }
-  .label.prim:after {
-    background-color: transparent;
-  }
-  .label.prim:hover:after {
-    background-color: transparent;
+
+  .ruleLabel.highlight {
+    background-color: @yellow-300;
   }
 
   .children {
-    display: -webkit-flex;
+    flex: 0 0 auto;
+
     display: flex;
-    -webkit-flex: 1;
-    flex: 1;
+    // flex-direction: column;
+    // flex: 1;
   }
   .children[hidden] {
     display: none;
   }
   .childrenCSSTransitionGroup {
-    display: -webkit-flex;
+    flex: 0 0 auto;
+
+    counter-reset: step-counter;
+
     display: flex;
-    -webkit-flex: 1;
-    flex: 1;
+    flex-direction: column;
+    // align-items: stretch;
+
   }
+
+
+  .labelChild {
+    flex: 0 0 auto;
+
+    counter-reset: step-counter;
+
+    display: flex;
+    // flex-direction: column;
+  }
+
+
 }
 
-// .pexpr + .pexpr {
-//   margin-left: 1px;
-// }
-// textarea, .CodeMirror {
-//   display: none;
-// }
+.childrenCSSTransitionGroup > .rule > .label::before {
+    content: counter(step-counter);
+    margin-right: 5px;
+
+    font-size: 80%;
+    // background-color: rgb(200,200,200);
+    color: black;
+    // font-weight: bold;
+    // padding: 3px 8px;
+    // border-radius: 3px;
+}
+.childrenCSSTransitionGroup > .rule {
+  // margin-left: 2em;
+  counter-increment: step-counter;
+}
+
+.rule + .rule {
+  margin-top: 0.5em;
+}
 
 @selectionColor: #B5D5FF;
 .highlightRuleSuccess {

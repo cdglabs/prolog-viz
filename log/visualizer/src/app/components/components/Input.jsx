@@ -84,9 +84,9 @@ var Input = React.createClass({
           endPos = cm.posFromIndex(interval.endIdx);
       cm.markText(startPos, endPos, { className: className });
 
-      this.highlightWidget(trace, endPos.line);
+      // this.highlightWidget(trace, endPos.line);
     } else {
-      this.highlightWidget();
+      // this.highlightWidget();
 
       // console.log("code mirror not available");
     }

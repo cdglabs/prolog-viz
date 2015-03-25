@@ -1,5 +1,6 @@
 
 var ohm = require('./ohm.min.js');
+var assign = require('object-assign');
 
 var Prolog = function(grammar) {
   // The parser
@@ -310,7 +311,7 @@ Subst.prototype.unify = function(term1, term2) {
 // -----------------------------------------------------------------------------
 
 var envCount = 0;
-function Env(goals, rules, subst) {
+function Env(goals, rules, subst, currentRule) {
   this.envId = envCount;
   envCount++;
   this.goals = goals ? goals.slice() : [];
@@ -321,9 +322,11 @@ function Env(goals, rules, subst) {
   }) : undefined;
   this.children = [];
   this.parent = undefined;
+  this.currentRule = currentRule;
 }
 
 Env.prototype.addChild = function(env) {
+  env.index = this.children.length;
   this.children.push(env);
   if (env) {
     env.parent = this;
@@ -350,7 +353,9 @@ Env.prototype.copyWithoutParent = function() {
       return rule.toString();
     });
   }
+  clone.currentRule = this.currentRule;
   clone.solution = this.solution;
+  clone.index = this.index;
 
   clone.children = clone.children.map(function(child) {
     return (child && child.constructor.name === "Env") ? child.copyWithoutParent() : {
@@ -379,8 +384,8 @@ Program.prototype.solve = function() {
   var rootEnv = new Env(goals, rules, subst);
   var currentEnv = rootEnv;
 
-  var trace = [];
-  trace.push({
+  var traces = [];
+  traces.push({
     rootEnv: JSON.parse(rootEnv.toString()),
     currentEnv: JSON.parse(currentEnv.toString())
   });
@@ -401,7 +406,14 @@ Program.prototype.solve = function() {
     return newGoals;
   };
 
+  var solveCount = 0;
   var solve = function(env) {
+
+    solveCount++;
+    if (solveCount > 100) {
+      return false;
+    }
+
     if (!env || env.constructor.name !== "Env") {
       return false;
     }
@@ -415,15 +427,17 @@ Program.prototype.solve = function() {
     var goals = env.goals;
     var rules = env.rules;
     if (goals.length === 0) {
+
+      var solution = env.subst.filter(self.getQueryVarNames()).toString();//JSON.stringify(env.subst.filter(self.getQueryVarNames()));
+      env.solution = solution;
+
       if (env.parent) {
-        trace.push({
+        traces.push({
           rootEnv: JSON.parse(rootEnv.toString()),
           currentEnv: JSON.parse(env.parent.toString())
         });
       }
 
-      var solution = env.subst.filter(self.getQueryVarNames()).toString();//JSON.stringify(env.subst.filter(self.getQueryVarNames()));
-      env.solution = solution;
       if (solutions.indexOf(solution) < 0) {
         solutions.push(solution);
         return env.subst;
@@ -434,39 +448,32 @@ Program.prototype.solve = function() {
         var rule = rules[env.children.length];
         var subst = env.subst.clone();
         try {
-          trace.push({
+
+          var goalBeforeUnification = goal.rewrite(subst);
+          traces.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
             status: "BEFORE",
-            goal: goal
-          });
-
-          var goalBeforeUnification = goal.rewrite(subst);
-          trace.push({
-            rootEnv: JSON.parse(rootEnv.toString()),
-            currentEnv: JSON.parse(env.toString()),
-            currentRule: rule,
-            rewrittenHead: rule.head.rewrite(subst),
-            status: "REWRITING_HEAD",
             goal: goalBeforeUnification
           });
+
 
           subst.unify(goal, rule.head);
 
           // show subsitution
-          trace.push({
+          traces.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
             rewrittenHead: rule.head.rewrite(subst),
             status: "SUBST",
             goal: goalBeforeUnification,
-            subst: subst
+            subst: subst.filter(assign(rule.getQueryVarNames(), goalBeforeUnification.getQueryVarNames()))
           });
 
           // show unification succeeded
-          trace.push({
+          traces.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
@@ -476,49 +483,48 @@ Program.prototype.solve = function() {
             goal: goal.rewrite(subst)
           });
 
-
-
           var newGoals = resolution(rule.body, goals, subst);
-          var newEnv = new Env(newGoals, rules, subst);
+
+          var newEnv = new Env(newGoals, [], subst, rule.toString());
+
+          if (newGoals.length === 0) {
+          } else {
+            newEnv = new Env(newGoals, rules, subst, rule.toString());
+          }
+
           env.addChild(newEnv);
 
-          // trace.push({
-          //   rootEnv: JSON.parse(rootEnv.toString()),
-          //   currentEnv: JSON.parse(newEnv.toString()),
-          //   currentRule: rule,
-          //   rewrittenHead: rule.head.rewrite(subst),
-          //   rewrittenBody: rule.body,
-          //   status: "REWRITING_BODY",
-          //   goal: goal.rewrite(subst)
-          // });
-
-
-          // show new goal
-          trace.push({
+          var trace = {
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(newEnv.toString()),
             currentRule: rule,
             status: "NEW_GOAL",
             goal: newGoals // this is a array
-          });
+          };
+          // show new goal or solution
+          if (newGoals.length === 0) {
+            var solution = newEnv.subst.filter(self.getQueryVarNames()).toString();//JSON.stringify(env.subst.filter(self.getQueryVarNames()));
+            trace.solution = solution;
+          }
+          traces.push(trace);
 
           return solve(newEnv);
         } catch(e) {
-          console.log(e);
-          // backtrace
-          var newEnv = new Env(["nothing"]);
+          // console.log(e);
+          // backtraces
+          var newEnv = new Env(["nothing"], [], subst, rule.toString());
           env.addChild(newEnv);
 
           var rootEnvAfter = JSON.parse(rootEnv.toString());
-          trace.push({
+          traces.push({
             rootEnv: rootEnvAfter,
-            currentEnv: JSON.parse(newEnv.toString()),
+            currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
             status: "FAILURE",
             goal: goal.rewrite(subst)
           });
-          // backtrace
-          trace.push({
+          // backtraces
+          traces.push({
             rootEnv: rootEnvAfter,
             currentEnv: JSON.parse(env.toString())
           });
@@ -526,9 +532,11 @@ Program.prototype.solve = function() {
       }
 
       if (env.parent) {
-        trace.push({
+        traces.push({
           rootEnv: JSON.parse(rootEnv.toString()),
-          currentEnv: JSON.parse(env.parent.toString())
+          currentEnv: JSON.parse(env.parent.toString()),
+          // goal: goal.rewrite(subst)
+
         });
       }
       return solve(env.parent);
@@ -546,14 +554,14 @@ Program.prototype.solve = function() {
     getRootEnv: function() {
       var ret = JSON.parse(rootEnv.toString());
       // console.log(JSON.stringify(ret, null, '\t'));
-      // console.log(JSON.stringify(trace, null, '\t'));
+      // console.log(JSON.stringify(traces, null, '\t'));
       return ret;
       // or rootEnv.copyWithoutParent();
     },
     getTraceIter: function() {
-      var traceCopy = trace.slice();
+      var tracesCopy = traces.slice();
       var idx = 0;
-      var max = traceCopy.length;
+      var max = tracesCopy.length;
       return {
         forward: function() {
           idx = Math.min(max, idx+1);
@@ -562,7 +570,7 @@ Program.prototype.solve = function() {
           idx = Math.max(0, idx-1);
         },
         getCurrentTrace: function() {
-          return traceCopy[idx];
+          return tracesCopy[idx];
         },
         getMax: function() {
           return max;
@@ -624,6 +632,21 @@ Program.prototype.getQueryVarNames = function() {
   this.query.forEach(function(clause) {
     clause.recordVarNames(varNames);
   });
+  return Object.keys(varNames);
+};
+
+Rule.prototype.getQueryVarNames = function() {
+  var varNames = Object.create(null);
+  this.head.recordVarNames(varNames);
+  // forEach(function(clause) {
+  //   clause.recordVarNames(varNames);
+  // });
+  return Object.keys(varNames);
+};
+
+Clause.prototype.getQueryVarNames = function() {
+  var varNames = Object.create(null);
+  this.recordVarNames(varNames);
   return Object.keys(varNames);
 };
 

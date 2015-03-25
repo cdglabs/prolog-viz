@@ -2,10 +2,10 @@ var React = require('react');
 var Classable = require('../../mixins/classable.js');
 var mui = require('material-ui');
 var Toggle = mui.Toggle;
+var Rule = require('./Rule.jsx');
 
 var assign = require('object-assign');
 
-var Tree = require('./D3Tree.jsx');
 var CodeMirror = require('react-code-mirror');
 require('codemirror/addon/display/placeholder.js');
 
@@ -71,22 +71,58 @@ var Visualization = React.createClass({
       // "prin": true
     });
 
-    var tree = <h1>A tree goes here</h1>;
+    var vis = <h1>A tree goes here</h1>;
 
     if (this.state.traceIter) {
       var trace = this.state.traceIter.getCurrentTrace();
       if (trace) {
-        var treeProps = assign(trace, {
-          showFailure: this.state.showFailure
-        });
-        tree = <Tree {...treeProps}/>;
+        var self = this;
+
+        // render the tree using root env
+        var rootEnv = trace.rootEnv;
+
+        // use this to target the current node
+        var currentEnv = trace.currentEnv;
+
+        vis = (function walkEnv(env) {
+          if (!env) {
+            return;
+          }
+
+          // if (Array.isArray(env.goals) && env.goals.length === 1 && env.goals[0] === "nothing") {
+          //   return;
+          // }
+
+          if (env.children) {
+            var children = env.children.map(function(child) {
+              return walkEnv(child);
+            });
+          }
+
+          var ruleProps = {
+            parent: self,
+            node: env,
+            children: children,
+            shouldAnimate: true,
+          };
+
+          if (env.envId === currentEnv.envId) {
+            // console.log(currentEnv);
+
+            ruleProps.trace = trace;
+          }
+
+          // add key
+          return <Rule key={env.envId} {...ruleProps} />;
+        })(rootEnv);
+
       }
     }
 
     return (
       <div className="visualizationScrollWrapper">{/*TODO: no longer needed*/}
         <div className={classes}>
-          {tree}
+          {vis}
         </div>
         <div className="controls">
           <Toggle name="toggleName1" value="toggleValue1" label="Show failed nodes" onToggle={this.onShowFailureChange}/>

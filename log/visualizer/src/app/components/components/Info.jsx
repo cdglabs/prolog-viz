@@ -62,7 +62,15 @@ var Info = React.createClass({
       defaultValue: this.state.text,
     };
 
-// <div className="mid"><CodeMirror ref="codeMirror" {...props}/></div>
+    function objToString (obj) {
+      var pairs = [];
+      for (var p in obj) {
+        if (obj.hasOwnProperty(p)) {
+          pairs.push(p + ': ' + obj[p]);
+        }
+      }
+      return pairs.join(', ');
+    }
 
     var info = <p>Failed to unify.</p>;
     var traceIter = this.state.traceIter;
@@ -70,8 +78,8 @@ var Info = React.createClass({
       var trace = traceIter.getCurrentTrace();
       if (trace && trace.currentEnv) {
         info = <div>
-            <p>goals: {JSON.stringify(trace.currentEnv.goals)}</p>
-            <p>subst: {JSON.stringify(trace.currentEnv.subst)}</p>
+            <p>Current Goals: {trace.currentEnv.goals.toString()}</p>
+            <p>Substitution: {objToString(trace.currentEnv.subst)}</p>
                 </div>;
       }
     }
