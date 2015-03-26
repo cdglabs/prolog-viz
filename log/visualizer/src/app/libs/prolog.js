@@ -1,4 +1,3 @@
-
 var ohm = require('./ohm.min.js');
 
 var Prolog = function(grammar) {
@@ -94,8 +93,6 @@ var Prolog = function(grammar) {
 };
 
 module.exports = Prolog;
-
-
 
 
 var JS = {};
@@ -348,7 +345,6 @@ function Env(goals, rules, subst, currentRule) {
   this.subst = subst ? subst.clone() : undefined;
   this.rules = rules ? rules.map(function(rule, i) {
     return rule.makeCopyWithFreshVarNames("'");
-    // return rule.makeCopyWithFreshVarNames('_'+i);
   }) : undefined;
   this.children = [];
   this.parent = undefined;
@@ -356,7 +352,6 @@ function Env(goals, rules, subst, currentRule) {
 }
 
 Env.prototype.addChild = function(env) {
-  env.index = this.children.length;
   this.children.push(env);
   if (env) {
     env.parent = this;
@@ -385,7 +380,6 @@ Env.prototype.copyWithoutParent = function() {
   }
   clone.currentRule = this.currentRule;
   clone.solution = this.solution;
-  clone.index = this.index;
 
   clone.children = clone.children.map(function(child) {
     return (child && child.constructor.name === "Env") ? child.copyWithoutParent() : {
@@ -424,7 +418,6 @@ Program.prototype.solve = function() {
   var solutions = [];
 
   var resolution = function(body, goals, subst) {
-    // console.log("--- resolution");
     var newGoals = body.slice();
     var goalsTail = goals.slice(1);
     if (Array.isArray(goalsTail)) {
@@ -487,7 +480,6 @@ Program.prototype.solve = function() {
             goal: goal
           });
 
-
           subst.unify(goal, rule.head);
 
           // console.log(traces.length);
@@ -506,7 +498,6 @@ Program.prototype.solve = function() {
             subst: subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()))
           });
 
-
           // TODO: replace all variables from query that can ...
           /*
            * query: prereqTrans(P, cs137b)
@@ -517,11 +508,11 @@ Program.prototype.solve = function() {
            * newSubst: Y' = cs137b
            * */
 
-           //FIXME
-           // this process only happens to body of rules that got unified, does not work with
-           // goals: prereq(P, Z'), prereqTrans(Z', cs137b) -> new goals: prereqTrans(Z', cs137b)
-           // where no new goal is added
-           // seems to be a good thing, see the screen shot
+          //FIXME
+          // this process only happens to body of rules that got unified, does not work with
+          // goals: prereq(P, Z'), prereqTrans(Z', cs137b) -> new goals: prereqTrans(Z', cs137b)
+          // where no new goal is added
+          // seems to be a good thing, see the screen shot
 
 
           var goalVarNames = goal.getQueryVarNames();
@@ -535,21 +526,20 @@ Program.prototype.solve = function() {
             }
           });
 
-
           rule = rule.makeCopyWithNewVarNames(tempSubst);
 
           // remove redundunt substitution form rule, this reduces the #steps for example prereq 171 -> 143
           var ruleVarNames = rule.getQueryVarNames();
           rule.head = rule.head.rewrite(subst);
           rule.body = rule.body.map(function(c) {
-            return c.rewrite(subst)
+            return c.rewrite(subst);
           });
 
           var newRuleVarNames = rule.getQueryVarNames();
           var substitutedVarNames = ruleVarNames.filter(function(i) {return newRuleVarNames.indexOf(i) < 0;});
           substitutedVarNames.forEach(function(varName) {
             subst.unbind(varName);
-          })
+          });
           rules[env.children.length] = rule;
 
           // show unification succeeded
@@ -587,7 +577,7 @@ Program.prototype.solve = function() {
 
           return solve(newEnv);
         } catch(e) {
-          console.log(e);
+          // console.log(e);
           // backtraces
           var newEnv = new Env(["nothing"], [], undefined, rule.toString());
           env.addChild(newEnv);
@@ -753,7 +743,7 @@ Rule.prototype.toString = function() {
   if (this.body.length > 0) {
     ret += " :- "+this.body.map(function(term) {
       return term.toString();
-    });
+    }).join(", ");
   }
   return ret;
 };

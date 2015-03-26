@@ -1,57 +1,34 @@
-.visualizationScrollWrapper {
-
-}
 .visualization {
+  height: 100%;
+  position: relative;
+}
+.content {
   height: 100%;
   width: 100%;
   overflow: auto;
   padding: 1em 1em;
   display: flex;
+
+  // for auto scrolling
   position: relative;
-
-  // * { .ease-out(); }
-  // padding: 0em 1em;
-
-  // margin-top: 30px;
-  // position: relative;
-
-  // prevent inline-block from wrapping
-  // white-space: nowrap;
-
   // neccessary for border
   display: flex;
-
-  // flex-direction: row;
-  // flex-wrap: nowrap;
-  // align-content: flex-start;
+  // the default value is stretch, undesirable
   align-items: flex-start;
+
+  // * { .ease-out(); }
 }
 
 .controls {
-  position: fixed;
+  right: 0;
+  position: absolute;
   bottom: 1em;
-  // width: 100%;
-}
-
-.inputFont {
-  .monoFont;
-  font-size: 18px;
-}
-
-.monoFont {
-  font-family: Droid Sans Mono, Monaco, Menlo, sans-serif;
-}
-.rule .nothing {
-  // height: 0;
-}
-
-.nothing .ruleLabel {
-  background-color: #DDD;
 }
 
 .rule {
   .goals {
-    display: flex;
+    // padding: 0.5em;
+    // display: flex;
     .currentGoal {
       background-color: @grey-300;
     }
@@ -177,7 +154,6 @@
   .childrenCSSTransitionGroup {
     flex: 0 0 auto;
 
-    counter-reset: step-counter;
 
     display: flex;
     flex-direction: column;
@@ -185,42 +161,33 @@
 
   }
 
-
   .labelChild {
     flex: 0 0 auto;
-
-    counter-reset: step-counter;
-
     display: flex;
-    // flex-direction: column;
   }
 
+  // counter
+  // counter-reset: step-counter;
+  // .labelChild::before {
+  //     content: counter(step-counter);
+  //     counter-increment: step-counter;
+  //     margin-right: 5px;
+  //     font-size: 80%;
+  // }
 
 }
 
-.rule.current {
+.rule.currentEnv {
   border: 2px dashed @grey-500;
 }
-
-.childrenCSSTransitionGroup > .rule > .label::before {
-    content: counter(step-counter);
-    margin-right: 5px;
-
-    font-size: 80%;
-    // background-color: rgb(200,200,200);
-    color: black;
-    // font-weight: bold;
-    // padding: 3px 8px;
-    // border-radius: 3px;
-}
-.childrenCSSTransitionGroup > .rule {
-  // margin-left: 2em;
-  counter-increment: step-counter;
+.rule.nothing {
+  display: none;
 }
 
-.rule + .rule {
-  margin-top: 0.5em;
-}
+
+// .rule + .rule {
+//   margin-top: 0.5em;
+// }
 
 @selectionColor: #B5D5FF;
 .highlightRuleSuccess {
@@ -241,43 +208,26 @@
   opacity: 0.5;
 }
 
-.whitespace {
-  color: #ccc;
-}
-.pexpr.whitespace {
-  height: 0;
-}
-.pexpr.whitespace .prim {
-  /* HACK! This is not the right way to deal with whitespace. */
-  width: 10px;
-}
 
+// styles for the d3 tree
 .tooltip {
   font-family: "Lucida Console", Monaco, monospace;
-
 }
 .feedback-tree {
   // overflow: auto;
   position: relative;
-
   font-family: "Lucida Console", Monaco, monospace;
-
 }
-
 .node .current {
-  // fill: #fff;
   stroke: steelblue;
   stroke-width: 10px !important;
 }
-
 .node .circle {
-  // fill: #fff;
   stroke: steelblue;
   stroke-width: 1px;
 }
 .node text {
   font-family: "Lucida Console", Monaco, monospace;
-
   max-width: 100px;
 }
 .link {

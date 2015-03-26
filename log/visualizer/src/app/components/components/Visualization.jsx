@@ -57,9 +57,7 @@ var Visualization = React.createClass({
     // scroll to curren rule
     // .ruleLabel.highlight
     // .currentGoal.highlight
-
-    this.showBookmark(".current", false);
-
+    this.showBookmark(".currentEnv", false);
   },
 
   showNode: function (oNode) {
@@ -69,6 +67,8 @@ var Visualization = React.createClass({
     for (var oItNode = oNode; oItNode && oItNode !== node; nLeft += oItNode.offsetLeft, nTop += oItNode.offsetTop, oItNode = oItNode.offsetParent);
     node.scrollTop = nTop;
     node.scrollLeft = nLeft;
+
+    console.log(nLeft);
 
     // highlight the node
     // oNode.classList.add("highlightRule");
@@ -102,9 +102,6 @@ var Visualization = React.createClass({
   },
 
   render: function() {
-    var classes = this.getClasses('visualization', {
-      // "prin": true
-    });
 
     var vis = <h1>A tree goes here</h1>;
 
@@ -135,9 +132,6 @@ var Visualization = React.createClass({
           });
 
           if (env.children) {
-
-
-
             var children = env.children.map(function(child) {
               return walkEnv(child);
             });
@@ -152,8 +146,6 @@ var Visualization = React.createClass({
           };
 
           if (env.envId === currentEnv.envId) {
-            // console.log(currentEnv);
-
             ruleProps.trace = trace;
           }
 
@@ -164,13 +156,18 @@ var Visualization = React.createClass({
       }
     }
 
+    var classes = this.getClasses('visualization', {
+      // "prin": true
+    });
+
     return (
-      <div className="visualizationScrollWrapper">{/*TODO: no longer needed*/}
-        <div ref="vis" className={classes}>
+      <div className="visualization">{/*TODO: no longer needed*/}
+        <div ref="vis" className="content">
           {vis}
         </div>
         <div className="controls">
           <Toggle name="toggleName1" value="toggleValue1" label="Show failed nodes" onToggle={this.onShowFailureChange}/>
+          <Toggle name="toggleName1" value="toggleValue1" label="Show only rules with compatible name" onToggle={this.onShowFailureChange}/>
         </div>
       </div>
       );
