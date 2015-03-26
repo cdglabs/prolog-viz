@@ -65,8 +65,6 @@
 
   .labelWrapper {
     flex: 0 0 auto;
-
-
   }
 
   .ruleLabels {
@@ -76,6 +74,7 @@
     flex-direction: column;
 
   }
+
 
   .label {
     // background-color: #efefef;
@@ -91,9 +90,21 @@
     word-wrap: nowrap;
     flex: 0 0 auto;
 
-    // max-width: 300px;
+
+    .goals {
+      display: flex;
+      // flex-wrap: nowrap;
+      .currentGoal {
+        background-color: @grey-300;
+      }
+    }
 
   }
+
+  .label.solution {
+    color: @green-600;
+  }
+
   .label:after {
     background-color: @grey-200;
     content: '';

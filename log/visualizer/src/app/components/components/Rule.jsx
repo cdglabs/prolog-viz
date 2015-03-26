@@ -5,6 +5,16 @@ var ReactTransitionGroup = React.addons.TransitionGroup;
 var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 var cx = React.addons.classSet;
 
+function objToString (obj) {
+  var pairs = [];
+  for (var p in obj) {
+    if (obj.hasOwnProperty(p)) {
+      pairs.push(p + ': ' + obj[p]);
+    }
+  }
+  return pairs.join(', ');
+}
+
 var Rule = React.createClass({
   mixins: [Classable, tweenState.Mixin],
 
@@ -80,37 +90,36 @@ var Rule = React.createClass({
     var childNodes = this.props.children;
     var trace = this.props.trace;
 
+    var isSolution = false;
 
     // label
-    var displayString = env.goals.toString();
+    var displayString = <div className="goals">
+                            <div className="currentGoal">{env.goals.length > 0 ? env.goals[0].toString() : ""}</div>
+                            <div>{env.goals.slice(1).toString()}</div>
+                        </div>;
 
+
+    var subst = <div className="subst">{objToString(env.subst)}</div>;
+
+    // solution
     if (env.goals.length === 0 && env.solution) {
       displayString = env.solution.toString();
+      subst = "";
+      isSolution = true;
     }
 
     if (Array.isArray(env.goals) && env.goals.length === 1 && env.goals[0] === "nothing") {
       displayString = "✕";
     }
 
+
     // use this to display information inside the current node
     // renamed rule, rewritten goal
     if (trace) {
 
       var msg = "";
-      if (trace.currentRule) {
-        msg += trace.currentRule.toString() + " -- Renamed rule\n";
-      }
-
-      if (trace.goal && trace.goal.toString().length !== 0) {
-        // msg += trace.goal.toString();
-        displayString = trace.goal.toString();
-      }
       if (trace.subst) {
-        displayString += " -> "+trace.subst.toString();
-      }
-
-      if (trace.solution) {
-        displayString += trace.solution;
+        msg += "Subsituting: "+trace.subst.toString();
       }
 
       if (trace.status) {
@@ -118,7 +127,7 @@ var Rule = React.createClass({
           case "BEFORE":
             break;
           case "SUBST":
-            displayString += " -- Subsituting";
+            // msg += " -- Subsituting";
             break;
           case "NEW_GOAL":
             // if (trace.goal.toString().length > 0) {
@@ -145,34 +154,39 @@ var Rule = React.createClass({
 
     // rule label
     var rules = env.rules;
-    console.log(env);
 
     var ruleLabels =
     <div className="ruleLabels">{rules.map(function(rule, i) {
 
       var highlight = false;
+      var lineWidget2;
       if (trace && trace.currentRule && rule === trace.currentRule.toString()) {
         highlight = true;
+        lineWidget2 = lineWidget;
       }
 
       var ruleLabelClasses = cx({
         'ruleLabel': true,
         'highlight': highlight
       });
-      return <div className="labelChild"><div className={ruleLabelClasses}>{rule.toString()}</div>{childNodes[i]}</div>;
+      return <div className="labelChild"><div className={ruleLabelClasses}>{rule.toString()}{lineWidget2}</div>{childNodes[i]}</div>;
 
     })}</div>;
 
     // label
     var labelClasses = cx({
       'label': true,
+      'solution': isSolution
     });
     var labelProps = {
       // onMouseEnter: parent.onMouseOverPExpr.bind(parent, node),
       // onMouseLeave: parent.onMouseOutPExpr,
       // onClick: parent.onClickPExpr.bind(parent, node),
     };
-    var label = <div key={"label"} className={labelClasses} {...labelProps}>{displayString}</div>;
+
+    var label = <div key={"label"} className={labelClasses} {...labelProps}>
+        {displayString}{subst}
+      </div>;
 
     // children
     // var children =

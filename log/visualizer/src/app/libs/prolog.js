@@ -1,6 +1,5 @@
 
 var ohm = require('./ohm.min.js');
-var assign = require('object-assign');
 
 var Prolog = function(grammar) {
   // The parser
@@ -191,6 +190,12 @@ Subst.prototype.bind = function(varName, term) {
   return this;
 };
 
+Subst.prototype.unbind = function(varName) {
+  // this.bindings[varName] = undefined;
+  delete this.bindings[varName];
+  return this;
+};
+
 Subst.prototype.clone = function() {
   var clone = new Subst();
   for (var varName in this.bindings) {
@@ -229,6 +234,31 @@ Rule.prototype.makeCopyWithFreshVarNames = function(suffix) {
   var head = makeCopyOfClauseWithFreshVarNames(this.head, random);
   var body = this.body.map(function(c) {
     return makeCopyOfClauseWithFreshVarNames(c, random);
+  });
+  return new Rule(head, body, this.interval);
+};
+
+function makeCopyOfClauseWithNewVarNames(c, subst) {
+  // TODO: args : an array of terms (a term is either a Clause or a Var)
+  return new Clause(c.name, c.args.map(function(term) {
+    switch (term.constructor.name) {
+      case "Var":
+        if (subst[term.name]) {
+          return new Var(subst[term.name]);
+        }
+        return new Var(term.name);
+      case "Clause":
+        return makeCopyOfClauseWithNewVarNames(term, subst);
+      default:
+        return null;
+    }
+  }));
+}
+
+Rule.prototype.makeCopyWithNewVarNames = function(subst) {
+  var head = makeCopyOfClauseWithNewVarNames(this.head, subst);
+  var body = this.body.map(function(c) {
+    return makeCopyOfClauseWithNewVarNames(c, subst);
   });
   return new Rule(head, body, this.interval);
 };
@@ -400,7 +430,7 @@ Program.prototype.solve = function() {
     if (Array.isArray(goalsTail)) {
       Array.prototype.push.apply(newGoals, goalsTail);
     }
-    newGoals.map(function(term) {
+    newGoals = newGoals.map(function(term) {
       return term.rewrite(subst);
     });
     return newGoals;
@@ -449,54 +479,101 @@ Program.prototype.solve = function() {
         var subst = env.subst.clone();
         try {
 
-          var goalBeforeUnification = goal.rewrite(subst);
           traces.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
             status: "BEFORE",
-            goal: goalBeforeUnification
+            goal: goal
           });
 
 
           subst.unify(goal, rule.head);
+
+          // console.log(traces.length);
+          // console.log(goal);
+          // console.log(rule.head);
+          // console.log(subst.toString());
+          // console.log(subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames())).toString());
 
           // show subsitution
           traces.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
-            rewrittenHead: rule.head.rewrite(subst),
             status: "SUBST",
-            goal: goalBeforeUnification,
-            subst: subst.filter(assign(rule.getQueryVarNames(), goalBeforeUnification.getQueryVarNames()))
+            goal: goal,
+            subst: subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()))
           });
+
+
+          // TODO: replace all variables from query that can ...
+          /*
+           * query: prereqTrans(P, cs137b)
+           * rule: prereqTrans(X', Y') :- prereq(X', Y')
+           * subst: P = X', Y' = cs137b
+           *
+           * newRule: prereqTrans(P, Y') :- prereq(P, Y')
+           * newSubst: Y' = cs137b
+           * */
+
+           //FIXME
+           // this process only happens to body of rules that got unified, does not work with
+           // goals: prereq(P, Z'), prereqTrans(Z', cs137b) -> new goals: prereqTrans(Z', cs137b)
+           // where no new goal is added
+           // seems to be a good thing, see the screen shot
+
+
+          var goalVarNames = goal.getQueryVarNames();
+
+          var tempSubst = {};
+          goalVarNames.forEach(function(varName) {
+            var value = subst.lookup(varName);
+            if (value.constructor.name === "Var") {
+              tempSubst[value.name] = varName;
+              subst.unbind(varName);
+            }
+          });
+
+
+          rule = rule.makeCopyWithNewVarNames(tempSubst);
+
+          // remove redundunt substitution form rule, this reduces the #steps for example prereq 171 -> 143
+          var ruleVarNames = rule.getQueryVarNames();
+          rule.head = rule.head.rewrite(subst);
+          rule.body = rule.body.map(function(c) {
+            return c.rewrite(subst)
+          });
+
+          var newRuleVarNames = rule.getQueryVarNames();
+          var substitutedVarNames = ruleVarNames.filter(function(i) {return newRuleVarNames.indexOf(i) < 0;});
+          substitutedVarNames.forEach(function(varName) {
+            subst.unbind(varName);
+          })
+          rules[env.children.length] = rule;
 
           // show unification succeeded
           traces.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
-            rewrittenHead: rule.head.rewrite(subst),
-
             status: "SUCCESS",
-            goal: goal.rewrite(subst)
+            goal: goal
           });
 
           var newGoals = resolution(rule.body, goals, subst);
-
-          var newEnv = new Env(newGoals, [], subst, rule.toString());
+          var newEnv = new Env(newGoals, [], subst);
 
           if (newGoals.length === 0) {
           } else {
-            newEnv = new Env(newGoals, rules, subst, rule.toString());
+            newEnv = new Env(newGoals, rules, subst);
           }
 
           env.addChild(newEnv);
 
           var trace = {
             rootEnv: JSON.parse(rootEnv.toString()),
-            currentEnv: JSON.parse(newEnv.toString()),
+            currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
             status: "NEW_GOAL",
             goal: newGoals // this is a array
@@ -510,9 +587,9 @@ Program.prototype.solve = function() {
 
           return solve(newEnv);
         } catch(e) {
-          // console.log(e);
+          console.log(e);
           // backtraces
-          var newEnv = new Env(["nothing"], [], subst, rule.toString());
+          var newEnv = new Env(["nothing"], [], undefined, rule.toString());
           env.addChild(newEnv);
 
           var rootEnvAfter = JSON.parse(rootEnv.toString());
@@ -521,7 +598,7 @@ Program.prototype.solve = function() {
             currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
             status: "FAILURE",
-            goal: goal.rewrite(subst)
+            goal: goal
           });
           // backtraces
           traces.push({
@@ -638,6 +715,9 @@ Program.prototype.getQueryVarNames = function() {
 Rule.prototype.getQueryVarNames = function() {
   var varNames = Object.create(null);
   this.head.recordVarNames(varNames);
+  // this.body.forEach(function(c) {
+  //   c.recordVarNames(varNames);
+  // });
   // forEach(function(clause) {
   //   clause.recordVarNames(varNames);
   // });

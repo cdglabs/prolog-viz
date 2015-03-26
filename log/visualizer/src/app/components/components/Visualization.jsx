@@ -89,10 +89,6 @@ var Visualization = React.createClass({
             return;
           }
 
-          // if (Array.isArray(env.goals) && env.goals.length === 1 && env.goals[0] === "nothing") {
-          //   return;
-          // }
-
           if (env.children) {
             var children = env.children.map(function(child) {
               return walkEnv(child);
