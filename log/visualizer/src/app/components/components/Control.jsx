@@ -82,7 +82,7 @@ var Control = React.createClass({
     var traceIter = this.state.traceIter;
     if (traceIter) {
       step = traceIter.getStep();
-      maxStep = traceIter.getMax()-1;
+      maxStep = traceIter.getMax();
     }
 
     var sliderProps = {

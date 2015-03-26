@@ -37,7 +37,19 @@
 .rule .nothing {
   // height: 0;
 }
+
+.nothing .ruleLabel {
+  background-color: #DDD;
+}
+
 .rule {
+  .goals {
+    display: flex;
+    // flex-wrap: nowrap;
+    .currentGoal {
+      background-color: @grey-300;
+    }
+  }
 
   // align the top edge
   // vertical-align: middle;
@@ -91,13 +103,6 @@
     flex: 0 0 auto;
 
 
-    .goals {
-      display: flex;
-      // flex-wrap: nowrap;
-      .currentGoal {
-        background-color: @grey-300;
-      }
-    }
 
   }
 
@@ -120,8 +125,34 @@
     background-color: @grey-300;
   }
 
+  .currentGoal.highlight {
+    .highlightRuleBefore;
+  }
+  .currentGoal.highlight.unificationSucceeded {
+    .highlightRuleSuccess;
+  }
+  .currentGoal.highlight.unificationFailed {
+    .highlightRuleFailure;
+  }
+
   .ruleLabel.highlight {
-    background-color: @yellow-300;
+    .highlightRuleBefore;
+  }
+  .ruleLabel.highlight.unificationSucceeded {
+    // background-color: @yellow-300;
+    .highlightRuleSuccess;
+
+    .errorMsg {
+      .highlightRuleSuccess;
+      color: @deep-orange-900;
+    }
+  }
+  .ruleLabel.highlight.unificationFailed {
+    .highlightRuleFailure;
+  }
+
+  .ruleLabel.shouldCross {
+    text-decoration: line-through;
   }
 
   .children {
@@ -158,6 +189,10 @@
 
 }
 
+.rule.current {
+  border: 2px dashed @teal-500;
+}
+
 .childrenCSSTransitionGroup > .rule > .label::before {
     content: counter(step-counter);
     margin-right: 5px;
@@ -180,13 +215,13 @@
 
 @selectionColor: #B5D5FF;
 .highlightRuleSuccess {
-  background-color: @light-green-600;
+  background-color: @light-green-300;
 }
 .highlightRuleFailure {
-  background-color: @red-600;
+  background-color: @red-200;
 }
 .highlightRuleBefore {
-  background-color: @yellow-600;
+  background-color: @yellow-200;
 }
 
 .highlightApplication {

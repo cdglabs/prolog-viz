@@ -638,7 +638,7 @@ Program.prototype.solve = function() {
     getTraceIter: function() {
       var tracesCopy = traces.slice();
       var idx = 0;
-      var max = tracesCopy.length;
+      var max = tracesCopy.length-1;
       return {
         forward: function() {
           idx = Math.min(max, idx+1);

@@ -9,7 +9,7 @@ var ActionTypes = Constants.ActionTypes;
 
 var CHANGE_EVENT = 'change';
 
-var DEFAULT_TEXT = 'father(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\nparent(X, Y) :- father(X, Y).\nparent(X, lisa)?';
+var DEFAULT_TEXT = "father(orville, abe).\nfather(abe, homer).\nfather(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\nparent(X, Y) :- father(X, Y).\ngrandfather(X, Y) :- father(X, Z), parent(Z, Y).\ngrandfather(X, Y)?";
 
 // Misc Helpers
 // ------------

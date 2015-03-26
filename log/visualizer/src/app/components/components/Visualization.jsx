@@ -89,7 +89,20 @@ var Visualization = React.createClass({
             return;
           }
 
+          var failedChildRules = env.children.map(function(child) {
+            var ret = false;
+
+            if (child && Array.isArray(child.goals) && child.goals.length === 1 && child.goals[0] === "nothing") {
+              ret = true;
+            }
+
+            return ret;
+          });
+
           if (env.children) {
+
+
+
             var children = env.children.map(function(child) {
               return walkEnv(child);
             });
@@ -100,6 +113,7 @@ var Visualization = React.createClass({
             node: env,
             children: children,
             shouldAnimate: true,
+            failedChildRules: failedChildRules,
           };
 
           if (env.envId === currentEnv.envId) {

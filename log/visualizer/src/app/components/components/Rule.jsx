@@ -89,71 +89,55 @@ var Rule = React.createClass({
     var env = this.props.node;
     var childNodes = this.props.children;
     var trace = this.props.trace;
+    var failedChildRules = this.props.failedChildRules;
 
     var isSolution = false;
 
-    // label
-    var displayString = <div className="goals">
-                            <div className="currentGoal">{env.goals.length > 0 ? env.goals[0].toString() : ""}</div>
-                            <div>{env.goals.slice(1).toString()}</div>
-                        </div>;
 
 
     var subst = <div className="subst">{objToString(env.subst)}</div>;
 
-    // solution
-    if (env.goals.length === 0 && env.solution) {
-      displayString = env.solution.toString();
-      subst = "";
-      isSolution = true;
-    }
 
-    if (Array.isArray(env.goals) && env.goals.length === 1 && env.goals[0] === "nothing") {
-      displayString = "✕";
-    }
+    var isCurrentEnv = false;
 
-
+    var unificationSucceeded = false;
+    var unificationFailed = false;
     // use this to display information inside the current node
     // renamed rule, rewritten goal
     if (trace) {
+      isCurrentEnv = true;
 
       var msg = "";
       if (trace.subst) {
         msg += "Subsituting: "+trace.subst.toString();
       }
 
-      if (trace.status) {
-        switch(trace.status) {
-          case "BEFORE":
-            break;
-          case "SUBST":
-            // msg += " -- Subsituting";
-            break;
-          case "NEW_GOAL":
-            // if (trace.goal.toString().length > 0) {
-            //   displayString += " -- New goal";
-            // } else {
-            //   displayString += " -- Found a solution";
-            // }
-            break;
-          case "SUCCESS":
-            // displayString += " -- Unification Succeeded";
-            break;
-          case "FAILURE":
-            // displayString += " -- Unification Failed";
-            break;
-          default:
-        }
-
+      switch(trace.status) {
+        case "BEFORE":
+          break;
+        case "SUCCESS":
+        case "SUBST":
+        case "NEW_GOAL":
+          unificationSucceeded = true;
+          break;
+        case "FAILURE":
+          unificationFailed = true
+          break;
+        default:
       }
 
-
     }
-    var lineWidget = msg ? <div className="errorMsg">{msg}</div> : undefined;
+    var lineWidgetClasses = cx({
+      'errorMsg': true,
+    });
+
+    var lineWidget = msg ? <div className={lineWidgetClasses}>{msg}</div> : undefined;
 
 
     // rule label
     var rules = env.rules;
+
+    var anyHighlight = false;
 
     var ruleLabels =
     <div className="ruleLabels">{rules.map(function(rule, i) {
@@ -164,14 +148,50 @@ var Rule = React.createClass({
         highlight = true;
         lineWidget2 = lineWidget;
       }
+      anyHighlight |= highlight;
+
+      // if a rule leads to failed node, cross it
+      var shouldCross = false;
+      if (failedChildRules && failedChildRules[i]) {
+        shouldCross = true;
+      }
 
       var ruleLabelClasses = cx({
         'ruleLabel': true,
-        'highlight': highlight
+        'highlight': highlight,
+        'unificationSucceeded': unificationSucceeded,
+        'unificationFailed': unificationFailed,
+        'shouldCross': shouldCross
       });
       return <div className="labelChild"><div className={ruleLabelClasses}>{rule.toString()}{lineWidget2}</div>{childNodes[i]}</div>;
 
     })}</div>;
+
+
+    var currentGoalLabelClasses = cx({
+      'currentGoal': true,
+      'highlight': anyHighlight,
+      'unificationSucceeded': unificationSucceeded,
+      'unificationFailed': unificationFailed,
+    });
+
+    // goal label
+    var displayString = <div className="goals">
+                            <div className={currentGoalLabelClasses}>{env.goals.length > 0 ? env.goals[0].toString() : ""}</div>
+                            <div>{env.goals.slice(1).toString()}</div>
+                        </div>;
+
+    // solution
+    if (env.goals.length === 0 && env.solution) {
+      displayString = env.solution.toString();
+      subst = "";
+      isSolution = true;
+    }
+
+    // failed
+    if (Array.isArray(env.goals) && env.goals.length === 1 && env.goals[0] === "nothing") {
+      displayString = "✕";
+    }
 
     // label
     var labelClasses = cx({
@@ -208,7 +228,8 @@ var Rule = React.createClass({
 
     var ruleClasses = cx({
       'rule': true,
-      'nothing': nothing
+      'nothing': nothing,
+      'current': isCurrentEnv
     });
     var ruleProps = {
       env: env,

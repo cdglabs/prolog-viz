@@ -1,0 +1,9 @@
+{
+  "firebase": "prolog",
+  "public": "log/visualizer/build",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ]
+}
