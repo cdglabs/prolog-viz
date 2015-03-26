@@ -1,10 +1,16 @@
 .visualizationScrollWrapper {
-  width: 100%; 
-  overflow: auto;
+
 }
 .visualization {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  padding: 1em 1em;
+  display: flex;
+  position: relative;
+
   // * { .ease-out(); }
-  padding: 0em 1em;
+  // padding: 0em 1em;
 
   // margin-top: 30px;
   // position: relative;
@@ -12,12 +18,13 @@
   // prevent inline-block from wrapping
   // white-space: nowrap;
 
-  // display: flex;
+  // neccessary for border
+  display: flex;
 
   // flex-direction: row;
   // flex-wrap: nowrap;
-  // justify-content:  space-around;
-
+  // align-content: flex-start;
+  align-items: flex-start;
 }
 
 .controls {
@@ -45,7 +52,6 @@
 .rule {
   .goals {
     display: flex;
-    // flex-wrap: nowrap;
     .currentGoal {
       background-color: @grey-300;
     }
@@ -54,13 +60,16 @@
   // align the top edge
   // vertical-align: middle;
 
-  cursor: pointer;
+  // cursor: pointer;
   color: @grey-900;
   display: flex;
+  // flex-wrap: nowrap;
+
   .monoFont;
   font-size: 12px;
-  // overflow: hidden;
+  // overflow: auto;
 
+  flex: 0 0 auto;
 
 
   .rule.failed > .label {
@@ -190,7 +199,7 @@
 }
 
 .rule.current {
-  border: 2px dashed @teal-500;
+  border: 2px dashed @grey-500;
 }
 
 .childrenCSSTransitionGroup > .rule > .label::before {

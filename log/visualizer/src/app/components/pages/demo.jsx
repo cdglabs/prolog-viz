@@ -45,10 +45,10 @@ var Demo = React.createClass({
       <div className="demo-page">
         <div className="leftPanel">
           <Input/>
+          <Info/>
           <Control/>
         </div>
         <div className="rightPanel">
-          <Info/>
           <Visualization/>
         </div>
       </div>

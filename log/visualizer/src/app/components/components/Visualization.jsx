@@ -54,6 +54,41 @@ var Visualization = React.createClass({
     if (this.state.argsErrorMsg !== undefined) {
       // this.highlight(this.state.argsErrorMsg);
     }
+    // scroll to curren rule
+    // .ruleLabel.highlight
+    // .currentGoal.highlight
+
+    this.showBookmark(".current", false);
+
+  },
+
+  showNode: function (oNode) {
+    var nLeft = 0, nTop = 0;
+    var node = this.refs.vis.getDOMNode();
+
+    for (var oItNode = oNode; oItNode && oItNode !== node; nLeft += oItNode.offsetLeft, nTop += oItNode.offsetTop, oItNode = oItNode.offsetParent);
+    node.scrollTop = nTop;
+    node.scrollLeft = nLeft;
+
+    // highlight the node
+    // oNode.classList.add("highlightRule");
+    // this.lastHighlightedNode = oNode;
+  },
+
+  showBookmark: function(sBookmark, bUseHash) {
+    if (arguments.length === 1 || bUseHash) {
+        location.hash = sBookmark;
+        return;
+    }
+    var oBookmark = this.getDOMNode().querySelector(sBookmark);
+    // var oBookmark = document.getElementById(sBookmark);
+    if (oBookmark) {
+        // special treatment for <td/>
+        // if (oBookmark.parentNode.tagName === "TD") {
+        //   oBookmark = oBookmark.parentNode;
+        // }
+        this.showNode(oBookmark);
+    }
   },
 
   onEditorTextChange: function(e) {
@@ -131,7 +166,7 @@ var Visualization = React.createClass({
 
     return (
       <div className="visualizationScrollWrapper">{/*TODO: no longer needed*/}
-        <div className={classes}>
+        <div ref="vis" className={classes}>
           {vis}
         </div>
         <div className="controls">
