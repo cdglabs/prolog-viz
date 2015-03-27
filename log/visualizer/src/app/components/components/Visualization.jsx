@@ -68,8 +68,6 @@ var Visualization = React.createClass({
     node.scrollTop = nTop;
     node.scrollLeft = nLeft;
 
-    console.log(nLeft);
-
     // highlight the node
     // oNode.classList.add("highlightRule");
     // this.lastHighlightedNode = oNode;
@@ -116,7 +114,7 @@ var Visualization = React.createClass({
         // use this to target the current node
         var currentEnv = trace.currentEnv;
 
-        vis = (function walkEnv(env) {
+        vis = (function walkEnv(env, options) {
           if (!env) {
             return;
           }
@@ -132,26 +130,44 @@ var Visualization = React.createClass({
           });
 
           if (env.children) {
-            var children = env.children.map(function(child) {
-              return walkEnv(child);
+            var children = env.children.map(function(childEnv, i) {
+              // console.log(env)
+              // console.log(env.trace ? env.trace.status : "");
+              return walkEnv(childEnv, {
+                isDirectlyInsideCurrentEnv: env.envId === currentEnv.envId,
+                indexUnderParentEnv: i,
+                numberOfChildrenOfParentEnv: env.children.length,
+                doesParentEnvCurrentRuleHasBody: trace.currentRule && trace.currentRule.body.length > 0,
+                isParentEnvStatusNewGoal: trace.status === "NEW_GOAL"
+              });
             });
           }
 
-          var ruleProps = {
+          var shouldHighlightLatestGoals = (options && options.isDirectlyInsideCurrentEnv && options.isParentEnvStatusNewGoal && options.indexUnderParentEnv === options.numberOfChildrenOfParentEnv-1)
+
+          var ruleProps = assign({
             parent: self,
-            node: env,
+            env: env,
             children: children,
             shouldAnimate: true,
             failedChildRules: failedChildRules,
-          };
+            shouldHighlightLatestGoals: shouldHighlightLatestGoals
+          }, options);
 
+          // if ((options && options.isDirectlyInsideCurrentEnv)) {
+          //   console.log("here");
+          // }
+
+          // the latest goals in the next env should be highlighted if
+
+                                                  // derve that it will be the next current env
           if (env.envId === currentEnv.envId) {
             ruleProps.trace = trace;
           }
 
           // add key
           return <Rule key={env.envId} {...ruleProps} />;
-        })(rootEnv);
+        })(rootEnv, {});
 
       }
     }

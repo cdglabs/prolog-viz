@@ -15,6 +15,13 @@ function objToString (obj) {
   return pairs.join(', ');
 }
 
+function isEnvNothing(env) {
+  if (Array.isArray(env.goals) && env.goals.length === 1 && env.goals[0] === "nothing") {
+    return true;
+  }
+  return false;
+}
+
 var Rule = React.createClass({
   mixins: [Classable, tweenState.Mixin],
 
@@ -24,7 +31,7 @@ var Rule = React.createClass({
 
   propTypes: {
     parent: React.PropTypes.object.isRequired,
-    node: React.PropTypes.object.isRequired,
+    env: React.PropTypes.object.isRequired,
     // count: React.PropTypes.number.isRequired,
     shouldAnimate: React.PropTypes.bool.isRequired,
   },
@@ -87,19 +94,21 @@ var Rule = React.createClass({
 
     // props
     var parent = this.props.parent;
-    var env = this.props.node;
+    var env = this.props.env;
     var childNodes = this.props.children;
     var trace = this.props.trace;
     var failedChildRules = this.props.failedChildRules;
+    var shouldHighlightLatestGoals = this.props.shouldHighlightLatestGoals;
 
     // class related
     var isCurrentEnv = false;
-    var isSolution = false;
+    var isSolution = env.goals.length === 0;
     var unificationSucceeded = false;
     var unificationFailed = false;
     var anyHighlight = false;
-    var nothing = false;
+    var nothing = isEnvNothing(env);
 
+    var shouldHideRuleBody = true;
 
     // === rule labels ===
     // use this to display information inside the current node
@@ -111,8 +120,11 @@ var Rule = React.createClass({
       switch(trace.status) {
         case "BEFORE":
           break;
-        case "SUCCESS":
         case "SUBST":
+        case "SUCCESS":
+          shouldHideRuleBody = false;
+          unificationSucceeded = true;
+          break;
         case "NEW_GOAL":
           unificationSucceeded = true;
           break;
@@ -131,57 +143,102 @@ var Rule = React.createClass({
       }
     }
 
-    var ruleLabels = <div className="ruleLabels">{env.rules.map(function(rule, i) {
+    var ruleLabels;
+    if (!isSolution) {
+      ruleLabels = <div className="ruleLabels">{env.rules.map(function(rule, i) {
+        var highlight = false;
+        var lineWidgetPlaceholder;
+        if (trace && trace.currentRule && rule === trace.currentRule.toString()) {
+          highlight = true;
+          lineWidgetPlaceholder = lineWidget;
+        }
+        anyHighlight |= highlight;
 
-      var highlight = false;
-      var lineWidgetPlaceholder;
-      if (trace && trace.currentRule && rule === trace.currentRule.toString()) {
-        highlight = true;
-        lineWidgetPlaceholder = lineWidget;
-      }
-      anyHighlight |= highlight;
+        // if a rule leads to failed node, cross it
+        var shouldCross = false;
+        if (failedChildRules && failedChildRules[i]) {
+          shouldCross = true;
+        }
 
-      // if a rule leads to failed node, cross it
-      var shouldCross = false;
-      if (failedChildRules && failedChildRules[i]) {
-        shouldCross = true;
-      }
+        var ruleLabelClasses = cx({
+          'ruleLabel': true,
+          'highlight': highlight,
+          'unificationSucceeded': unificationSucceeded,
+          'unificationFailed': unificationFailed,
+          'shouldCross': shouldCross
+        });
 
-      var ruleLabelClasses = cx({
-        'ruleLabel': true,
-        'highlight': highlight,
-        'unificationSucceeded': unificationSucceeded,
-        'unificationFailed': unificationFailed,
-        'shouldCross': shouldCross
-      });
-      return <div className="labelChild"><div className={ruleLabelClasses}>{rule.toString()}{lineWidgetPlaceholder}</div>{childNodes[i]}</div>;
+        var shouldShowEclipseInPlaceOfRuleBody = false;
+        if (childNodes.length <= i) {
+          shouldShowEclipseInPlaceOfRuleBody = true;
+        } else {
+          var childEnv = childNodes[i].props.env;
+          if (childEnv) {
+            if (Array.isArray(childEnv.goals) && childEnv.goals.length === 1 && childEnv.goals[0] === "nothing") {
+              shouldShowEclipseInPlaceOfRuleBody = true;
+            } else {
+              shouldShowEclipseInPlaceOfRuleBody = false;
+            }
+          }
+        }
 
-    })}</div>;
+        var ruleString = rule.toString();
+        if (shouldHideRuleBody || !highlight) {
+          ruleString = ruleString.replace(/:-.*/, shouldShowEclipseInPlaceOfRuleBody ? ":- ..." : ":- ");
+        }
+        return <div className="childRuleAndChildGoal"><div className={ruleLabelClasses}>{ruleString}{lineWidgetPlaceholder}</div>{childNodes[i]}</div>;
+
+      })}</div>;
+    }
+
 
 
     var currentGoalLabelClasses = cx({
       'currentGoal': true,
-      'highlight': anyHighlight,
+      'highlight': anyHighlight || unificationSucceeded,
       'unificationSucceeded': unificationSucceeded,
       'unificationFailed': unificationFailed,
+    });
+    var latestGoalsLabelClasses = cx({
+      'latestGoals': true,
+      'highlight': shouldHighlightLatestGoals,
     });
 
     // === label ===
     // goals
+    var numLatestGoals = env.options && env.options.latestGoals ? env.options.latestGoals.length : 1;
+
+    var currentGoal = env.goals.length > 0 ? env.goals[0].toString() : "";
+
     var goals = <div className="goals">
-                            <div className={currentGoalLabelClasses}>{env.goals.length > 0 ? env.goals[0].toString() : ""}</div>
-                            <div>{env.goals.slice(1).toString()}</div>
-                        </div>;
+                  <div className={latestGoalsLabelClasses}>
+                    {env.goals.slice(0, numLatestGoals).map(function(goal, i, goals) {
+                      if (i !== goals.length -1) {
+                        goal+=", ";
+                      }
+                      if (i === 0) {
+                        return <div className={currentGoalLabelClasses}>{goal}</div>;
+                      }
+                      return <div className="notFirstGoal">{goal}</div>;
+                    })}
+                  </div>
+                  {env.goals.slice(numLatestGoals).map(function(goal, i, goals) {
+                    if (i !== goals.length -1) {
+                      goal+=", ";
+                    }
+                    if (numLatestGoals === 0 && i === 0) {
+                      return <div className={currentGoalLabelClasses}>{goal}</div>;
+                    }
+                    return <div className="notFirstGoal">{goal}</div>;
+                  })}
+                </div>;
 
     // solution
-    if (env.goals.length === 0 && env.solution) {
-      goals = env.solution.toString();
-      isSolution = true;
-    }
-
-    // failed
-    if (Array.isArray(env.goals) && env.goals.length === 1 && env.goals[0] === "nothing") {
-      nothing = true;
+    if (isSolution) {
+      goals = objToString(env.subst);
+      if (env.solution) {
+        goals = env.solution.toString();
+      }
     }
 
     // subst
