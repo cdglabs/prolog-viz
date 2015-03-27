@@ -144,9 +144,9 @@ var Rule = React.createClass({
       }
     }
 
-    var ruleLabels;
+    var childRules;
     if (!isSolution) {
-      ruleLabels = <div className="ruleLabels">{env.rules.map(function(rule, i) {
+      childRules = <div className="childRules">{env.rules.map(function(rule, i) {
         if (showOnlyCompatible) {
           if (env.goals[0]) {
             var reg = /\(.*/;
@@ -176,8 +176,8 @@ var Rule = React.createClass({
           shouldCross = true;
         }
 
-        var ruleLabelClasses = cx({
-          'ruleLabel': true,
+        var childRuleClasses = cx({
+          'childRule': true,
           'highlight': highlight,
           'unificationSucceeded': unificationSucceeded,
           'unificationFailed': unificationFailed,
@@ -201,7 +201,7 @@ var Rule = React.createClass({
         if (shouldHideRuleBody || !highlight) {
           ruleString = ruleString.replace(/:-.*/, shouldShowEclipseInPlaceOfRuleBody ? ":- ..." : ":- ");
         }
-        return <div className="childRuleAndChildGoal"><div className={ruleLabelClasses}>{ruleString}{lineWidgetPlaceholder}</div>{childNodes[i]}</div>;
+        return <div className="childRuleAndChildGoal"><div className={childRuleClasses}>{ruleString}{lineWidgetPlaceholder}</div>{childNodes[i]}</div>;
 
       })}</div>;
     }
@@ -221,7 +221,7 @@ var Rule = React.createClass({
 
     // === label ===
     // goals
-    var numLatestGoals = env.options && env.options.latestGoals ? env.options.latestGoals.length : 1;
+    var numLatestGoals = env.options && env.options.latestGoals ? env.options.latestGoals.length : 0;
 
     var currentGoal = env.goals.length > 0 ? env.goals[0].toString() : "";
 
@@ -286,7 +286,7 @@ var Rule = React.createClass({
       env: env,
     };
 
-    return <div key={env.envId} style={style} className={ruleClasses} {...ruleProps}>{label}{ruleLabels}</div>;
+    return <div key={env.envId} style={style} className={ruleClasses} {...ruleProps}>{label}{childRules}</div>;
   }
 });
 

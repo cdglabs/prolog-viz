@@ -192,7 +192,6 @@ var Visualization = React.createClass({
         </div>
         <div className="controls">
           <Toggle name="toggleName1" value="toggleValue1" label="Show failed nodes" onToggle={this.onShowFailureChange}/>
-          <Toggle name="toggleName1" value="toggleValue1" label="Show only rules with compatible name" onToggle={this.onShowCompatibleNameChange}/>
         </div>
       </div>
       );

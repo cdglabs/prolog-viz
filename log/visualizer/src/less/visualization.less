@@ -25,7 +25,7 @@
   bottom: 1em;
 }
 
-.ruleLabelStyle {
+.childRuleStyle {
   background-color: @grey-400;
 }
 
@@ -45,7 +45,7 @@
   .label {
     // height: 100%;
 
-    background-color: @grey-200;
+    background-color: @grey-100;
     box-sizing: border-box;
     display: block;
     // margin: 1px 0;
@@ -74,7 +74,7 @@
         // display: flex;
 
         background-color: @dark-white;
-        .ruleLabelStyle;
+        .childRuleStyle;
       }
       .latestGoals.highlight {
         .highlightRuleSuccess;
@@ -90,6 +90,10 @@
 
     }
 
+    .subst {
+      border-top: 1px solid @grey-300;
+    }
+
   }
 
   .label.solution {
@@ -103,7 +107,7 @@
   }
 
 
-  .ruleLabels {
+  .childRules {
     flex: 0 0 auto;
     display: flex;
     flex-direction: column;
@@ -116,15 +120,15 @@
       display: flex;
       align-items: baseline;
 
-      .ruleLabel {
+      .childRule {
         flex: 0 0 auto;
-        .ruleLabelStyle;
+        .childRuleStyle;
       }
 
-      .ruleLabel.highlight {
+      .childRule.highlight {
         .highlightRuleBefore;
       }
-      .ruleLabel.highlight.unificationSucceeded {
+      .childRule.highlight.unificationSucceeded {
         // background-color: @yellow-300;
         .highlightRuleSuccess;
 
@@ -133,11 +137,11 @@
           color: @deep-orange-900;
         }
       }
-      .ruleLabel.highlight.unificationFailed {
+      .childRule.highlight.unificationFailed {
         .highlightRuleFailure;
       }
 
-      .ruleLabel.shouldCross {
+      .childRule.shouldCross {
         text-decoration: line-through;
       }
 
@@ -158,7 +162,8 @@
 }
 
 .rule.currentEnv {
-  border: 2px dashed @grey-500;
+  // border: 2px dashed @grey-500;
+  outline: @grey-500 dashed 2px;
 }
 .rule.nothing {
   display: none;

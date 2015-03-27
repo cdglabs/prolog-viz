@@ -1,4 +1,5 @@
 var mui = require('material-ui');
+var Toggle = mui.Toggle;
 var Slider = mui.Slider;
 var FlatButton = mui.FlatButton;
 var React = require('react');
@@ -16,6 +17,7 @@ function getStateFromStores() {
   return {
     text : EditorStore.getText(),
     traceIter : EditorStore.getTraceIter(),
+    showOnlyCompatible: EditorStore.getShowOnlyCompatible(),
   };
 }
 
@@ -72,6 +74,10 @@ var Control = React.createClass({
     });
   },
 
+  onShowCompatibleNameChange: function(e, on) {
+    EditorActionCreators.setShowCompatible(on);
+  },
+
   render: function() {
     var classes = this.getClasses('control', {
       // "prin": true
@@ -100,6 +106,10 @@ var Control = React.createClass({
 
     return (
       <div className={classes}>
+        <div className="toggle">
+          <Toggle name="toggleName1" value="toggleValue1" label="Show only rules with compatible name" defaultToggled={this.state.showOnlyCompatible} onToggle={this.onShowCompatibleNameChange}/>
+        </div>
+
         <div className="slider">
           <Slider name="slider1" {...sliderProps}/>
         </div>
