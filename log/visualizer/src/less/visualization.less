@@ -25,37 +25,40 @@
   bottom: 1em;
 }
 
-.childRuleStyle {
-  background-color: @grey-400;
+.ruleStyle {
+  background-color: @grey-300;
+  white-space: pre;
 }
 
-.rule {
+.goal {
   // padding: 0.5em 0;
 
   color: @grey-900;
   display: flex;
+  flex: 0 0 auto;
+  align-items: baseline;
   // flex-wrap: nowrap;
 
   .monoFont;
   font-size: 12px;
 
-  flex: 0 0 auto;
-  // align-items: baseline;
-
-  .label {
+  .labels {
     // height: 100%;
+    padding-right: 1em;
 
-    background-color: @grey-100;
+    // background-color: @grey-100;
     box-sizing: border-box;
     display: block;
     // margin: 1px 0;
     position: relative;
     // text-align: center;
-    // z-index: 0;
     flex: 0 0 auto;
 
     .goals {
-      margin-right: 1em;
+      // outline: 1px dashed @grey-500;
+      font-weight: bold;
+
+
 
       .currentGoal {
         // border: 2px dashed @grey-500;
@@ -70,13 +73,14 @@
         .highlightRuleFailure;
       }
 
-      .latestGoals {
-        // display: flex;
-
-        background-color: @dark-white;
-        .childRuleStyle;
+      .latestGoal {
+        // background-color: none;
+        .ruleStyle;
       }
-      .latestGoals.highlight {
+      .currentGoal.latestGoal.highlightLatest {
+        .highlightRuleSuccess;
+      }
+      .latestGoal.highlightLatest {
         .highlightRuleSuccess;
       }
 
@@ -91,44 +95,50 @@
     }
 
     .subst {
-      border-top: 1px solid @grey-300;
+      // border-top: 1px solid @grey-300;
     }
-
   }
 
-  .label.solution {
-    color: @green-600;
-  }
+  .rulesAndChildren {
+    border-left: 1px solid @black;
 
-  .rule.failed > .label {
-    background-color: rgba(219, 82, 75, 0.6);
-    border-right: 1px solid rgb(219, 82, 75);
-    border-left: 1px solid rgb(219, 82, 75);
-  }
+    padding-left: 1em;
 
-
-  .childRules {
     flex: 0 0 auto;
     display: flex;
     flex-direction: column;
 
-    .childRuleAndChildGoal+.childRuleAndChildGoal {
-      margin-top: 2px;
+    .ruleAndChild+.ruleAndChild {
+      margin-top: 0.5em;
     }
-    .childRuleAndChildGoal {
+    .ruleAndChild {
       flex: 0 0 auto;
       display: flex;
       align-items: baseline;
 
-      .childRule {
-        flex: 0 0 auto;
-        .childRuleStyle;
+      position: relative;
+
+      .ruleWrapper {
+
+      }
+      .longestRule {
+        visibility: hidden;
+        height: 0;
+        // position: absolute;
+      }
+      .rule {
+        // flex: 0 0 auto;
+        display: inline-block;
+        .ruleStyle;
       }
 
-      .childRule.highlight {
+      .rule.noChild {
+        background-color: transparent;
+      }
+      .rule.highlight {
         .highlightRuleBefore;
       }
-      .childRule.highlight.unificationSucceeded {
+      .rule.highlight.unificationSucceeded {
         // background-color: @yellow-300;
         .highlightRuleSuccess;
 
@@ -137,19 +147,16 @@
           color: @deep-orange-900;
         }
       }
-      .childRule.highlight.unificationFailed {
+      .rule.highlight.unificationFailed {
         .highlightRuleFailure;
       }
 
-      .childRule.shouldCross {
+      .rule.shouldStrike {
         text-decoration: line-through;
+        background-color: transparent;
       }
-
     }
-
   }
-
-
 
   // counter
   // counter-reset: step-counter;
@@ -161,60 +168,41 @@
   // }
 }
 
-.rule.currentEnv {
+.goal.currentEnv {
   // border: 2px dashed @grey-500;
-  outline: @grey-500 dashed 2px;
+  // outline: @grey-500 dashed 2px;
+  background-color: @grey-50;
 }
-.rule.nothing {
+.goal.nothing {
   display: none;
 }
+.goal.solution {
+  color: @green-600;
 
+  .labels {
+    border: none;
+  }
+  .subst {
+    display: none;
+  }
+  .rulesAndChildren {
+    display: none;
+  }
+}
 
-// .rule + .rule {
-//   margin-top: 0.5em;
-// }
 
 @selectionColor: #B5D5FF;
 .highlightRuleSuccess {
-  background-color: @light-green-300;
+  background-color: @light-green-300 !important;
 }
 .highlightRuleFailure {
-  background-color: @red-200;
+  background-color: @red-200 !important;
 }
 .highlightRuleBefore {
-  background-color: @yellow-200;
+  background-color: @yellow-200 !important;
 }
 
 .highlightApplication {
   background-color: CornflowerBlue;
   color: white;
-}
-
-
-
-// styles for the d3 tree
-.tooltip {
-  font-family: "Lucida Console", Monaco, monospace;
-}
-.feedback-tree {
-  // overflow: auto;
-  position: relative;
-  font-family: "Lucida Console", Monaco, monospace;
-}
-.node .current {
-  stroke: steelblue;
-  stroke-width: 10px !important;
-}
-.node .circle {
-  stroke: steelblue;
-  stroke-width: 1px;
-}
-.node text {
-  font-family: "Lucida Console", Monaco, monospace;
-  max-width: 100px;
-}
-.link {
-    fill: none;
-    stroke: #aaa;
-    stroke-width: 2px;
 }

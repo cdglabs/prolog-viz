@@ -2,7 +2,7 @@ var React = require('react');
 var Classable = require('../../mixins/classable.js');
 var mui = require('material-ui');
 var Toggle = mui.Toggle;
-var Rule = require('./Rule.jsx');
+var Goal = require('./Goal.jsx');
 
 var assign = require('object-assign');
 
@@ -153,7 +153,7 @@ var Visualization = React.createClass({
 
           var shouldHighlightLatestGoals = (options && options.isDirectlyInsideCurrentEnv && options.isParentEnvStatusNewGoal && options.indexUnderParentEnv === options.numberOfChildrenOfParentEnv-1)
 
-          var ruleProps = assign({
+          var goalProps = assign({
             parent: self,
             env: env,
             children: children,
@@ -171,11 +171,11 @@ var Visualization = React.createClass({
 
                                                   // derve that it will be the next current env
           if (env.envId === currentEnv.envId) {
-            ruleProps.trace = trace;
+            goalProps.trace = trace;
           }
 
           // add key
-          return <Rule key={env.envId} {...ruleProps} />;
+          return <Goal key={env.envId} {...goalProps} />;
         })(rootEnv, {});
 
       }
