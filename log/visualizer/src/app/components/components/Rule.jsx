@@ -99,6 +99,7 @@ var Rule = React.createClass({
     var trace = this.props.trace;
     var failedChildRules = this.props.failedChildRules;
     var shouldHighlightLatestGoals = this.props.shouldHighlightLatestGoals;
+    var showOnlyCompatible = this.props.showOnlyCompatible;
 
     // class related
     var isCurrentEnv = false;
@@ -146,6 +147,21 @@ var Rule = React.createClass({
     var ruleLabels;
     if (!isSolution) {
       ruleLabels = <div className="ruleLabels">{env.rules.map(function(rule, i) {
+        if (showOnlyCompatible) {
+          if (env.goals[0]) {
+            var reg = /\(.*/;
+            if (env.goals[0].replace(reg, "") !== rule.replace(reg, "")) {
+              return;
+            }
+          }
+        }
+
+        var childEnv;
+        if (childNodes[i]) {
+          childEnv = childNodes[i].props.env;
+        }
+
+
         var highlight = false;
         var lineWidgetPlaceholder;
         if (trace && trace.currentRule && rule === trace.currentRule.toString()) {
@@ -172,7 +188,6 @@ var Rule = React.createClass({
         if (childNodes.length <= i) {
           shouldShowEclipseInPlaceOfRuleBody = true;
         } else {
-          var childEnv = childNodes[i].props.env;
           if (childEnv) {
             if (Array.isArray(childEnv.goals) && childEnv.goals.length === 1 && childEnv.goals[0] === "nothing") {
               shouldShowEclipseInPlaceOfRuleBody = true;

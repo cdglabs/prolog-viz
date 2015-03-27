@@ -20,6 +20,8 @@ module.exports = {
     STEP_BACKWARD: null,
     SET_STEP: null,
 
+    SET_SHOW_COMPATIBLE: null,
+
   }),
 
 

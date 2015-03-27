@@ -394,7 +394,7 @@ Env.prototype.toString = function() {
 };
 
 var count = 0;
-Program.prototype.solve = function() {
+Program.prototype.solve = function(showOnlyCompatible) {
   console.log("=== solve#"+count+" ===");
   count++;
 
@@ -468,6 +468,15 @@ Program.prototype.solve = function() {
       while (env.children.length < rules.length) {
         var goal = goals[0];
         var rule = rules[env.children.length];
+
+        if (showOnlyCompatible) {
+          if (goal.name !== rule.head.name) {
+            var newEnv = new Env(["nothing"], [], undefined);
+            env.addChild(newEnv);
+            continue;
+          }
+        }
+
         var subst = env.subst.clone();
         try {
 

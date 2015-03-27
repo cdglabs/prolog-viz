@@ -17,6 +17,7 @@ function getStateFromStores() {
     text : EditorStore.getText(),
     rootEnv : EditorStore.getRootEnv(),
     traceIter : EditorStore.getTraceIter(),
+    showOnlyCompatible: EditorStore.getShowOnlyCompatible(),
   };
 }
 
@@ -26,7 +27,8 @@ var Visualization = React.createClass({
   getInitialState: function() {
     return assign(getStateFromStores(), {
       inputs: [],
-      showFailure: false
+      showFailure: false,
+      showOnlyCompatible: false
     });
   },
 
@@ -99,7 +101,13 @@ var Visualization = React.createClass({
     });
   },
 
+  onShowCompatibleNameChange: function(e, on) {
+    EditorActionCreators.setShowCompatible(on);
+  },
+
   render: function() {
+
+    var showOnlyCompatible = this.state.showOnlyCompatible;
 
     var vis = <h1>A tree goes here</h1>;
 
@@ -151,7 +159,8 @@ var Visualization = React.createClass({
             children: children,
             shouldAnimate: true,
             failedChildRules: failedChildRules,
-            shouldHighlightLatestGoals: shouldHighlightLatestGoals
+            showOnlyCompatible: showOnlyCompatible,
+            shouldHighlightLatestGoals: shouldHighlightLatestGoals,
           }, options);
 
           // if ((options && options.isDirectlyInsideCurrentEnv)) {
@@ -183,7 +192,7 @@ var Visualization = React.createClass({
         </div>
         <div className="controls">
           <Toggle name="toggleName1" value="toggleValue1" label="Show failed nodes" onToggle={this.onShowFailureChange}/>
-          <Toggle name="toggleName1" value="toggleValue1" label="Show only rules with compatible name" onToggle={this.onShowFailureChange}/>
+          <Toggle name="toggleName1" value="toggleValue1" label="Show only rules with compatible name" onToggle={this.onShowCompatibleNameChange}/>
         </div>
       </div>
       );

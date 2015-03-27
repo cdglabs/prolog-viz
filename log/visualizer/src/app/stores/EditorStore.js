@@ -51,6 +51,8 @@ var store = function() {
   var iter;
   var traceIter;
 
+  var showOnlyCompatible = false;
+
   if(storageAvailable) {
     if (localStorage.getItem(SOURCE_KEY)) {
       text = localStorage.getItem(SOURCE_KEY);
@@ -83,6 +85,16 @@ var store = function() {
       return L;
     },
 
+    getShowOnlyCompatible: function() {
+      return showOnlyCompatible;
+    },
+
+    setShowOnlyCompatible: function(on) {
+      showOnlyCompatible = on;
+      console.log("here");
+      this.updateProgram();
+    },
+
     getGrammar: function(namespace, domId, grammar) {
       if (!g) {
         try {
@@ -102,7 +114,7 @@ var store = function() {
       if (g) {
         try {
           program = L.parse(text);
-          iter = program.solve();
+          iter = program.solve(showOnlyCompatible);
           var count = 0;
           while (iter.next() && count < 5) {
             count++;
@@ -196,6 +208,11 @@ EditorStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.SET_STEP:
       EditorStore.setStep(action.value);
+      EditorStore.emitChange();
+      break;
+
+    case ActionTypes.SET_SHOW_COMPATIBLE:
+      EditorStore.setShowOnlyCompatible(action.value);
       EditorStore.emitChange();
       break;
 
