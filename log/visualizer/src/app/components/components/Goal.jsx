@@ -101,6 +101,9 @@ var Goal = React.createClass({
     var shouldHighlightLatestGoals = this.props.shouldHighlightLatestGoals;
     var showOnlyCompatible = this.props.showOnlyCompatible;
 
+    var longestSiblingGoal = this.props.longestSiblingGoal;
+    var longestSiblingSubst = this.props.longestSiblingSubst;
+
     // class related
     var isCurrentEnv = false;
     var isSolution = env.goals.length === 0;
@@ -123,7 +126,7 @@ var Goal = React.createClass({
           break;
         case "SUBST":
         case "SUCCESS":
-          shouldHideRuleBody = false;
+          shouldHideRuleBody = true;
           unificationSucceeded = true;
           break;
         case "NEW_GOAL":
@@ -230,23 +233,24 @@ var Goal = React.createClass({
     // === labels ===
     // goals
     var goalStrings = env.goals;
-    // solution
-    if (isSolution) {
-      goalStrings = [objToString(env.subst)];
-      if (env.solution) {
-        goalStrings = [env.solution.toString()];
-      }
-    }
+    // // solution
+    // if (isSolution) {
+    //   goalStrings = [objToString(env.subst)];
+    //   if (env.solution) {
+    //     goalStrings = [env.solution.toString()];
+    //   }
+    // }
 
     var numLatestGoals = env.options && env.options.latestGoals ? env.options.latestGoals.length : 0;
     var goals = <div className="goals">
                   {goalStrings.map(function(goal, i, goals) {
-                    if (i !== goals.length -1) {
-                      goal+=", ";
-                    }
+                    // if (i !== goals.length -1) {
+                    //   goal+=", ";
+                    // }
 
                     var isCurrentGoal = i === 0;
                     var isLatestGoal = i < numLatestGoals;
+                    var isFirstNonLatestGoal = numLatestGoals > 0 && i === numLatestGoals;
                     var highlight = false;
                     var highlightLatest = false;
                     if (isCurrentGoal) {
@@ -257,8 +261,10 @@ var Goal = React.createClass({
                     }
 
                     var goalLabelClasses = cx({
+                      'goalLabel': true,
                       'currentGoal': isCurrentGoal,
                       'latestGoal': isLatestGoal,
+                      'firstNonLastestGoal': isFirstNonLatestGoal,
                       'highlight': highlight,
                       'highlightLatest': highlightLatest,
                       'unificationSucceeded': unificationSucceeded,
@@ -271,7 +277,11 @@ var Goal = React.createClass({
 
 
     // subst
-    var subst = <div className="subst">{objToString(env.subst)}</div>;
+    var substString = objToString(env.subst);
+    if (env.options && env.options.solution) {
+      substString = env.options.solution === "yes" ? "" : env.options.solution;
+    }
+    var subst = <div className="subst">{substString}</div>;
 
     // label
     var labelsClasses = cx({
@@ -284,6 +294,10 @@ var Goal = React.createClass({
     };
     var labels = <div key={"label"} className={labelsClasses} {...labelsProps}>
         {goals}{subst}
+
+        <div className="longestPlaceholder">{longestSiblingGoal}</div>
+        <div className="longestPlaceholder">{longestSiblingSubst}</div>
+
       </div>;
 
     // === goal ===
@@ -291,7 +305,8 @@ var Goal = React.createClass({
       'goal': true,
       'nothing': nothing,
       'currentEnv': isCurrentEnv,
-      'solution': isSolution
+      'solution': isSolution,
+      'shouldHideRulesAndChildren': shouldHighlightLatestGoals
     });
     var goalProps = {
       env: env,

@@ -12,6 +12,16 @@ require('codemirror/addon/display/placeholder.js');
 var EditorStore = require('../../stores/EditorStore.js');
 var EditorActionCreators = require('../../actions/EditorActionCreators.js');
 
+function objToString (obj) {
+  var pairs = [];
+  for (var p in obj) {
+    if (obj.hasOwnProperty(p)) {
+      pairs.push(p + ' = ' + obj[p]);
+    }
+  }
+  return pairs.join(', ');
+}
+
 function getStateFromStores() {
   return {
     text : EditorStore.getText(),
@@ -138,6 +148,20 @@ var Visualization = React.createClass({
           });
 
           if (env.children) {
+
+            var longestSiblingGoal = env.children.reduce(function(acc, e) {
+              var longestGoal = e.goals.reduce(function(acc, goal) {
+                return acc.length > goal.toString().length ? acc : goal.toString();
+              }, "");
+              return acc.length > longestGoal.length ? acc : longestGoal;
+            }, "");
+            var longestSiblingSubst = env.children.reduce(function(acc, e) {
+              return acc.length > objToString(e.subst).length ? acc : objToString(e.subst);
+            }, "");
+
+            // console.log(longestSiblingGoal);
+            // console.log(longestSiblingSubst);
+
             var children = env.children.map(function(childEnv, i) {
               // console.log(env)
               // console.log(env.trace ? env.trace.status : "");
@@ -146,7 +170,9 @@ var Visualization = React.createClass({
                 indexUnderParentEnv: i,
                 numberOfChildrenOfParentEnv: env.children.length,
                 doesParentEnvCurrentRuleHasBody: trace.currentRule && trace.currentRule.body.length > 0,
-                isParentEnvStatusNewGoal: trace.status === "NEW_GOAL"
+                isParentEnvStatusNewGoal: trace.status === "NEW_GOAL",
+                longestSiblingGoal: longestSiblingGoal,
+                longestSiblingSubst: longestSiblingSubst
               });
             });
           }

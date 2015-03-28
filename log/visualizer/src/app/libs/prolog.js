@@ -489,14 +489,8 @@ Program.prototype.solve = function(showOnlyCompatible) {
 
           subst.unify(goal, rule.head);
 
-          // show subsitution
-          traces.push({
-            rootEnv: JSON.parse(rootEnv.toString()),
-            currentEnv: JSON.parse(env.toString()),
-            currentRule: rule,
-            status: "SUBST",
-            subst: subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()))
-          });
+          // var oldRule = assign(rule);
+          var tempSubst = subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()));
 
           // TODO: replace all variables from query that can ...
           /*
@@ -533,22 +527,35 @@ Program.prototype.solve = function(showOnlyCompatible) {
             return c.rewrite(subst);
           });
           var newRuleVarNames = rule.getQueryVarNames();
-          var substitutedVarNames = varNamesInRule.filter(function(i) {return newRuleVarNames.indexOf(i) < 0;});
+          var queryVarNames = self.getQueryVarNames();
+          var substitutedVarNames = varNamesInRule.filter(function(varName) {return newRuleVarNames.indexOf(varName) < 0;});
           substitutedVarNames.forEach(function(varName) {
-            subst.unbind(varName);
+            if (queryVarNames.indexOf(varName) < 0) {
+              subst.unbind(varName);
+            }
           });
-          rules[env.children.length] = rule;
 
-          // show unification succeeded
+
+
+          // rules[env.children.length] = oldRule;
+          // rules[env.children.length] = rule;
+
+          // show subsitution
           traces.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
-            currentRule: rule,
-            status: "SUCCESS",
+            currentRule: rules[env.children.length],//rule,
+            status: "SUBST",
+            subst: tempSubst
           });
 
+          rules[env.children.length] = rule;
+
           var newGoals = resolution(rule.body, goals, subst);
-          var newEnv = new Env(newGoals, rules, subst, {"latestGoals": newGoals.slice(0, rule.body.length)});
+          var newEnv = new Env(newGoals, rules, subst, {
+            "latestGoals": newGoals.slice(0, rule.body.length),
+            "solution": subst.filter(self.getQueryVarNames()).toString()
+            });
 
           env.addChild(newEnv);
 
@@ -559,6 +566,14 @@ Program.prototype.solve = function(showOnlyCompatible) {
             status: "NEW_GOAL",
           };
           traces.push(trace);
+
+          // show unification succeeded
+          // traces.push({
+          //   rootEnv: JSON.parse(rootEnv.toString()),
+          //   currentEnv: JSON.parse(env.toString()),
+          //   // currentRule: rule,
+          //   // status: "SUCCESS",
+          // });
 
           return solve(newEnv);
         } catch(e) {
