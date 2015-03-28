@@ -156,7 +156,13 @@ var Visualization = React.createClass({
               return acc.length > longestGoal.length ? acc : longestGoal;
             }, "");
             var longestSiblingSubst = env.children.reduce(function(acc, e) {
-              return acc.length > objToString(e.subst).length ? acc : objToString(e.subst);
+              var longest = acc;
+              if (env.options && env.options.solution) {
+                longest = env.options.solution.length > longest.length ? env.options.solution : longest;
+              } else {
+                longest = objToString(e.subst).length > longest.length ? objToString(e.subst) : longest;
+              }
+              return longest;
             }, "");
 
             // console.log(longestSiblingGoal);
@@ -172,7 +178,7 @@ var Visualization = React.createClass({
                 doesParentEnvCurrentRuleHasBody: trace.currentRule && trace.currentRule.body.length > 0,
                 isParentEnvStatusNewGoal: trace.status === "NEW_GOAL",
                 longestSiblingGoal: longestSiblingGoal,
-                longestSiblingSubst: longestSiblingSubst
+                longestSiblingSubst: longestSiblingSubst,
               });
             });
           }
@@ -211,13 +217,16 @@ var Visualization = React.createClass({
       // "prin": true
     });
 
+
+/*
+<div className="controls">
+  <Toggle name="toggleName1" value="toggleValue1" label="Show failed nodes" onToggle={this.onShowFailureChange}/>
+</div>
+*/
     return (
       <div className="visualization">{/*TODO: no longer needed*/}
         <div ref="vis" className="content">
           {vis}
-        </div>
-        <div className="controls">
-          <Toggle name="toggleName1" value="toggleValue1" label="Show failed nodes" onToggle={this.onShowFailureChange}/>
         </div>
       </div>
       );

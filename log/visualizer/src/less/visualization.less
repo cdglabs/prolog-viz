@@ -46,6 +46,8 @@
   // flex-wrap: nowrap;
   flex: 1 0 auto;
 
+  // for duplicated current goals
+  position: relative;
 
   .monoFont;
   font-size: 12px;
@@ -58,10 +60,12 @@
     box-sizing: border-box;
     display: block;
     // margin: 1px 0;
-    position: relative;
     // text-align: center;
     flex: 0 0 auto;
 
+    z-index: 10;
+    // background-color: @dark-white;
+    background-color: @white;
     .goals {
       // outline: 1px dashed @grey-500;
       display: flex;
@@ -140,7 +144,7 @@
       display: flex;
       align-items: baseline;
       // align-content: center;
-      position: relative;
+      // position: relative;
       // justify-content: center;
 
 
@@ -148,6 +152,16 @@
         // border-top: 1px solid @grey-400;
 
       }
+
+      .duplicatedCurrentGoal {
+        position: absolute;
+        left: 0;
+        // color: grey-500;
+        font-weight: bold;
+        opacity: 0.4;
+        z-index: 0;
+      }
+
       .longestRule {
         visibility: hidden;
         height: 0;
@@ -197,8 +211,8 @@
 
 .goal.currentEnv {
   // border: 2px dashed @grey-500;
-  // outline: @grey-500 dashed 1px;
-  background-color: @grey-50;
+  outline: @grey-400 solid 1px;
+  // background-color: @grey-50;
   // background-color: @grey-300;
 }
 .goal.nothing {

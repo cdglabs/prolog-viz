@@ -343,9 +343,15 @@ function Env(goals, rules, subst, options) {
   envCount++;
   this.goals = goals ? goals.slice() : [];
   this.subst = subst ? subst.clone() : undefined;
+  
+
   this.rules = rules ? rules.map(function(rule, i) {
+    if (options && options.reversedSubst) {
+      return rule.makeCopyWithNewVarNames(options.reversedSubst).makeCopyWithFreshVarNames("'");
+    }
     return rule.makeCopyWithFreshVarNames("'");
   }) : undefined;
+
   this.children = [];
   this.parent = undefined;
   this.options = options;
@@ -554,8 +560,15 @@ Program.prototype.solve = function(showOnlyCompatible) {
           var newGoals = resolution(rule.body, goals, subst);
           var newEnv = new Env(newGoals, rules, subst, {
             "latestGoals": newGoals.slice(0, rule.body.length),
-            "solution": subst.filter(self.getQueryVarNames()).toString()
+            "solution": subst.filter(self.getQueryVarNames()).toString(),
+            "reversedSubst": reversedSubst,
             });
+
+          console.log("--- trace #"+traces.length+" ---");
+          console.log(goals.toString());
+          console.log(subst.toString());
+          console.log(rules.toString());
+          console.log(newEnv.rules.toString());
 
           env.addChild(newEnv);
 

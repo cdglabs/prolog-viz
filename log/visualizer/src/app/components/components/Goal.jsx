@@ -222,6 +222,7 @@ var Goal = React.createClass({
       return <div className="ruleAndChild">
               <div className="ruleWrapper">
                 <div className="longestRule">{longestRule}</div>
+                <div className="duplicatedCurrentGoal">{noChild || shouldStrike ? undefined : env.goals[0]}</div>
                 <div className={ruleClasses}>
                   {rule}{lineWidgetPlaceholder}
                 </div>
