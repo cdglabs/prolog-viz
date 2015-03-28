@@ -206,14 +206,19 @@ Subst.prototype.clone = function() {
 //         {Clause, Var}.prototype.rewrite(subst)
 // -----------------------------------------------------------------------------
 
-function makeCopyOfClauseWithFreshVarNames(c, random) {
+function makeCopyOfClauseWithFreshVarNames(c, suffix, skipSuffixForVarNames) {
   // TODO: args : an array of terms (a term is either a Clause or a Var)
   return new Clause(c.name, c.args.map(function(term) {
     switch (term.constructor.name) {
       case "Var":
-        return new Var(term.name+random);
+        if (skipSuffixForVarNames.indexOf(term.name) < 0) {
+          return new Var(term.name+suffix);
+        } else {
+          return new Var(term.name);
+        }
+        break;
       case "Clause":
-        return makeCopyOfClauseWithFreshVarNames(term, random);
+        return makeCopyOfClauseWithFreshVarNames(term, suffix, skipSuffixForVarNames);
       default:
         return null;
     }
@@ -221,16 +226,19 @@ function makeCopyOfClauseWithFreshVarNames(c, random) {
 }
 
 var nameCount = 0;
-Rule.prototype.makeCopyWithFreshVarNames = function(suffix) {
-  // IDEA: append a random number to all var names
-  var random = suffix;
-  if (random === undefined) {
-    random = "_"+nameCount;//Math.random();
+Rule.prototype.makeCopyWithFreshVarNames = function(suffix, existingVarNames) {
+  if (suffix === undefined) {
+    suffix = "_"+nameCount;
     nameCount++;
   }
-  var head = makeCopyOfClauseWithFreshVarNames(this.head, random);
+  var ruleVarNames = this.getQueryVarNames();
+  var skipSuffixForVarNames = ruleVarNames.filter(function(varName) {
+    return existingVarNames.indexOf(varName) < 0;
+  });
+
+  var head = makeCopyOfClauseWithFreshVarNames(this.head, suffix, skipSuffixForVarNames);
   var body = this.body.map(function(c) {
-    return makeCopyOfClauseWithFreshVarNames(c, random);
+    return makeCopyOfClauseWithFreshVarNames(c, suffix, skipSuffixForVarNames);
   });
   return new Rule(head, body, this.interval);
 };
@@ -343,13 +351,23 @@ function Env(goals, rules, subst, options) {
   envCount++;
   this.goals = goals ? goals.slice() : [];
   this.subst = subst ? subst.clone() : undefined;
-  
+
+  var existingVarNames = goals.reduce(function(acc, goal) {
+    if (goal.constructor.name === "Clause") {
+      return acc.concat(goal.getQueryVarNames());
+    }
+    return acc;
+  },[]);
+  if (subst) {
+    existingVarNames = existingVarNames.concat(Object.keys(subst.bindings));
+  }
 
   this.rules = rules ? rules.map(function(rule, i) {
+    var newRule = rule;
     if (options && options.reversedSubst) {
-      return rule.makeCopyWithNewVarNames(options.reversedSubst).makeCopyWithFreshVarNames("'");
+      newRule = rule.makeCopyWithNewVarNames(options.reversedSubst);//.makeCopyWithFreshVarNames("'");
     }
-    return rule.makeCopyWithFreshVarNames("'");
+    return newRule.makeCopyWithFreshVarNames("'", existingVarNames);
   }) : undefined;
 
   this.children = [];
@@ -564,12 +582,6 @@ Program.prototype.solve = function(showOnlyCompatible) {
             "reversedSubst": reversedSubst,
             });
 
-          console.log("--- trace #"+traces.length+" ---");
-          console.log(goals.toString());
-          console.log(subst.toString());
-          console.log(rules.toString());
-          console.log(newEnv.rules.toString());
-
           env.addChild(newEnv);
 
           var trace = {
@@ -715,12 +727,9 @@ Program.prototype.getQueryVarNames = function() {
 Rule.prototype.getQueryVarNames = function() {
   var varNames = Object.create(null);
   this.head.recordVarNames(varNames);
-  // this.body.forEach(function(c) {
-  //   c.recordVarNames(varNames);
-  // });
-  // forEach(function(clause) {
-  //   clause.recordVarNames(varNames);
-  // });
+  this.body.forEach(function(c) {
+    c.recordVarNames(varNames);
+  });
   return Object.keys(varNames);
 };
 
