@@ -1,4 +1,13 @@
+// colors
+@backgroundColor: @white;
+@primaryBorderColor: @grey-400;
+@secondaryBorderColor: @grey-300;
+
+@primaryTextColor: @black;
+@secondaryTextColor: @grey-800;
+
 .visualization {
+  z-index: 1;
   height: 100%;
   position: relative;
 }
@@ -6,7 +15,7 @@
   height: 100%;
   width: 100%;
   overflow: auto;
-  padding: 1em 1em;
+  padding: 1em;
   display: flex;
 
   // for auto scrolling
@@ -17,6 +26,8 @@
   align-items: flex-start;
 
   // * { .ease-out(); }
+
+
 }
 
 .controls {
@@ -32,7 +43,7 @@
 
 .goal {
   // padding: 0.5em 0;
-
+  background-color: transparent;
 
   .longestPlaceholder {
     height: 0;
@@ -55,6 +66,7 @@
   .labels {
     // height: 100%;
     padding-right: 1em;
+    z-index: 1;
 
     // background-color: @grey-100;
     box-sizing: border-box;
@@ -63,11 +75,8 @@
     // text-align: center;
     flex: 0 0 auto;
 
-    z-index: 10;
-    // background-color: @dark-white;
     background-color: @white;
     .goals {
-      // outline: 1px dashed @grey-500;
       display: flex;
       flex-direction: column;
       align-items: baseline;
@@ -79,7 +88,6 @@
       }
 
       .currentGoal {
-        // border: 2px dashed @grey-500;
         font-weight: bold;
       }
       .currentGoal.highlight {
@@ -102,7 +110,7 @@
       .firstNonLastestGoal:not(:only-child) {
         // background-color: red;
         // .ruleStyle;
-        border-top: 1px dashed @grey-400;
+        border-top: 1px dashed @primaryBorderColor;
         // box-sizing: border-box;
       }
 
@@ -114,7 +122,7 @@
     }
 
     .subst:not(:empty) {
-      border-top: 1px solid @grey-300;
+      border-top: 1px solid @secondaryBorderColor;
     }
 
     .subst {
@@ -123,8 +131,6 @@
   }
 
   .rulesAndChildren {
-    border-left: 1px solid @grey-400;
-    padding-left: 1em;
 
     // flex: 0 0 auto;
     flex: 1 0 auto;
@@ -132,14 +138,42 @@
     display: flex;
     flex-direction: column;
 
+    @paddingInBetween: 0.25em;
+    .ruleAndChild:first-child {
+      // padding-top: @paddingInBetween;
+    }
+
+    // padding-top: @paddingInBetween;
+
+    .ruleAndChild+.ruleAndChild > .goal > .rulesAndChildren > .ruleAndChild:first-child {
+      margin-top: @paddingInBetween;
+    }
+
+    .ruleAndChild+.ruleAndChild > .goal > .rulesAndChildren > .ruleAndChild:last-child {
+      // margin-bottom: @paddingInBetween;
+    }
+
     .ruleAndChild+.ruleAndChild {
-      // border-top: 1px solid @grey-400;
+      // border-top: 1px solid @primaryBorderColor;
       // margin-top: 0.5em;
       // padding-top: 0.5em;
-      // padding-top: 1px;
+
+      .ruleAndChild+.ruleAndChild {
+
+        // padding-top: 2px;
+      }
+      // .ruleAndChild:last-child {
+      //   // margin-bottom: @paddingInBetween;
+      // }
+      // .ruleAndChild:first-child {
+      //   margin-top: @paddingInBetween;
+      // }
+
     }
 
     .ruleAndChild {
+      padding-left: 1em;
+      border-left: 1px solid @primaryBorderColor;
 
       flex: 0 0 auto;
       display: flex;
@@ -150,17 +184,17 @@
 
 
       .ruleWrapper {
-        // border-top: 1px solid @grey-400;
+        // border-top: 1px solid @primaryBorderColor;
 
       }
 
       .duplicatedCurrentGoal {
         position: absolute;
         left: 0;
-        // color: grey-500;
         font-weight: bold;
-        opacity: 0.4;
-        z-index: 0;
+        // opacity: 0.4;
+        // z-index: -1;
+        color: @grey-500;
       }
 
       .longestRule {
@@ -212,7 +246,7 @@
 
 .goal.currentEnv {
   // border: 2px dashed @grey-500;
-  outline: @grey-400 solid 1px;
+  outline: @primaryBorderColor dashed 1px;
   // background-color: @grey-50;
   // background-color: @grey-300;
 }
