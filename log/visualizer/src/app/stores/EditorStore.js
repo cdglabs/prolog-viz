@@ -74,11 +74,18 @@ var store = function() {
       return text ? text : "";
     },
     setText: function(value) {
+      var oldText = text;
       text = value;
-      if (storageAvailable) {
-        localStorage.setItem(SOURCE_KEY, value);
+      try {
+        this.updateProgram();
+
+        if (storageAvailable) {
+          localStorage.setItem(SOURCE_KEY, value);
+        }
+      } catch(e) {
+        console.log(e);
+        this.setText(oldText);
       }
-      this.updateProgram();
     },
 
     getInterpreter: function() {
@@ -91,7 +98,6 @@ var store = function() {
 
     setShowOnlyCompatible: function(on) {
       showOnlyCompatible = on;
-      console.log("here");
       this.updateProgram();
     },
 
@@ -187,7 +193,9 @@ EditorStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
   switch (action.type) {
     case ActionTypes.DID_MOUNT:
-      var g = EditorStore.getGrammar('demo', 'arithmetic', 'L');
+      if (!g) {
+        var g = EditorStore.getGrammar('demo', 'arithmetic', 'L');
+      }
       EditorStore.emitChange();
       break;
 

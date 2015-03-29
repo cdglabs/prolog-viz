@@ -11,6 +11,7 @@ var Demo = require('./components/pages/demo.jsx');
 
 var AppRoutes = (
   <Route name="root" path="/" handler={Master}  >
+    <Route name="examples" path="examples/:exampelName" handler={Demo} />
     <DefaultRoute name="demo" handler={Demo} />
   </Route>
 

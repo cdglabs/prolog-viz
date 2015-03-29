@@ -38,6 +38,12 @@ var Input = React.createClass({
    */
   _onChange: function() {
     var newState = getStateFromStores();
+    var cm = this.refs.codeMirror.editor;
+    if (cm) {
+      if (newState.text !== cm.getValue()) {
+        cm.setValue(newState.text);
+      }
+    }
     this.setState(newState);
   },
 
@@ -186,7 +192,7 @@ var Input = React.createClass({
 
     return (
       <div className={classes} >
-        <div className="mid"><CodeMirror className="cm" ref="codeMirror" {...props}/></div>
+        <CodeMirror className="cm" ref="codeMirror" {...props}/>
       </div>
       );
     }
