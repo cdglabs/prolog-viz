@@ -40,13 +40,15 @@ var Demo = React.createClass({
     this.setState(getStateFromStores());
   },
 
+  // <Info/>
+
   render: function() {
     return (
       <div className="demo-page">
         <div className="leftPanel">
           <Input/>
-          <Info/>
           <Control/>
+          <div className="examples"></div>
         </div>
         <div className="rightPanel">
           <Visualization/>

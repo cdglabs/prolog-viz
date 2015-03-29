@@ -4,20 +4,44 @@
 
   width: 100%;
 
-  display: flex;
-  flex-wrap: wrap;
+  // display: flex;
+  // flex-wrap: wrap;
+  // flex-direction: column;
+
+  flex: 0 0 auto;
 
   padding: 1em 1em;
+  // overflow: auto;
+
 
   .left, .right {
     .monoFont;
     font-size: 24px;
   }
-
   .mid {
-    -webkit-flex: 1 0.5 200px;
-    flex: 1 0.5 200px;
+    flex: 1 0 auto;
+    flex-direction: column;
+    display: flex;
+
+    // height: 100%;
+
+    // height: 100%;
   }
+  .cm {
+    // height: 100%;
+
+    flex: 1 0 auto;
+    flex-direction: column;
+    display: flex;
+
+    position: relative;
+
+
+  }
+  // .mid {
+  //   -webkit-flex: 1 0.5 200px;
+  //   flex: 1 0.5 200px;
+  // }
 
 }
 
@@ -42,17 +66,28 @@
 
 .input, .printer {
   .CodeMirror {
+    flex: 1 0 auto;
+
     .monoFont;
     line-height: 120%;
     font-size: 18px;
     border: 1px solid #eee;
     // height: auto;
-    // height: 100%;
+
+    // min-height: 500px;
+    // max-height: 500px;
+
 
     // .CodeMirror ::selection  {
     //   background-color: #B5D5FF !important;
     // }
   }
+
+  .CodeMirror-scroll {
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
   .CodeMirror-focused .CodeMirror-selected { background: @selectionColor; }
   .CodeMirror ::selection { background: @selectionColor; }
   .CodeMirror ::-moz-selection { background: @selectionColor; }

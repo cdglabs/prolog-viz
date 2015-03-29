@@ -179,11 +179,14 @@ var Input = React.createClass({
       lineNumbers: true,
       onChange: this.onEditorTextChange,
       defaultValue: this.state.text,
+      height: "dynamic",
+      minHeight: 600,
+      // width: "100%",
     };
 
     return (
       <div className={classes} >
-        <div className="mid"><CodeMirror ref="codeMirror" {...props}/></div>
+        <div className="mid"><CodeMirror className="cm" ref="codeMirror" {...props}/></div>
       </div>
       );
     }

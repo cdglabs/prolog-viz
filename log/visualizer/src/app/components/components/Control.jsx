@@ -107,7 +107,7 @@ var Control = React.createClass({
     return (
       <div className={classes}>
         <div className="toggle">
-          <Toggle name="toggleName1" value="toggleValue1" label="Show only rules with compatible name" defaultToggled={this.state.showOnlyCompatible} onToggle={this.onShowCompatibleNameChange}/>
+          <Toggle name="toggleName1" value="toggleValue1" label="Hide rules with incompatible name" defaultToggled={this.state.showOnlyCompatible} onToggle={this.onShowCompatibleNameChange}/>
         </div>
 
         <div className="slider">
