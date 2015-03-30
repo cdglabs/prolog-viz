@@ -161,15 +161,15 @@ var ExamplesStore = assign({}, EventEmitter.prototype, store(), {
 
 });
 
-ExamplesStore.dispatchToken = AppDispatcher.register(function(payload) {
-  var action = payload.action;
-  switch (action.type) {
-
-    default:
-      console.log("No implementation for action: "+action.type);
-      break;
-  }
-
-});
+// ExamplesStore.dispatchToken = AppDispatcher.register(function(payload) {
+//   var action = payload.action;
+//   switch (action.type) {
+//
+//     default:
+//       console.log("No implementation for action: "+action.type);
+//       break;
+//   }
+//
+// });
 
 module.exports = ExamplesStore;

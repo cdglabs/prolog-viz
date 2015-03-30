@@ -13,6 +13,8 @@ function getStateFromStores() {
   };
 }
 
+var EditorActionCreators = require('../../actions/EditorActionCreators.js');
+
 var Demo = React.createClass({
   mixins: [Router.State, Router.Navigation],
 
@@ -23,6 +25,11 @@ var Demo = React.createClass({
   propTypes: {
     // single child
     children: React.PropTypes.element.isRequired
+  },
+
+  componentDidMount: function() {
+    // load grammar from script tag
+    EditorActionCreators.didMount();
   },
 
   render: function() {
@@ -43,7 +50,7 @@ var Demo = React.createClass({
         <AppBar
           className="mui-dark-theme"
           title={title}
-          zDepth={2}
+          zDepth={1}
           showMenuIconButton={false}>
           {githubButton}
         </AppBar>

@@ -77,7 +77,8 @@
     // text-align: center;
     flex: 0 0 auto;
 
-    background-color: @white;
+    background-color: @backgroundColor;
+    z-index: -1;
     .goals {
       display: flex;
       flex-direction: column;
@@ -195,7 +196,8 @@
         left: 0;
         font-weight: bold;
         // opacity: 0.4;
-        // z-index: -1;
+        z-index: -2;
+
         color: @grey-500;
       }
 
@@ -217,7 +219,6 @@
         .highlightRuleBefore;
       }
       .rule.highlight.unificationSucceeded {
-        // background-color: @yellow-300;
         .highlightRuleSuccess;
 
         .errorMsg {
@@ -288,7 +289,7 @@
 
 @selectionColor: #B5D5FF;
 .highlightRuleSuccess {
-  background-color: @light-green-300 !important;
+  background-color: @green-200 !important;
 }
 .highlightRuleFailure {
   background-color: @red-200 !important;

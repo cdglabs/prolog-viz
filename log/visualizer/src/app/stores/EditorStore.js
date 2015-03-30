@@ -126,6 +126,7 @@ var store = function() {
             count++;
           }
           traceIter = iter.getTraceIter();
+          EditorStore.emitChange();
         } catch (e) {
           console.log("error updating the program");
           console.log(e);
@@ -195,8 +196,8 @@ EditorStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.DID_MOUNT:
       if (!g) {
         var g = EditorStore.getGrammar('demo', 'arithmetic', 'L');
+        EditorStore.emitChange();
       }
-      EditorStore.emitChange();
       break;
 
     case ActionTypes.CHANGE_TEXT:
