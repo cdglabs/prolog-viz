@@ -52,7 +52,7 @@ var Examples = React.createClass({
 
     return (
       <div className={classes} >
-        <h3 className="title">Examples</h3>
+        <h4 className="title">Examples</h4>
         {rows}
       </div>
       );
