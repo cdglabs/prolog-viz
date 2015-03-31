@@ -45,6 +45,50 @@ var Visualization = React.createClass({
   componentDidMount: function() {
     EditorStore.addChangeListener(this._onChange);
     // this.refs.codeMirror.editor.on('cursorActivity', this.handleCursorActivity);
+
+    var self = this;
+    var printEl;
+
+    var beforePrint = function() {
+    // document.getElementById('printImage').src =
+    //     'http://stackoverflow.com/favicon.ico';
+
+      // html2canvas(self.refs.vis.getDOMNode()).then(function(canvas) {
+      //   var img    = canvas.toDataURL("image/png");
+      //   document.write('<img src="'+img+'"/>');
+      //
+      //     // document.body.appendChild(canvas);
+      // });
+
+      if (printEl) {
+        printEl.remove();
+      }
+
+      printEl = document.createElement("div");
+      printEl.className = "printContent";
+      printEl.appendChild(document.querySelector("body > div > div.demo-page > div.rightPanel > div > div").cloneNode(true));
+      document.body.appendChild(printEl);
+    };
+    var afterPrint = function() {
+      if (printEl) {
+        printEl.remove();
+      }
+    };
+
+    if (window.matchMedia) {
+        var mediaQueryList = window.matchMedia('print');
+        mediaQueryList.addListener(function(mql) {
+            if (mql.matches) {
+                beforePrint();
+            } else {
+                afterPrint();
+            }
+        });
+    }
+
+    window.onbeforeprint = beforePrint;
+    window.onafterprint = afterPrint;
+
   },
 
   componentWillUnmount: function() {

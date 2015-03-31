@@ -302,6 +302,7 @@ Var.prototype.rewrite = function(subst) {
 // Part II: Subst.prototype.unify(term1, term2)
 // -----------------------------------------------------------------------------
 
+// term1: goal, term2: rule
 Subst.prototype.unify = function(term1, term2) {
   var term1 = term1.rewrite(this);
   var term2 = term2.rewrite(this);
@@ -312,7 +313,7 @@ Subst.prototype.unify = function(term1, term2) {
     }
     if (this.lookup(term1.name)) {
       this.bind(term2.name, this.lookup(term1.name));
-    } if (this.lookup(term2.name)) {
+    } else if (this.lookup(term2.name)) {
       this.bind(term1.name, this.lookup(term2.name));
     } else {
       this.bind(term1.name, term2);
@@ -515,6 +516,8 @@ Program.prototype.solve = function(showOnlyCompatible) {
 
           // var oldRule = assign(rule);
           var tempSubst = subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()));
+          // TODO: make sure all vars are in the right direction
+          // tempSubst
 
           // TODO: replace all variables from query that can ...
           /*

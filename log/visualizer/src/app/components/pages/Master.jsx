@@ -6,6 +6,7 @@ var AppCanvas = mui.AppCanvas;
 var Menu = mui.Menu;
 var IconButton = mui.IconButton;
 RouteHandler = Router.RouteHandler;
+var html2canvas = require('html2canvas');
 
 function getStateFromStores() {
   return {
@@ -32,8 +33,59 @@ var Demo = React.createClass({
     EditorActionCreators.didMount();
   },
 
+  onPrinterButtonTouchTap: function() {
+    // html2canvas(document.body, {
+    //     onrendered: function (canvas) {
+    //         var imgSrc = canvas.toDataURL();
+    //         var popup = window.open(imgSrc);
+    //         console.log("here");
+    //     }
+    // });
+
+    // html2canvas(document.body, {
+    //     allowTaint: true,
+    //     logging:true,
+    //     onrendered: function(canvas) {
+    //     imagestring = canvas.toDataURL("image/png");
+    //     console.log(imagestring);
+    //     document.body.appendChild(canvas);
+    //     }
+    // });
+
+    // html2canvas(document.body).then(function(canvas) {
+    // // document.body.appendChild(canvas);
+    // console.log("here");
+    // var imgSrc = canvas.toDataURL();
+    // console.log(imgSrc);
+    // var popup = window.open(imgSrc);
+    // console.log("here");
+    //
+    // });
+
+    // console.log(document.querySelector("body > div > div.demo-page > div.rightPanel > div > div"));
+    var canvas = html2canvas(document.querySelector("body > div > div.demo-page > div.rightPanel > div > div").cloneNode(true) , {
+      onrendered: function(canvas) {
+        console.log("here");
+        document.body.appendChild(canvas);
+      }
+    });
+    // console.log(canvas);
+  },
+
   render: function() {
     var title = "Prolog Visualizer";
+
+
+    // var printButton = (
+    //   // <IconButton iconClassName="muidocs-icon-custom-github" tooltip="GitHub"/>
+    //
+    //   <IconButton
+    //     className="print-button"
+    //     iconClassName="muidocs-icon-action-thumb-up"
+    //     onTouchTap={this.onPrinterButtonTouchTap} tooltip="GitHub"/>
+    // );
+    // {printButton}
+
 
     var githubButton = (
       // <IconButton iconClassName="muidocs-icon-custom-github" tooltip="GitHub"/>
