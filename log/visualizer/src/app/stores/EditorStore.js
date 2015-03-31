@@ -66,6 +66,10 @@ var store = function() {
 
   var trace;
 
+  var syntaxError;
+  var syntaxHighlight;
+  var matchTrace;
+
   return {
     getIsMobile: function() {
       return IS_MOBILE;
@@ -75,19 +79,11 @@ var store = function() {
       return text ? text : "";
     },
     setText: function(value) {
-      var oldText = text;
       text = value;
-      try {
-        this.updateProgram();
-
-        if (storageAvailable) {
-          localStorage.setItem(SOURCE_KEY, value);
-        }
-      } catch(e) {
-        console.log(e);
-        this.setText(oldText);
-        EditorStore.emitChange();
+      if (storageAvailable) {
+        localStorage.setItem(SOURCE_KEY, value);
       }
+      this.updateProgram();
     },
 
     getInterpreter: function() {
@@ -110,6 +106,53 @@ var store = function() {
             .loadGrammarsFromScriptElement(document.getElementById(domId))
             .grammar(grammar);
           L = PrologInterpreter(g);
+          syntaxHighlight = L.grammar && L.grammar.semanticAction({
+            number: function(_) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "number" }
+              );
+            },
+            ident: function(_, _) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "ident" }
+              );
+            },
+            keyword: function(_) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "keyword" }
+              );
+            },
+            variable: function(_, _) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "variable" }
+              );
+            },
+            symbol: function(_, _) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "symbol" }
+              );
+            },
+            comment: function(_) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "comment" }
+              );
+            },
+            _list: ohm.actions.map,
+            _terminal: function() {},
+            _default: ohm.actions.passThrough
+          });
         } catch (err) {
           g = undefined;
           console.log(err);
@@ -128,17 +171,35 @@ var store = function() {
             count++;
           }
           traceIter = iter.getTraceIter();
+          syntaxError = undefined;
+          matchTrace = L.grammar.matchContents(text, 'tokens');
           EditorStore.emitChange();
         } catch (e) {
-          console.log("error updating the program");
-          console.log(e);
+          // console.log("error updating the program");
+          // console.log(e);
+          if (e instanceof ohm.error.MatchFailure) {
+            // showSyntaxError(e, src);
+            syntaxError = e;
+          } else {
+            // clearEverythingElse();
+            // abs.setValue(showException(e));
+            syntaxError = undefined;
+          }
         }
       }
     },
     getProgram: function() {
       return program;
     },
-
+    getSyntaxHighlight: function() {
+      return syntaxHighlight;
+    },
+    getSyntaxError: function() {
+      return syntaxError;
+    },
+    getMatchTrace: function() {
+      return matchTrace;
+    },
     getIter: function() {
       return iter;
     },

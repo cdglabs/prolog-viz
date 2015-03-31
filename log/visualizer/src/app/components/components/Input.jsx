@@ -14,6 +14,10 @@ function getStateFromStores() {
     L: EditorStore.getInterpreter(),
     program: EditorStore.getProgram(),
     traceIter: EditorStore.getTraceIter(),
+    syntaxError: EditorStore.getSyntaxError(),
+    syntaxHighlight: EditorStore.getSyntaxHighlight(),
+    matchTrace: EditorStore.getMatchTrace(),
+
   };
 }
 
@@ -77,12 +81,56 @@ var Input = React.createClass({
         this.highlight();
       }
     }
+
+    var syntaxError = this.state.syntaxError;
+    var syntaxHighlight = this.state.syntaxHighlight;
+    if (syntaxError) {
+      this.highlight();
+      console.log(syntaxError);
+    }
+    var cm = this.refs.codeMirror.editor;
+    this.showSyntaxError(syntaxError, cm.getValue());
+    if (syntaxHighlight) {
+      // syntaxHighlight(this.state.matchTrace);
+    }
+
+  },
+
+  showSyntaxError: function(e, src) {
+    var cm = this.refs.codeMirror.editor;
+    var self = this;
+    setTimeout(
+      function() {
+        if (self.lineWidget) {
+          cm.removeLineWidget(self.lineWidget);
+        }
+        if (e && cm.getValue() === src) {
+          function repeat(x, n) {
+            var xs = [];
+            while (n-- > 0) {
+              xs.push(x);
+            }
+            return xs.join('');
+          }
+          var msg = 'Expected: ' + e.getExpectedText();
+          var pos = cm.posFromIndex(e.getPos());
+          // var error = toDOM(['parseError', repeat(' ', pos.ch) + '^\n' + msg]);
+          // parseErrorWidget = conc.addLineWidget(pos.line, error);
+          // $(error).hide().slideDown();
+          var msgEl = document.createElement("div");
+          msgEl.className = "errorMsg";
+          msgEl.appendChild(document.createTextNode(repeat(' ', pos.ch) + '^\n' + msg));
+
+          self.lineWidget = cm.addLineWidget(pos.line, msgEl, {coverGutter: false, noHScroll: true});
+        }
+      },
+      500
+    );
   },
 
   highlight: function(trace, className) {
     var cm = this.refs.codeMirror.editor;
     cm.getAllMarks().forEach(function(m) { m.clear(); });
-    console.log("here");
 
     var interval = trace && trace.currentRule ? trace.currentRule.interval : undefined;
 
@@ -97,7 +145,6 @@ var Input = React.createClass({
 
       // console.log("code mirror not available");
     }
-
   },
 
   highlightWidget: function(trace, line) {
