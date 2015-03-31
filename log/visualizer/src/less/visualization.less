@@ -72,13 +72,24 @@
 
     // background-color: @grey-100;
     box-sizing: border-box;
-    display: block;
+    display: flex;
     // margin: 1px 0;
     // text-align: center;
     flex: 0 0 auto;
 
+    // justify-content: flex-start;
+
     background-color: @backgroundColor;
     z-index: -1;
+
+    align-items: flex-start;
+    flex-direction: column;
+
+    .contents {
+      display: flex;
+      flex-direction: column;
+    }
+
     .goals {
       display: flex;
       flex-direction: column;
@@ -247,7 +258,7 @@
   // }
 }
 
-.goal.currentEnv >   .labels {
+.goal.currentEnv > .labels > .contents {
     outline: @primaryBorderColor dashed 1px;
 
   }

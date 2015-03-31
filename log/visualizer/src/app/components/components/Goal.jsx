@@ -294,11 +294,9 @@ var Goal = React.createClass({
       // onClick: parent.onClickPExpr.bind(parent, node),
     };
     var labels = <div key={"label"} className={labelsClasses} {...labelsProps}>
-        {goals}{subst}
-
+        <div className="contents">{goals}{subst}</div>
         <div className="longestPlaceholder">{longestSiblingGoal}</div>
         <div className="longestPlaceholder">{longestSiblingSubst}</div>
-
       </div>;
 
     // === goal ===
