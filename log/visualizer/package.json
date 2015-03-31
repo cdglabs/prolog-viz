@@ -55,6 +55,7 @@
     "material-ui": "^0.7.1",
     "object-assign": "^2.0.0",
     "purecss": "^0.5.0",
+    "rasterizehtml": "^1.1.0",
     "react": "^0.12.2",
     "react-code-mirror": "^3.0.3",
     "react-router": "^0.11.4",
