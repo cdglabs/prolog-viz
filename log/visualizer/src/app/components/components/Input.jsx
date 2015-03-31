@@ -71,10 +71,10 @@ var Input = React.createClass({
             this.highlight(trace, 'highlightRuleFailure');
             break;
           default:
-            this.highlight(undefined, 'highlightRule');
+            this.highlight();
         }
       } else {
-        this.highlight(undefined, 'highlightRule');
+        this.highlight();
       }
     }
   },
@@ -82,6 +82,7 @@ var Input = React.createClass({
   highlight: function(trace, className) {
     var cm = this.refs.codeMirror.editor;
     cm.getAllMarks().forEach(function(m) { m.clear(); });
+    console.log("here");
 
     var interval = trace && trace.currentRule ? trace.currentRule.interval : undefined;
 
@@ -172,6 +173,7 @@ var Input = React.createClass({
   },
 
   onEditorTextChange: function(e) {
+    this.highlight();
     EditorActionCreators.changeText(e.target.value);
   },
 
@@ -180,7 +182,7 @@ var Input = React.createClass({
     });
 
     var props = {
-      lineWrapping: true,
+      // lineWrapping: true,
       viewportMargin: Infinity,
       lineNumbers: true,
       onChange: this.onEditorTextChange,

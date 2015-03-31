@@ -452,11 +452,11 @@ Program.prototype.solve = function(showOnlyCompatible) {
     return newGoals;
   };
 
-  var solveCount = 0;
+  var TIME_LIMIT = 500; // ms
+  var startTime = Date.now();
   var solve = function(env) {
-
-    solveCount++;
-    if (solveCount > 100) {
+    var elapsedTime = Date.now() - startTime;
+    if (elapsedTime > TIME_LIMIT) {
       return false;
     }
 

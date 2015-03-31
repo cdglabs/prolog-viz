@@ -8,6 +8,7 @@
   .leftPanel {
     flex: 2;
     max-width: 600px;
+    // min-width: 600px;
 
     height: 100%;
     overflow-y: auto;
@@ -41,6 +42,18 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+  }
+}
+
+@media all and (max-width: 1200px) {
+  .demo-page {
+    .leftPanel {
+      flex: 1;
+    }
+
+    .rightPanel {
+      flex: 1.5;
+    }
   }
 }
 

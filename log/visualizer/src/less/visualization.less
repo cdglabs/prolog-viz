@@ -67,7 +67,7 @@
 
   .labels {
     // height: 100%;
-    padding-right: 1em;
+    margin-right: 1em;
     z-index: 1;
 
     // background-color: @grey-100;
@@ -141,7 +141,7 @@
     display: flex;
     flex-direction: column;
 
-    @paddingInBetween: 0.25em;
+    @paddingInBetween: 1em;
     .ruleAndChild:first-child {
       // padding-top: @paddingInBetween;
     }
@@ -247,17 +247,23 @@
   // }
 }
 
-.goal.currentEnv {
+.goal.currentEnv >   .labels {
+    outline: @primaryBorderColor dashed 1px;
+
+  }
+
   // border: 2px dashed @grey-500;
-  outline: @primaryBorderColor dashed 1px;
   // background-color: @grey-50;
   // background-color: @grey-300;
-}
+
+
 .goal.nothing {
   display: none;
 }
 .goal.solution {
   color: @green-600;
+
+  margin-left: 1em;
 
   .labels {
     border: none;
