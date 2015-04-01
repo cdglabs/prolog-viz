@@ -144,6 +144,11 @@
     }
   }
 
+  .rulesAndChildren > * {
+    padding-left: 1em;
+    border-left: 1px solid @primaryBorderColor;
+  }
+
   .rulesAndChildren {
 
     // flex: 0 0 auto;
@@ -185,10 +190,17 @@
 
     }
 
-    .ruleAndChild {
-      padding-left: 1em;
-      border-left: 1px solid @primaryBorderColor;
 
+    .previousRuleAndSubst {
+      // position: absolute;
+      display: flex;
+      flex-direction: column;
+      color: @grey-600;
+      display: none;
+
+    }
+
+    .ruleAndChild {
       flex: 0 0 auto;
       display: flex;
       align-items: baseline;

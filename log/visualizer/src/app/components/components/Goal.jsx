@@ -210,6 +210,21 @@ var Goal = React.createClass({
 
       var noChild = childNodes[i] === undefined;
 
+      var previousRuleAndSubst;
+      if (!noChild) {
+        var childEnv = env.children[i];
+        var options = childEnv.options;
+
+        if (options) {
+          var ruleBeforeSubstitution = options.ruleBeforeSubstitution;
+          var parentSubst = options.parentSubst;
+          if (ruleBeforeSubstitution && parentSubst) {
+            previousRuleAndSubst = <div className="previousRuleAndSubst">{ruleBeforeSubstitution}{parentSubst.toString()}</div>
+          }
+
+        }
+      }
+
       var ruleClasses = cx({
         'rule': true,
         'highlight': shouldHighlights[i],
@@ -220,6 +235,8 @@ var Goal = React.createClass({
       });
 
       var duplicatedCurrentGoal = noChild || shouldStrike ? undefined : <div className="duplicatedCurrentGoal">{env.goals[0]}</div>;
+      // return <div className="ruleAndChildWrapper">
+      //         {previousRuleAndSubst}
       return <div className="ruleAndChild">
               <div className="ruleWrapper">
                 <div className="longestRule">{longestRule}</div>
@@ -229,7 +246,8 @@ var Goal = React.createClass({
                 </div>
               </div>
               {childNodes[i]}
-            </div>;
+            </div>
+          // </div>;
     })}</div>;
 
     // === labels ===
