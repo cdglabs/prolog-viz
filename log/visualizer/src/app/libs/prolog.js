@@ -585,8 +585,8 @@ Program.prototype.solve = function(showOnlyCompatible) {
             "latestGoals": newGoals.slice(0, rule.body.length),
             "solution": subst.filter(self.getQueryVarNames()).toString(),
             "reversedSubst": reversedSubst,
-            // "ruleBeforeSubstitution": oldRule.toString(),
-            // "parentSubst": tempSubst.toString()
+            "ruleBeforeSubstitution": oldRule,
+            "parentSubst": tempSubst
             });
 
           env.addChild(newEnv);
