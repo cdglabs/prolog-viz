@@ -567,11 +567,13 @@ Program.prototype.solve = function(showOnlyCompatible) {
           // rules[env.children.length] = oldRule;
           // rules[env.children.length] = rule;
 
-          // show subsitution
+          var oldRule = rules[env.children.length];
+
+          // show substitution
           traces.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
-            currentRule: rules[env.children.length],//rule,
+            currentRule: oldRule,
             status: "SUBST",
             subst: tempSubst
           });
@@ -583,6 +585,8 @@ Program.prototype.solve = function(showOnlyCompatible) {
             "latestGoals": newGoals.slice(0, rule.body.length),
             "solution": subst.filter(self.getQueryVarNames()).toString(),
             "reversedSubst": reversedSubst,
+            "ruleBeforeSubstitution": oldRule,
+            "parentSubst": tempSubst
             });
 
           env.addChild(newEnv);

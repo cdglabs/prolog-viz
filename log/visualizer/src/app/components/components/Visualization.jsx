@@ -9,9 +9,6 @@ var assign = require('object-assign');
 var CodeMirror = require('react-code-mirror');
 require('codemirror/addon/display/placeholder.js');
 
-var jsPDF = require('../../libs/jspdf/jspdf.js');
-var rasterizeHTML = require('rasterizeHTML');
-
 var EditorStore = require('../../stores/EditorStore.js');
 var EditorActionCreators = require('../../actions/EditorActionCreators.js');
 
@@ -45,38 +42,6 @@ var Visualization = React.createClass({
     });
   },
 
-  print: function(e) {
-    // printEl = document.createElement("div");
-    // printEl.className = "printContent";
-    // printEl.appendChild(document.querySelector("body > div > div.demo-page > div.rightPanel > div > div").cloneNode(true));
-
-    var canvas = document.createElement("canvas");
-    canvas.id = "canvas";
-    canvas.className = "printContent";
-    context = canvas.getContext('2d');
-    document.body.appendChild(canvas);
-
-    var html = document.querySelector("body > div > div.demo-page > div.rightPanel > div > div").cloneNode(true).innerHTML;
-
-    rasterizeHTML.drawHTML(html).then(function (renderResult) {
-        context.drawImage(renderResult.image, 10, 25);
-    });
-    // var image = canvas.toDataURL("image/png");
-
-    // console.log("print");
-    //
-    // var pdf = new jsPDF('p','pt','a4');
-    //
-    // var p = pdf.addHTML(document.querySelector("body > div > div.demo-page > div.rightPanel > div > div"), function() {
-    //   // var string = pdf.output('datauristring');
-    //   // $('.preview-pane').attr('src', string);
-    //   console.log("here");
-    //   console.log(pdf);
-    //   // pdf.save('Test.pdf');
-    // });
-
-  },
-
   componentDidMount: function() {
     EditorStore.addChangeListener(this._onChange);
     // this.refs.codeMirror.editor.on('cursorActivity', this.handleCursorActivity);
@@ -99,20 +64,14 @@ var Visualization = React.createClass({
         printEl.remove();
       }
 
-
+      programEl = document.createElement("div");
+      programEl.className = "originalProgram";
+      programEl.textContent = self.state.text;
 
       printEl = document.createElement("div");
       printEl.className = "printContent";
+      printEl.appendChild(programEl);
       printEl.appendChild(document.querySelector("body > div > div.demo-page > div.rightPanel > div > div").cloneNode(true));
-
-      var pdf = new jsPDF('p','pt','a4');
-
-      pdf.addHTML(printEl, function() {
-      	// var string = pdf.output('datauristring');
-      	// $('.preview-pane').attr('src', string);
-        pdf.save('Test.pdf');
-      });
-
       document.body.appendChild(printEl);
     };
     var afterPrint = function() {
@@ -160,6 +119,29 @@ var Visualization = React.createClass({
     // .ruleLabel.highlight
     // .currentGoal.highlight
     this.showBookmark(".currentEnv", false);
+
+    // select all .duplicatedCurrentGoal , hide if overlapped
+    var numBorders = 3;
+    var elements = document.getElementsByClassName("duplicatedCurrentGoal");
+    if (elements) {
+      Array.prototype.forEach.call(elements, function(el) {
+        var labels = el.parentNode.parentNode.parentNode.previousSibling;
+        var labelsRect = labels.getBoundingClientRect();
+        var elRect = el.getBoundingClientRect();
+        var overlap = !(labelsRect.right < elRect.left ||
+                        labelsRect.left > elRect.right ||
+                        labelsRect.bottom-numBorders < elRect.top ||
+                        labelsRect.top > elRect.bottom);
+        if (overlap) {
+          // console.log("overlapped");
+          // console.log(labelsRect);
+          // console.log(el);
+          // console.log(elRect);
+          el.classList.add("overlapped");
+        }
+      });
+    }
+
   },
 
   showNode: function (oNode) {

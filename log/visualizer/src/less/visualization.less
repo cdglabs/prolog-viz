@@ -7,7 +7,7 @@
 @secondaryTextColor: @grey-800;
 
 .visualization {
-  z-index: 1;
+  // z-index: 1;
   height: 100%;
   position: relative;
 }
@@ -68,10 +68,10 @@
   .labels {
     // height: 100%;
     margin-right: 1em;
-    z-index: 1;
+    // z-index: 1;
 
     // background-color: @grey-100;
-    box-sizing: border-box;
+    // box-sizing: border-box;
     display: flex;
     // margin: 1px 0;
     // text-align: center;
@@ -79,8 +79,8 @@
 
     // justify-content: flex-start;
 
-    background-color: @backgroundColor;
-    z-index: -1;
+    // background-color: @backgroundColor;
+    // z-index: -1;
 
     align-items: flex-start;
     flex-direction: column;
@@ -207,9 +207,12 @@
         left: 0;
         font-weight: bold;
         // opacity: 0.4;
-        z-index: -2;
+        // z-index: -2;
 
         color: @grey-500;
+      }
+      .duplicatedCurrentGoal.overlapped {
+        display: none;
       }
 
       .longestRule {
@@ -232,7 +235,10 @@
       .rule.highlight.unificationSucceeded {
         .highlightRuleSuccess;
 
-        .errorMsg {
+        .lineWidget {
+          // padding: 0 4px;
+          padding: 4px;
+
           .highlightRuleSuccess;
           color: @deep-orange-900;
         }

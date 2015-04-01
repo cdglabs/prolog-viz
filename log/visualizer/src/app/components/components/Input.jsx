@@ -17,7 +17,6 @@ function getStateFromStores() {
     syntaxError: EditorStore.getSyntaxError(),
     syntaxHighlight: EditorStore.getSyntaxHighlight(),
     matchTrace: EditorStore.getMatchTrace(),
-
   };
 }
 
@@ -221,7 +220,14 @@ var Input = React.createClass({
 
   onEditorTextChange: function(e) {
     this.highlight();
-    EditorActionCreators.changeText(e.target.value);
+
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
+
+    this.timeout = setTimeout(function() {
+      EditorActionCreators.changeText(e.target.value);
+    }, 500);
   },
 
   render: function() {

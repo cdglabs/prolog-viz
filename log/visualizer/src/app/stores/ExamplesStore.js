@@ -126,8 +126,7 @@ var examples = [
           'father(homer, bart).\n' +
           'father(homer, lisa).\n' +
           'father(homer, maggie).\n' +
-          'parent(X, Y) :- father(X, Y).\n' +
-          'grandfather(X, Y) :- father(X, Z), parent(Z, Y).\n' +
+          'grandfather(X, Y) :- father(X, Z), father(Z, Y).\n' +
           'grandfather(X, Y)?',
   }
 ];

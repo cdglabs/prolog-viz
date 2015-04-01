@@ -141,7 +141,7 @@ var Goal = React.createClass({
       if (trace.subst) {
         var message = "Subsituting: "+trace.subst.toString();
         var lineWidgetClasses = cx({
-          'errorMsg': true,
+          'lineWidget': true,
         });
         lineWidget = <div className={lineWidgetClasses}>{message}</div>;
       }
@@ -219,10 +219,11 @@ var Goal = React.createClass({
         'noChild': noChild
       });
 
+      var duplicatedCurrentGoal = noChild || shouldStrike ? undefined : <div className="duplicatedCurrentGoal">{env.goals[0]}</div>;
       return <div className="ruleAndChild">
               <div className="ruleWrapper">
                 <div className="longestRule">{longestRule}</div>
-                <div className="duplicatedCurrentGoal">{noChild || shouldStrike ? undefined : env.goals[0]}</div>
+                {duplicatedCurrentGoal}
                 <div className={ruleClasses}>
                   {rule}{lineWidgetPlaceholder}
                 </div>
