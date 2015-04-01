@@ -71,7 +71,7 @@ var Visualization = React.createClass({
       printEl = document.createElement("div");
       printEl.className = "printContent";
       printEl.appendChild(programEl);
-      printEl.appendChild(document.querySelector("body > div > div.demo-page > div.rightPanel > div > div").cloneNode(true));
+      printEl.appendChild(self.refs.vis.getDOMNode().cloneNode(true));
       document.body.appendChild(printEl);
     };
     var afterPrint = function() {
