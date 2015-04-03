@@ -28,8 +28,8 @@ function clone(obj) {
 }
 
 // HTML5 storage API
-var SOURCE_KEY = "prolog_input";
-var ARGS_SOURCE_KEY = "prolog_args";
+var SOURCE_KEY = "printf_input";
+var ARGS_SOURCE_KEY = "printf_args";
 var storageAvailable = typeof(Storage) !== "undefined";
 
 // detect mobile browser
