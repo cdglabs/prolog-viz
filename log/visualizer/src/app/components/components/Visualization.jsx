@@ -122,10 +122,11 @@ var Visualization = React.createClass({
 
     // select all .duplicatedCurrentGoal , hide if overlapped
     var numBorders = 3;
+    // TODO: select all goals and then their descendences
     var elements = document.getElementsByClassName("duplicatedCurrentGoal");
     if (elements) {
       Array.prototype.forEach.call(elements, function(el) {
-        var labels = el.parentNode.parentNode.parentNode.previousSibling;
+        var labels = el.parentNode.parentNode.parentNode.parentNode.previousSibling;
         var labelsRect = labels.getBoundingClientRect();
         var elRect = el.getBoundingClientRect();
         var overlap = !(labelsRect.right < elRect.left ||

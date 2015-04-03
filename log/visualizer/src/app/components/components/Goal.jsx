@@ -234,10 +234,22 @@ var Goal = React.createClass({
         'noChild': noChild
       });
 
+/*
+return <div className="ruleAndChild">
+        <div className="ruleWrapper">
+          <div className="longestRule">{longestRule}</div>
+          {duplicatedCurrentGoal}
+          <div className={ruleClasses}>
+            {rule}{lineWidgetPlaceholder}
+          </div>
+        </div>
+        {childNodes[i]}
+      </div>
+*/
       var duplicatedCurrentGoal = noChild || shouldStrike ? undefined : <div className="duplicatedCurrentGoal">{env.goals[0]}</div>;
-      // return <div className="ruleAndChildWrapper">
-      //         {previousRuleAndSubst}
-      return <div className="ruleAndChild">
+      return <div className="ruleAndChildWrapper">
+              {previousRuleAndSubst}
+            <div className="ruleAndChild">
               <div className="ruleWrapper">
                 <div className="longestRule">{longestRule}</div>
                 {duplicatedCurrentGoal}
@@ -247,7 +259,7 @@ var Goal = React.createClass({
               </div>
               {childNodes[i]}
             </div>
-          // </div>;
+          </div>;
     })}</div>;
 
     // === labels ===
