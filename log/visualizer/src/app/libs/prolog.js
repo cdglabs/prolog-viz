@@ -206,71 +206,53 @@ Subst.prototype.clone = function() {
 //         {Clause, Var}.prototype.rewrite(subst)
 // -----------------------------------------------------------------------------
 
-function makeCopyOfClauseWithFreshVarNames(c, suffix, skipSuffixForVarNames) {
-  // TODO: args : an array of terms (a term is either a Clause or a Var)
-  return new Clause(c.name, c.args.map(function(term) {
+Clause.prototype.makeCopy = function(options) {
+  return new Clause(this.name, this.args.map(function(term) {
     switch (term.constructor.name) {
       case "Var":
-        if (skipSuffixForVarNames.indexOf(term.name) < 0) {
-          return new Var(term.name+suffix);
-        } else {
-          return new Var(term.name);
+        var suffix = options.suffix;
+        var varNamesToSkip = options.varNamesToSkip;
+        var subst = options.subst;
+
+        if (varNamesToSkip && suffix) {
+          if (varNamesToSkip.indexOf(term.name) < 0) {
+            return new Var(term.name+suffix);
+          } else {
+            return new Var(term.name);
+          }
         }
-        break;
-      case "Clause":
-        return makeCopyOfClauseWithFreshVarNames(term, suffix, skipSuffixForVarNames);
-      default:
-        return null;
-    }
-  }));
-}
-
-var nameCount = 0;
-Rule.prototype.makeCopyWithFreshVarNames = function(suffix, existingVarNames) {
-  if (suffix === undefined) {
-    suffix = "_"+nameCount;
-    nameCount++;
-  }
-  var ruleVarNames = this.getQueryVarNames();
-  var skipSuffixForVarNames = ruleVarNames.filter(function(varName) {
-    return existingVarNames.indexOf(varName) < 0;
-  });
-
-  var head = makeCopyOfClauseWithFreshVarNames(this.head, suffix, skipSuffixForVarNames);
-  var body = this.body.map(function(c) {
-    return makeCopyOfClauseWithFreshVarNames(c, suffix, skipSuffixForVarNames);
-  });
-  return new Rule(head, body, this.interval);
-};
-
-function makeCopyOfClauseWithNewVarNames(c, subst) {
-  // TODO: args : an array of terms (a term is either a Clause or a Var)
-  return new Clause(c.name, c.args.map(function(term) {
-    switch (term.constructor.name) {
-      case "Var":
-        if (subst[term.name]) {
+        if (subst && subst[term.name]) {
           return new Var(subst[term.name]);
         }
         return new Var(term.name);
       case "Clause":
-        return makeCopyOfClauseWithNewVarNames(term, subst);
+        return term.makeCopy(options);
       default:
         return null;
     }
   }));
-}
+};
 
-Rule.prototype.makeCopyWithNewVarNames = function(subst) {
-  var head = makeCopyOfClauseWithNewVarNames(this.head, subst);
-  var body = this.body.map(function(c) {
-    return makeCopyOfClauseWithNewVarNames(c, subst);
+Rule.prototype.makeCopy = function(options) {
+  var suffix = options.suffix;
+  var existingVarNames = options.existingVarNames;
+
+  if (suffix && existingVarNames) {
+    var ruleVarNames = this.getQueryVarNames();
+    options.varNamesToSkip = ruleVarNames.filter(function(varName) {
+      return existingVarNames.indexOf(varName) < 0;
+    });
+  }
+
+  var head = this.head.makeCopy(options);
+  var body = this.body.map(function(clause) {
+    return clause.makeCopy(options);
   });
   return new Rule(head, body, this.interval);
 };
 
 Clause.prototype.rewrite = function(subst) {
   var args = this.args.map(function(term) {
-    // console.log(subst);
     return term.rewrite(subst);
   });
   var newClause = new Clause(this.name, args);
@@ -545,7 +527,9 @@ Program.prototype.solve = function(showOnlyCompatible) {
               subst.unbind(varName);
             }
           });
-          rule = rule.makeCopyWithNewVarNames(reversedSubst);
+          rule = rule.makeCopy({
+            subst: reversedSubst
+          });
 
           // remove redundunt substitution form rule, this reduces the #steps for example prereq 171 -> 143
           var varNamesInRule = rule.getQueryVarNames();
