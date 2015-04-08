@@ -4,12 +4,13 @@ var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
 var ohm = require('../libs/ohm.min.js');
 var PrologInterpreter = require('../libs/prolog.js');
+var EditorActionCreators = require('../actions/EditorActionCreators.js');
 
 var ActionTypes = Constants.ActionTypes;
 
 var CHANGE_EVENT = 'change';
 
-var DEFAULT_TEXT = 'father(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\nparent(X, Y) :- father(X, Y).\nparent(X, lisa)?';
+var DEFAULT_TEXT = "father(orville, abe).\nfather(abe, homer).\nfather(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\nparent(X, Y) :- father(X, Y).\ngrandfather(X, Y) :- father(X, Z), parent(Z, Y).\ngrandfather(X, Y)?";
 
 // Misc Helpers
 // ------------
@@ -51,6 +52,8 @@ var store = function() {
   var iter;
   var traceIter;
 
+  var showOnlyCompatible = false;
+
   if(storageAvailable) {
     if (localStorage.getItem(SOURCE_KEY)) {
       text = localStorage.getItem(SOURCE_KEY);
@@ -62,6 +65,10 @@ var store = function() {
   var cursorIndex;
 
   var trace;
+
+  var syntaxError;
+  var syntaxHighlight;
+  var matchTrace;
 
   return {
     getIsMobile: function() {
@@ -83,6 +90,15 @@ var store = function() {
       return L;
     },
 
+    getShowOnlyCompatible: function() {
+      return showOnlyCompatible;
+    },
+
+    setShowOnlyCompatible: function(on) {
+      showOnlyCompatible = on;
+      this.updateProgram();
+    },
+
     getGrammar: function(namespace, domId, grammar) {
       if (!g) {
         try {
@@ -90,6 +106,53 @@ var store = function() {
             .loadGrammarsFromScriptElement(document.getElementById(domId))
             .grammar(grammar);
           L = PrologInterpreter(g);
+          syntaxHighlight = L.grammar && L.grammar.semanticAction({
+            number: function(_) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "number" }
+              );
+            },
+            ident: function(_, _) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "ident" }
+              );
+            },
+            keyword: function(_) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "keyword" }
+              );
+            },
+            variable: function(_, _) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "variable" }
+              );
+            },
+            symbol: function(_, _) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "symbol" }
+              );
+            },
+            comment: function(_) {
+              cm.doc.markText(
+                cm.doc.posFromIndex(this.interval.startIdx),
+                cm.doc.posFromIndex(this.interval.endIdx),
+                { className: "comment" }
+              );
+            },
+            _list: ohm.actions.map,
+            _terminal: function() {},
+            _default: ohm.actions.passThrough
+          });
         } catch (err) {
           g = undefined;
           console.log(err);
@@ -102,22 +165,41 @@ var store = function() {
       if (g) {
         try {
           program = L.parse(text);
-          iter = program.solve();
+          iter = program.solve(showOnlyCompatible);
           var count = 0;
           while (iter.next() && count < 5) {
             count++;
           }
           traceIter = iter.getTraceIter();
+          syntaxError = undefined;
+          matchTrace = L.grammar.matchContents(text, 'tokens');
+          EditorStore.emitChange();
         } catch (e) {
-          console.log("error updating the program");
-          console.log(e);
+          // console.log("error updating the program");
+          // console.log(e);
+          if (e instanceof ohm.error.MatchFailure) {
+            // showSyntaxError(e, src);
+            syntaxError = e;
+          } else {
+            // clearEverythingElse();
+            // abs.setValue(showException(e));
+            syntaxError = undefined;
+          }
         }
       }
     },
     getProgram: function() {
       return program;
     },
-
+    getSyntaxHighlight: function() {
+      return syntaxHighlight;
+    },
+    getSyntaxError: function() {
+      return syntaxError;
+    },
+    getMatchTrace: function() {
+      return matchTrace;
+    },
     getIter: function() {
       return iter;
     },
@@ -175,8 +257,10 @@ EditorStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
   switch (action.type) {
     case ActionTypes.DID_MOUNT:
-      var g = EditorStore.getGrammar('demo', 'arithmetic', 'L');
-      EditorStore.emitChange();
+      if (!g) {
+        var g = EditorStore.getGrammar('demo', 'arithmetic', 'L');
+        EditorStore.emitChange();
+      }
       break;
 
     case ActionTypes.CHANGE_TEXT:
@@ -196,6 +280,11 @@ EditorStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.SET_STEP:
       EditorStore.setStep(action.value);
+      EditorStore.emitChange();
+      break;
+
+    case ActionTypes.SET_SHOW_COMPATIBLE:
+      EditorStore.setShowOnlyCompatible(action.value);
       EditorStore.emitChange();
       break;
 

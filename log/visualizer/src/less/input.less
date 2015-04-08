@@ -4,61 +4,92 @@
 
   width: 100%;
 
-  display: -webkit-flex;
-  display: flex;
-  -webkit-flex-wrap: wrap;
-  flex-wrap: wrap;
+  // display: flex;
+  // flex-wrap: wrap;
+  // flex-direction: column;
 
-  padding: 2em 1em;
+  flex: 0 0 auto;
 
-  // .content {
-  //   padding: 1em;
-  //
-  // }
+  // padding: 1em 1em;
+  padding-top: 1em;
+  // overflow: auto;
+
 
   .left, .right {
     .monoFont;
     font-size: 24px;
-
   }
-
-  .errorMsg {
-    font-size: 1em;
-
-    display: block;
-    white-space: pre-wrap;
-    color: maroon;
-    background: yellow;
-    padding: 0 4px;
-    padding: 4px;
-    opacity: 1;
-    // max-height: 100pt;
-
-    // overflow: auto;
-
-    user-select: none;
-  }
-
   .mid {
-    -webkit-flex: 1 0.5 200px;
-    flex: 1 0.5 200px;
-  }
+    flex: 1 0 auto;
+    flex-direction: column;
+    display: flex;
 
+    // height: 100%;
+
+    // height: 100%;
+  }
+  .cm {
+    // height: 100%;
+
+    flex: 1 0 auto;
+    flex-direction: column;
+    display: flex;
+
+
+
+  }
+  // .mid {
+  //   -webkit-flex: 1 0.5 200px;
+  //   flex: 1 0.5 200px;
+  // }
+
+}
+
+.errorMsg {
+  // .pt-page-moveFromTop;
+  font-size: 1em;
+
+  display: block;
+  white-space: pre-wrap;
+  color: maroon;
+  background: yellow;
+  padding: 0 4px;
+  padding: 4px;
+  opacity: 1;
+  // max-height: 100pt;
+
+  // overflow: auto;
+
+  user-select: none;
+
+  flex: 0 0 auto;
 }
 
 .input, .printer {
   .CodeMirror {
+    flex: 1 0 auto;
+
     .monoFont;
     line-height: 120%;
-    font-size: 18px;
+    font-size: 16px;
     border: 1px solid #eee;
+    border-right: none;
     // height: auto;
-    // height: 100%;
+
+    // min-height: 500px;
+    // max-height: 500px;
+
 
     // .CodeMirror ::selection  {
     //   background-color: #B5D5FF !important;
     // }
   }
+
+  .CodeMirror-scroll {
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
   .CodeMirror-focused .CodeMirror-selected { background: @selectionColor; }
   .CodeMirror ::selection { background: @selectionColor; }
   .CodeMirror ::-moz-selection { background: @selectionColor; }

@@ -1,4 +1,3 @@
-
 var ohm = require('./ohm.min.js');
 
 var Prolog = function(grammar) {
@@ -96,8 +95,6 @@ var Prolog = function(grammar) {
 module.exports = Prolog;
 
 
-
-
 var JS = {};
 JS.stringify =
 JS.prettyPrintValue = function(x) {
@@ -190,6 +187,12 @@ Subst.prototype.bind = function(varName, term) {
   return this;
 };
 
+Subst.prototype.unbind = function(varName) {
+  // this.bindings[varName] = undefined;
+  delete this.bindings[varName];
+  return this;
+};
+
 Subst.prototype.clone = function() {
   var clone = new Subst();
   for (var varName in this.bindings) {
@@ -203,14 +206,19 @@ Subst.prototype.clone = function() {
 //         {Clause, Var}.prototype.rewrite(subst)
 // -----------------------------------------------------------------------------
 
-function makeCopyOfClauseWithFreshVarNames(c, random) {
+function makeCopyOfClauseWithFreshVarNames(c, suffix, skipSuffixForVarNames) {
   // TODO: args : an array of terms (a term is either a Clause or a Var)
   return new Clause(c.name, c.args.map(function(term) {
     switch (term.constructor.name) {
       case "Var":
-        return new Var(term.name+random);
+        if (skipSuffixForVarNames.indexOf(term.name) < 0) {
+          return new Var(term.name+suffix);
+        } else {
+          return new Var(term.name);
+        }
+        break;
       case "Clause":
-        return makeCopyOfClauseWithFreshVarNames(term, random);
+        return makeCopyOfClauseWithFreshVarNames(term, suffix, skipSuffixForVarNames);
       default:
         return null;
     }
@@ -218,16 +226,44 @@ function makeCopyOfClauseWithFreshVarNames(c, random) {
 }
 
 var nameCount = 0;
-Rule.prototype.makeCopyWithFreshVarNames = function(suffix) {
-  // IDEA: append a random number to all var names
-  var random = suffix;
-  if (random === undefined) {
-    random = "_"+nameCount;//Math.random();
+Rule.prototype.makeCopyWithFreshVarNames = function(suffix, existingVarNames) {
+  if (suffix === undefined) {
+    suffix = "_"+nameCount;
     nameCount++;
   }
-  var head = makeCopyOfClauseWithFreshVarNames(this.head, random);
+  var ruleVarNames = this.getQueryVarNames();
+  var skipSuffixForVarNames = ruleVarNames.filter(function(varName) {
+    return existingVarNames.indexOf(varName) < 0;
+  });
+
+  var head = makeCopyOfClauseWithFreshVarNames(this.head, suffix, skipSuffixForVarNames);
   var body = this.body.map(function(c) {
-    return makeCopyOfClauseWithFreshVarNames(c, random);
+    return makeCopyOfClauseWithFreshVarNames(c, suffix, skipSuffixForVarNames);
+  });
+  return new Rule(head, body, this.interval);
+};
+
+function makeCopyOfClauseWithNewVarNames(c, subst) {
+  // TODO: args : an array of terms (a term is either a Clause or a Var)
+  return new Clause(c.name, c.args.map(function(term) {
+    switch (term.constructor.name) {
+      case "Var":
+        if (subst[term.name]) {
+          return new Var(subst[term.name]);
+        }
+        return new Var(term.name);
+      case "Clause":
+        return makeCopyOfClauseWithNewVarNames(term, subst);
+      default:
+        return null;
+    }
+  }));
+}
+
+Rule.prototype.makeCopyWithNewVarNames = function(subst) {
+  var head = makeCopyOfClauseWithNewVarNames(this.head, subst);
+  var body = this.body.map(function(c) {
+    return makeCopyOfClauseWithNewVarNames(c, subst);
   });
   return new Rule(head, body, this.interval);
 };
@@ -266,6 +302,7 @@ Var.prototype.rewrite = function(subst) {
 // Part II: Subst.prototype.unify(term1, term2)
 // -----------------------------------------------------------------------------
 
+// term1: goal, term2: rule
 Subst.prototype.unify = function(term1, term2) {
   var term1 = term1.rewrite(this);
   var term2 = term2.rewrite(this);
@@ -276,7 +313,7 @@ Subst.prototype.unify = function(term1, term2) {
     }
     if (this.lookup(term1.name)) {
       this.bind(term2.name, this.lookup(term1.name));
-    } if (this.lookup(term2.name)) {
+    } else if (this.lookup(term2.name)) {
       this.bind(term1.name, this.lookup(term2.name));
     } else {
       this.bind(term1.name, term2);
@@ -310,17 +347,33 @@ Subst.prototype.unify = function(term1, term2) {
 // -----------------------------------------------------------------------------
 
 var envCount = 0;
-function Env(goals, rules, subst) {
+function Env(goals, rules, subst, options) {
   this.envId = envCount;
   envCount++;
   this.goals = goals ? goals.slice() : [];
   this.subst = subst ? subst.clone() : undefined;
+
+  var existingVarNames = goals.reduce(function(acc, goal) {
+    if (goal.constructor.name === "Clause") {
+      return acc.concat(goal.getQueryVarNames());
+    }
+    return acc;
+  },[]);
+  if (subst) {
+    existingVarNames = existingVarNames.concat(Object.keys(subst.bindings));
+  }
+
   this.rules = rules ? rules.map(function(rule, i) {
-    return rule.makeCopyWithFreshVarNames("'");
-    // return rule.makeCopyWithFreshVarNames('_'+i);
+    var newRule = rule;
+    if (options && options.reversedSubst) {
+      newRule = rule.makeCopyWithNewVarNames(options.reversedSubst);//.makeCopyWithFreshVarNames("'");
+    }
+    return newRule.makeCopyWithFreshVarNames("'", existingVarNames);
   }) : undefined;
+
   this.children = [];
   this.parent = undefined;
+  this.options = options;
 }
 
 Env.prototype.addChild = function(env) {
@@ -351,7 +404,7 @@ Env.prototype.copyWithoutParent = function() {
     });
   }
   clone.solution = this.solution;
-
+  clone.options = this.options;
   clone.children = clone.children.map(function(child) {
     return (child && child.constructor.name === "Env") ? child.copyWithoutParent() : {
       goals: ["nothing"],
@@ -366,7 +419,7 @@ Env.prototype.toString = function() {
 };
 
 var count = 0;
-Program.prototype.solve = function() {
+Program.prototype.solve = function(showOnlyCompatible) {
   console.log("=== solve#"+count+" ===");
   count++;
 
@@ -379,8 +432,8 @@ Program.prototype.solve = function() {
   var rootEnv = new Env(goals, rules, subst);
   var currentEnv = rootEnv;
 
-  var trace = [];
-  trace.push({
+  var traces = [];
+  traces.push({
     rootEnv: JSON.parse(rootEnv.toString()),
     currentEnv: JSON.parse(currentEnv.toString())
   });
@@ -389,19 +442,25 @@ Program.prototype.solve = function() {
   var solutions = [];
 
   var resolution = function(body, goals, subst) {
-    // console.log("--- resolution");
     var newGoals = body.slice();
     var goalsTail = goals.slice(1);
     if (Array.isArray(goalsTail)) {
       Array.prototype.push.apply(newGoals, goalsTail);
     }
-    newGoals.map(function(term) {
+    newGoals = newGoals.map(function(term) {
       return term.rewrite(subst);
     });
     return newGoals;
   };
 
+  var TIME_LIMIT = 500; // ms
+  var startTime = Date.now();
   var solve = function(env) {
+    var elapsedTime = Date.now() - startTime;
+    if (elapsedTime > TIME_LIMIT) {
+      return false;
+    }
+
     if (!env || env.constructor.name !== "Env") {
       return false;
     }
@@ -415,15 +474,17 @@ Program.prototype.solve = function() {
     var goals = env.goals;
     var rules = env.rules;
     if (goals.length === 0) {
+
+      var solution = env.subst.filter(self.getQueryVarNames()).toString();//JSON.stringify(env.subst.filter(self.getQueryVarNames()));
+      env.solution = solution;
+
       if (env.parent) {
-        trace.push({
+        traces.push({
           rootEnv: JSON.parse(rootEnv.toString()),
           currentEnv: JSON.parse(env.parent.toString())
         });
       }
 
-      var solution = env.subst.filter(self.getQueryVarNames()).toString();//JSON.stringify(env.subst.filter(self.getQueryVarNames()));
-      env.solution = solution;
       if (solutions.indexOf(solution) < 0) {
         solutions.push(solution);
         return env.subst;
@@ -432,93 +493,136 @@ Program.prototype.solve = function() {
       while (env.children.length < rules.length) {
         var goal = goals[0];
         var rule = rules[env.children.length];
+
+        if (showOnlyCompatible) {
+          if (goal.name !== rule.head.name) {
+            var newEnv = new Env(["nothing"], [], undefined);
+            env.addChild(newEnv);
+            continue;
+          }
+        }
+
         var subst = env.subst.clone();
         try {
-          trace.push({
+
+          traces.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
             status: "BEFORE",
-            goal: goal
-          });
-
-          var goalBeforeUnification = goal.rewrite(subst);
-          trace.push({
-            rootEnv: JSON.parse(rootEnv.toString()),
-            currentEnv: JSON.parse(env.toString()),
-            currentRule: rule,
-            rewrittenHead: rule.head.rewrite(subst),
-            status: "REWRITING_HEAD",
-            goal: goalBeforeUnification
           });
 
           subst.unify(goal, rule.head);
 
-          // show subsitution
-          trace.push({
+          // var oldRule = assign(rule);
+          var tempSubst = subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()));
+          // TODO: make sure all vars are in the right direction
+          // tempSubst
+
+          // TODO: replace all variables from query that can ...
+          /*
+           * query: prereqTrans(P, cs137b)
+           * rule: prereqTrans(X', Y') :- prereq(X', Y')
+           * subst: P = X', Y' = cs137b
+           *
+           * newRule: prereqTrans(P, Y') :- prereq(P, Y')
+           * newSubst: Y' = cs137b
+           * */
+
+          //FIXME
+          // this process only happens to body of rules that got unified, does not work with
+          // goals: prereq(P, Z'), prereqTrans(Z', cs137b) -> new goals: prereqTrans(Z', cs137b)
+          // where no new goal is added
+          // seems to be a good thing, see the screen shot
+
+          // reduce equivalent vars in goals and rules
+          var varNamesInGoal = goal.getQueryVarNames();
+          var reversedSubst = {};
+          varNamesInGoal.forEach(function(varName) {
+            var value = subst.lookup(varName);
+            if (value.constructor.name === "Var") {
+              reversedSubst[value.name] = varName;
+              subst.unbind(varName);
+            }
+          });
+          rule = rule.makeCopyWithNewVarNames(reversedSubst);
+
+          // remove redundunt substitution form rule, this reduces the #steps for example prereq 171 -> 143
+          var varNamesInRule = rule.getQueryVarNames();
+          rule.head = rule.head.rewrite(subst);
+          rule.body = rule.body.map(function(c) {
+            return c.rewrite(subst);
+          });
+          var newRuleVarNames = rule.getQueryVarNames();
+          var queryVarNames = self.getQueryVarNames();
+          var substitutedVarNames = varNamesInRule.filter(function(varName) {return newRuleVarNames.indexOf(varName) < 0;});
+          substitutedVarNames.forEach(function(varName) {
+            if (queryVarNames.indexOf(varName) < 0) {
+              subst.unbind(varName);
+            }
+          });
+
+
+
+          // rules[env.children.length] = oldRule;
+          // rules[env.children.length] = rule;
+
+          var oldRule = rules[env.children.length];
+
+          // show substitution
+          traces.push({
             rootEnv: JSON.parse(rootEnv.toString()),
             currentEnv: JSON.parse(env.toString()),
-            currentRule: rule,
-            rewrittenHead: rule.head.rewrite(subst),
+            currentRule: oldRule,
             status: "SUBST",
-            goal: goalBeforeUnification,
-            subst: subst
+            subst: tempSubst
           });
 
-          // show unification succeeded
-          trace.push({
-            rootEnv: JSON.parse(rootEnv.toString()),
-            currentEnv: JSON.parse(env.toString()),
-            currentRule: rule,
-            rewrittenHead: rule.head.rewrite(subst),
-
-            status: "SUCCESS",
-            goal: goal.rewrite(subst)
-          });
-
-
+          rules[env.children.length] = rule;
 
           var newGoals = resolution(rule.body, goals, subst);
-          var newEnv = new Env(newGoals, rules, subst);
+          var newEnv = new Env(newGoals, rules, subst, {
+            "latestGoals": newGoals.slice(0, rule.body.length),
+            "solution": subst.filter(self.getQueryVarNames()).toString(),
+            "reversedSubst": reversedSubst,
+            "ruleBeforeSubstitution": oldRule.toString(),
+            "parentSubst": tempSubst.toString()
+            });
+
           env.addChild(newEnv);
 
-          // trace.push({
-          //   rootEnv: JSON.parse(rootEnv.toString()),
-          //   currentEnv: JSON.parse(newEnv.toString()),
-          //   currentRule: rule,
-          //   rewrittenHead: rule.head.rewrite(subst),
-          //   rewrittenBody: rule.body,
-          //   status: "REWRITING_BODY",
-          //   goal: goal.rewrite(subst)
-          // });
-
-
-          // show new goal
-          trace.push({
+          var trace = {
             rootEnv: JSON.parse(rootEnv.toString()),
-            currentEnv: JSON.parse(newEnv.toString()),
+            currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
             status: "NEW_GOAL",
-            goal: newGoals // this is a array
-          });
+          };
+          traces.push(trace);
+
+          // show unification succeeded
+          // traces.push({
+          //   rootEnv: JSON.parse(rootEnv.toString()),
+          //   currentEnv: JSON.parse(env.toString()),
+          //   // currentRule: rule,
+          //   // status: "SUCCESS",
+          // });
 
           return solve(newEnv);
         } catch(e) {
-          console.log(e);
-          // backtrace
-          var newEnv = new Env(["nothing"]);
+          // console.log(e);
+          // backtraces
+          var newEnv = new Env(["nothing"], [], undefined);
           env.addChild(newEnv);
 
           var rootEnvAfter = JSON.parse(rootEnv.toString());
-          trace.push({
+          traces.push({
             rootEnv: rootEnvAfter,
-            currentEnv: JSON.parse(newEnv.toString()),
+            currentEnv: JSON.parse(env.toString()),
             currentRule: rule,
             status: "FAILURE",
-            goal: goal.rewrite(subst)
           });
-          // backtrace
-          trace.push({
+          // backtraces
+          traces.push({
             rootEnv: rootEnvAfter,
             currentEnv: JSON.parse(env.toString())
           });
@@ -526,9 +630,9 @@ Program.prototype.solve = function() {
       }
 
       if (env.parent) {
-        trace.push({
+        traces.push({
           rootEnv: JSON.parse(rootEnv.toString()),
-          currentEnv: JSON.parse(env.parent.toString())
+          currentEnv: JSON.parse(env.parent.toString()),
         });
       }
       return solve(env.parent);
@@ -546,14 +650,14 @@ Program.prototype.solve = function() {
     getRootEnv: function() {
       var ret = JSON.parse(rootEnv.toString());
       // console.log(JSON.stringify(ret, null, '\t'));
-      // console.log(JSON.stringify(trace, null, '\t'));
+      // console.log(JSON.stringify(traces, null, '\t'));
       return ret;
       // or rootEnv.copyWithoutParent();
     },
     getTraceIter: function() {
-      var traceCopy = trace.slice();
+      var tracesCopy = traces.slice();
       var idx = 0;
-      var max = traceCopy.length;
+      var max = tracesCopy.length-1;
       return {
         forward: function() {
           idx = Math.min(max, idx+1);
@@ -562,7 +666,7 @@ Program.prototype.solve = function() {
           idx = Math.max(0, idx-1);
         },
         getCurrentTrace: function() {
-          return traceCopy[idx];
+          return tracesCopy[idx];
         },
         getMax: function() {
           return max;
@@ -627,6 +731,21 @@ Program.prototype.getQueryVarNames = function() {
   return Object.keys(varNames);
 };
 
+Rule.prototype.getQueryVarNames = function() {
+  var varNames = Object.create(null);
+  this.head.recordVarNames(varNames);
+  this.body.forEach(function(c) {
+    c.recordVarNames(varNames);
+  });
+  return Object.keys(varNames);
+};
+
+Clause.prototype.getQueryVarNames = function() {
+  var varNames = Object.create(null);
+  this.recordVarNames(varNames);
+  return Object.keys(varNames);
+};
+
 Clause.prototype.recordVarNames = function(varNames) {
   this.args.forEach(function(arg) {
     arg.recordVarNames(varNames);
@@ -650,7 +769,7 @@ Rule.prototype.toString = function() {
   if (this.body.length > 0) {
     ret += " :- "+this.body.map(function(term) {
       return term.toString();
-    });
+    }).join(", ");
   }
   return ret;
 };

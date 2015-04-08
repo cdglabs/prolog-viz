@@ -3,13 +3,13 @@
 @import "./material-ui-custom-overrides.less";
 @import "../../node_modules/material-ui/src/less/components.less";
 
-@import url(http://fonts.googleapis.com/css?family=Droid+Sans+Mono);
+@import url(https://fonts.googleapis.com/css?family=Droid+Sans+Mono);
 
 /* custom font icons */
 @import (less) "./font-icons/style.css";
 
 // page animations: https://github.com/codrops/PageTransitions
-// @import (less) "animations.css";
+// @import (less) "./_legacy/animations.css";
 
 // purecss
 // @import (less) "../../node_modules/purecss/pure.css";
@@ -21,6 +21,7 @@
 @import "input.less";
 @import "info.less";
 @import "control.less";
+@import "examples.less";
 
 
 // code mirror
@@ -30,6 +31,17 @@
 body {
   margin: 0;
 }
+
+// Shared
+.inputFont {
+  .monoFont;
+  font-size: 18px;
+}
+
+.monoFont {
+  font-family: Droid Sans Mono, Monaco, Menlo, sans-serif;
+}
+
 
 // ReactCSSTransitionGroup
 @widthDuration: 0.2s;

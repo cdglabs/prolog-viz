@@ -1,9 +1,12 @@
 var mui = require('material-ui');
+var Toggle = mui.Toggle;
 var Slider = mui.Slider;
 var FlatButton = mui.FlatButton;
 var React = require('react');
 var Classable = require('../../mixins/classable.js');
-
+var IconButton = mui.IconButton;
+var ForwardIcon = require('../components/ForwardIcon.jsx');
+var BackwardIcon = require('../components/BackwardIcon.jsx');
 var assign = require('object-assign');
 
 var CodeMirror = require('react-code-mirror');
@@ -16,6 +19,7 @@ function getStateFromStores() {
   return {
     text : EditorStore.getText(),
     traceIter : EditorStore.getTraceIter(),
+    showOnlyCompatible: EditorStore.getShowOnlyCompatible(),
   };
 }
 
@@ -72,6 +76,10 @@ var Control = React.createClass({
     });
   },
 
+  onShowCompatibleNameChange: function(e, on) {
+    EditorActionCreators.setShowCompatible(on);
+  },
+
   render: function() {
     var classes = this.getClasses('control', {
       // "prin": true
@@ -82,7 +90,7 @@ var Control = React.createClass({
     var traceIter = this.state.traceIter;
     if (traceIter) {
       step = traceIter.getStep();
-      maxStep = traceIter.getMax()-1;
+      maxStep = traceIter.getMax();
     }
 
     var sliderProps = {
@@ -98,15 +106,34 @@ var Control = React.createClass({
       sliderProps.value = step;
     }
 
+    var forward = <IconButton className="right" onTouchTap={this.forward}>
+            <ForwardIcon/>
+            </IconButton>
+
+            // <FlatButton className="left" label="Back" onTouchTap={this.backward}/>
+
+    var back = <IconButton className="left" onTouchTap={this.backward}>
+            <BackwardIcon/>
+            </IconButton>
+
+    // var back = <BackwardIcon
+    //         className="left"
+    //         onTouchTap={this.backward}/>
+
+            // <FlatButton className="right" label="Forward" onTouchTap={this.forward}/>
+
+
     return (
       <div className={classes}>
+        <div className="toggle">
+          <Toggle name="toggleName1" value="toggleValue1" label="Hide rules with incompatible name" defaultToggled={this.state.showOnlyCompatible} onToggle={this.onShowCompatibleNameChange}/>
+        </div>
+
         <div className="slider">
           <Slider name="slider1" {...sliderProps}/>
         </div>
         <div className="buttons">
-          <FlatButton className="left" label="Back" onTouchTap={this.backward}/>
-          <p className="mid">Step {step+1} of {maxStep+1}</p>
-          <FlatButton className="right" label="Forward" onTouchTap={this.forward}/>
+          {back}<p className="mid">Step {step+1} of {maxStep+1}</p>{forward}
         </div>
       </div>
       );

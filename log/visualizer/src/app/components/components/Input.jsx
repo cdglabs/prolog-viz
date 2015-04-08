@@ -14,6 +14,9 @@ function getStateFromStores() {
     L: EditorStore.getInterpreter(),
     program: EditorStore.getProgram(),
     traceIter: EditorStore.getTraceIter(),
+    syntaxError: EditorStore.getSyntaxError(),
+    syntaxHighlight: EditorStore.getSyntaxHighlight(),
+    matchTrace: EditorStore.getMatchTrace(),
   };
 }
 
@@ -38,6 +41,12 @@ var Input = React.createClass({
    */
   _onChange: function() {
     var newState = getStateFromStores();
+    var cm = this.refs.codeMirror.editor;
+    if (cm) {
+      if (newState.text !== cm.getValue()) {
+        cm.setValue(newState.text);
+      }
+    }
     this.setState(newState);
   },
 
@@ -65,12 +74,57 @@ var Input = React.createClass({
             this.highlight(trace, 'highlightRuleFailure');
             break;
           default:
-            this.highlight(undefined, 'highlightRule');
+            this.highlight();
         }
       } else {
-        this.highlight(undefined, 'highlightRule');
+        this.highlight();
       }
     }
+
+    var syntaxError = this.state.syntaxError;
+    var syntaxHighlight = this.state.syntaxHighlight;
+    if (syntaxError) {
+      this.highlight();
+      console.log(syntaxError);
+    }
+    var cm = this.refs.codeMirror.editor;
+    this.showSyntaxError(syntaxError, cm.getValue());
+    if (syntaxHighlight) {
+      // syntaxHighlight(this.state.matchTrace);
+    }
+
+  },
+
+  showSyntaxError: function(e, src) {
+    var cm = this.refs.codeMirror.editor;
+    var self = this;
+    setTimeout(
+      function() {
+        if (self.lineWidget) {
+          cm.removeLineWidget(self.lineWidget);
+        }
+        if (e && cm.getValue() === src) {
+          function repeat(x, n) {
+            var xs = [];
+            while (n-- > 0) {
+              xs.push(x);
+            }
+            return xs.join('');
+          }
+          var msg = 'Expected: ' + e.getExpectedText();
+          var pos = cm.posFromIndex(e.getPos());
+          // var error = toDOM(['parseError', repeat(' ', pos.ch) + '^\n' + msg]);
+          // parseErrorWidget = conc.addLineWidget(pos.line, error);
+          // $(error).hide().slideDown();
+          var msgEl = document.createElement("div");
+          msgEl.className = "errorMsg";
+          msgEl.appendChild(document.createTextNode(repeat(' ', pos.ch) + '^\n' + msg));
+
+          self.lineWidget = cm.addLineWidget(pos.line, msgEl, {coverGutter: false, noHScroll: true});
+        }
+      },
+      500
+    );
   },
 
   highlight: function(trace, className) {
@@ -84,13 +138,12 @@ var Input = React.createClass({
           endPos = cm.posFromIndex(interval.endIdx);
       cm.markText(startPos, endPos, { className: className });
 
-      this.highlightWidget(trace, endPos.line);
+      // this.highlightWidget(trace, endPos.line);
     } else {
-      this.highlightWidget();
+      // this.highlightWidget();
 
       // console.log("code mirror not available");
     }
-
   },
 
   highlightWidget: function(trace, line) {
@@ -166,7 +219,15 @@ var Input = React.createClass({
   },
 
   onEditorTextChange: function(e) {
-    EditorActionCreators.changeText(e.target.value);
+    this.highlight();
+
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
+
+    this.timeout = setTimeout(function() {
+      EditorActionCreators.changeText(e.target.value);
+    }, 500);
   },
 
   render: function() {
@@ -174,16 +235,19 @@ var Input = React.createClass({
     });
 
     var props = {
-      lineWrapping: true,
+      // lineWrapping: true,
       viewportMargin: Infinity,
       lineNumbers: true,
       onChange: this.onEditorTextChange,
       defaultValue: this.state.text,
+      height: "dynamic",
+      minHeight: 600,
+      // width: "100%",
     };
 
     return (
       <div className={classes} >
-        <div className="mid"><CodeMirror ref="codeMirror" {...props}/></div>
+        <CodeMirror className="cm" ref="codeMirror" {...props}/>
       </div>
       );
     }

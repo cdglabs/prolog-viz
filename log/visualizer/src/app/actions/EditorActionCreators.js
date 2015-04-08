@@ -36,4 +36,13 @@ module.exports = {
     });
   },
 
+
+  setShowCompatible: function(value) {
+    AppDispatcher.handleViewAction({
+      type: ActionTypes.SET_SHOW_COMPATIBLE,
+      value: value
+    });
+  },
+
+
 };
