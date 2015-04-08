@@ -10,7 +10,7 @@ var ActionTypes = Constants.ActionTypes;
 
 var CHANGE_EVENT = 'change';
 
-var DEFAULT_TEXT = "father(orville, abe).\nfather(abe, homer).\nfather(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\nparent(X, Y) :- father(X, Y).\ngrandfather(X, Y) :- father(X, Z), parent(Z, Y).\ngrandfather(X, Y)?";
+var DEFAULT_TEXT = "father(orville, abe).\nfather(abe, homer).\nfather(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\ngrandfather(X, Y) :- father(X, Z), father(Z, Y).\ngrandfather(X, Y)?";
 
 // Misc Helpers
 // ------------
@@ -176,7 +176,7 @@ var store = function() {
           EditorStore.emitChange();
         } catch (e) {
           // console.log("error updating the program");
-          // console.log(e);
+          console.log(e);
           if (e instanceof ohm.error.MatchFailure) {
             // showSyntaxError(e, src);
             syntaxError = e;
