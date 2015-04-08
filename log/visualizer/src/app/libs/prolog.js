@@ -1,4 +1,5 @@
 var ohm = require('./ohm.min.js');
+var assign = require('object-assign');
 
 var Prolog = function(grammar) {
   // The parser
@@ -336,6 +337,8 @@ Subst.prototype.unify = function(term1, term2) {
 /**
  * options: exactCopy, reversedSubst
  *
+ * currentRuleIndex
+ *
  *             "latestGoals": newGoals.slice(0, rule.body.length),
              "solution": subst.filter(self.getQueryVarNames()).toString(),
              "reversedSubst": reversedSubst,
@@ -343,6 +346,28 @@ Subst.prototype.unify = function(term1, term2) {
              "parentSubst": tempSubst.toString()
 
  */
+
+var validOptions = {
+  latestGoals: true,
+  solution: true,
+  reversedSubst: true,
+  ruleBeforeSubstitution: true,
+  parentSubst: true,
+};
+
+var cloneOptions = options => {
+  var clone = {};
+  for (var key in options) {
+    var value = options[key];
+    if (typeof value.clone === "function") {
+      clone[key] = value.clone();
+    } else {
+      clone[key] = value;
+    }
+  }
+  return clone;
+};
+
 var envCount = 0;
 function Env(goals, rules, subst, options) {
   var cloningFromEnv;
@@ -354,14 +379,13 @@ function Env(goals, rules, subst, options) {
 
     this.envId = cloningFromEnv.envId;
     this.children = cloningFromEnv.children.map(child => child.clone());
-    // this.parentId =
-    this.options = cloningFromEnv.options;
+    this.options = cloneOptions(cloningFromEnv.options);
   } else {
     this.envId = envCount;
     envCount++;
     this.children = [];
     this.parent = undefined;
-    this.options = options;
+    this.options = options || {};
   }
 
   // rules
@@ -495,7 +519,6 @@ Program.prototype.solve = function(showOnlyCompatible) {
     var goals = env.goals;
     var rules = env.rules;
     if (goals.length === 0) {
-
       var solution = env.subst.filter(self.getQueryVarNames()).toString();//JSON.stringify(env.subst.filter(self.getQueryVarNames()));
       env.solution = solution;
 
@@ -514,6 +537,7 @@ Program.prototype.solve = function(showOnlyCompatible) {
       while (env.children.length < rules.length) {
         var goal = goals[0];
         var rule = rules[env.children.length];
+        var subst = env.subst.clone();
 
         if (showOnlyCompatible) {
           if (goal.name !== rule.head.name) {
@@ -523,19 +547,16 @@ Program.prototype.solve = function(showOnlyCompatible) {
           }
         }
 
-        var subst = env.subst.clone();
+        env.options.currentRuleIndex = env.children.length;
         try {
 
           traces.push({
             rootEnv: rootEnv.clone(),
             currentEnv: env.clone(),
-            currentRule: rule,
-            status: "BEFORE",
           });
 
           subst.unify(goal, rule.head);
 
-          // var oldRule = assign(rule);
           var tempSubst = subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()));
           // TODO: make sure all vars are in the right direction
           // tempSubst
@@ -587,14 +608,16 @@ Program.prototype.solve = function(showOnlyCompatible) {
 
           var oldRule = rules[env.children.length];
 
+
+          env.options.showSucceeded = true;
+
+          env.options.substituting = tempSubst; // this is defferent for each rule/children
           // show substitution
           traces.push({
             rootEnv: rootEnv.clone(),
             currentEnv: env.clone(),
-            currentRule: oldRule,
-            status: "SUBST",
-            subst: tempSubst
           });
+          delete env.options.substituting;
 
           rules[env.children.length] = rule;
 
@@ -612,11 +635,12 @@ Program.prototype.solve = function(showOnlyCompatible) {
           var trace = {
             rootEnv: rootEnv.clone(),
             currentEnv: env.clone(),
-            currentRule: rule,
-            status: "NEW_GOAL",
           };
           traces.push(trace);
 
+          delete env.options.showSucceeded;
+
+          env.options.currentRuleIndex = -1;
           return solve(newEnv);
         } catch(e) {
           // console.log(e);
@@ -624,27 +648,30 @@ Program.prototype.solve = function(showOnlyCompatible) {
           var newEnv = new Env(["nothing"], [], undefined);
           env.addChild(newEnv);
 
-          var rootEnvAfter = rootEnv.clone();
+          env.options.showFailed = true;
           traces.push({
-            rootEnv: rootEnvAfter,
+            rootEnv: rootEnv.clone(),
             currentEnv: env.clone(),
-            currentRule: rule,
-            status: "FAILURE",
           });
+          delete env.options.showFailed;
+
+          env.options.currentRuleIndex = -1;
           // backtraces
           traces.push({
-            rootEnv: rootEnvAfter,
+            rootEnv: rootEnv.clone(),
             currentEnv: env.clone()
           });
         }
       }
 
+      env.options.currentRuleIndex = -1;
       if (env.parent) {
         traces.push({
           rootEnv: rootEnv.clone(),
           currentEnv: env.parent.clone(),
         });
       }
+
       return solve(env.parent);
     }
   };

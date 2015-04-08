@@ -111,25 +111,11 @@ var Goal = React.createClass({
     if (trace) {
       isCurrentEnv = true;
 
-      switch(trace.status) {
-        case "BEFORE":
-          break;
-        case "SUBST":
-        case "SUCCESS":
-          shouldHideRuleBody = true;
-          unificationSucceeded = true;
-          break;
-        case "NEW_GOAL":
-          unificationSucceeded = true;
-          break;
-        case "FAILURE":
-          unificationFailed = true;
-          break;
-        default:
-      }
+      unificationSucceeded = env.options.showSucceeded;
+      unificationFailed = env.options.showFailed;
 
-      if (trace.subst) {
-        var message = "Subsituting: "+trace.subst.toString();
+      if (env.options.substituting) {
+        var message = "Subsituting: "+env.options.substituting.toString();
         var lineWidgetClasses = cx({
           'lineWidget': true,
         });
@@ -139,8 +125,10 @@ var Goal = React.createClass({
 
     var ruleStrings = env.rules.map(rule => rule.toString());
     var shouldHighlights = ruleStrings.map(function(rule, i) {
-      return trace && trace.currentRule && rule === trace.currentRule.toString();
+      // return trace && trace.currentRule && rule === trace.currentRule.toString();
+      return isCurrentEnv && env.options && env.options.currentRuleIndex === i;
     });
+
     anyHighlight = shouldHighlights.some(function(shouldHighlight) {
       return shouldHighlight === true;
     });

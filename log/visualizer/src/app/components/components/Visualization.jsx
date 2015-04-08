@@ -190,7 +190,6 @@ var Visualization = React.createClass({
 
         // render the tree using root env
         var rootEnv = trace.rootEnv;
-        console.log(JSON.stringify(rootEnv), null, "\t");
 
         // use this to target the current node
         var currentEnv = trace.currentEnv;
@@ -238,7 +237,6 @@ var Visualization = React.createClass({
                 isDirectlyInsideCurrentEnv: env.envId === currentEnv.envId,
                 indexUnderParentEnv: i,
                 numberOfChildrenOfParentEnv: env.children.length,
-                doesParentEnvCurrentRuleHasBody: trace.currentRule && trace.currentRule.body.length > 0,
                 isParentEnvStatusNewGoal: trace.status === "NEW_GOAL",
                 longestSiblingGoal: longestSiblingGoal,
                 longestSiblingSubst: longestSiblingSubst,
