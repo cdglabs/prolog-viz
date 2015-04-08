@@ -82,6 +82,10 @@ function Env(goals, rules, subst, options) {
   this.rules = rules ? newRules : undefined;
 }
 
+Env.prototype.getCurrentRule = function() {
+  return this.options.currentRuleIndex !== undefined ? this.rules[this.options.currentRuleIndex] : undefined;
+};
+
 Env.prototype.addChild = function(env) {
   this.children.push(env);
   if (env) {

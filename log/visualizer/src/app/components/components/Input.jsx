@@ -58,23 +58,16 @@ var Input = React.createClass({
     var traceIter = this.state.traceIter;
     if (traceIter) {
       var trace = traceIter.getCurrentTrace();
-      if (trace.currentRule) {
-        switch(trace.status) {
-          case "BEFORE":
-          case "REWRITING_HEAD":
-            this.highlight(trace, 'highlightRuleBefore');
-            break;
-          case "SUCCESS":
-          case "SUBST":
-          case "REWRITING_BODY":
-          case "NEW_GOAL":
-            this.highlight(trace, 'highlightRuleSuccess');
-            break;
-          case "FAILURE":
-            this.highlight(trace, 'highlightRuleFailure');
-            break;
-          default:
-            this.highlight();
+      var currentEnv = trace.currentEnv;
+      if (currentEnv && currentEnv.options) {
+        if (currentEnv.options.showUnifying) {
+          this.highlight(trace, 'highlightRuleBefore');
+        } else if (currentEnv.options.showSucceeded) {
+          this.highlight(trace, 'highlightRuleSuccess');
+        } else if (currentEnv.options.showFailed) {
+          this.highlight(trace, 'highlightRuleFailure');
+        } else {
+          this.highlight();
         }
       } else {
         this.highlight();
@@ -131,7 +124,10 @@ var Input = React.createClass({
     var cm = this.refs.codeMirror.editor;
     cm.getAllMarks().forEach(function(m) { m.clear(); });
 
-    var interval = trace && trace.currentRule ? trace.currentRule.interval : undefined;
+    if (!trace) { return; }
+
+    var currentRule = trace.currentEnv.getCurrentRule();
+    var interval = currentRule ? currentRule.interval : undefined;
 
     if (cm && interval) {
       var startPos = cm.posFromIndex(interval.startIdx),

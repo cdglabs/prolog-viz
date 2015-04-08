@@ -205,7 +205,9 @@ Program.prototype.solve = function(showOnlyCompatible) {
         env.options.currentRuleIndex = env.children.length;
         try {
 
+          env.options.showUnifying = true;
           trace.record();
+          delete env.options.showUnifying;
 
           subst.unify(goal, rule.head);
 
@@ -281,7 +283,7 @@ Program.prototype.solve = function(showOnlyCompatible) {
           trace.record();
           delete env.options.showSucceeded;
 
-          env.options.currentRuleIndex = -1;
+          delete env.options.currentRuleIndex;
           return solve(newEnv);
         } catch(e) {
           if (e.message !== "unification failed") {
@@ -295,7 +297,7 @@ Program.prototype.solve = function(showOnlyCompatible) {
           trace.record();
           delete env.options.showFailed;
 
-          env.options.currentRuleIndex = -1;
+          delete env.options.currentRuleIndex;
           // backtraces
           trace.record();
         }
