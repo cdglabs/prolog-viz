@@ -328,31 +328,58 @@ Subst.prototype.unify = function(term1, term2) {
 // Part III: Program.prototype.solve()
 // -----------------------------------------------------------------------------
 
+
+/**
+ * options: exactCopy, reversedSubst
+ *
+ *             "latestGoals": newGoals.slice(0, rule.body.length),
+             "solution": subst.filter(self.getQueryVarNames()).toString(),
+             "reversedSubst": reversedSubst,
+             "ruleBeforeSubstitution": oldRule.toString(),
+             "parentSubst": tempSubst.toString()
+
+ */
 var envCount = 0;
 function Env(goals, rules, subst, options) {
-  this.envId = envCount;
-  envCount++;
-  this.goals = goals ? goals.slice() : [];
-  this.subst = subst ? subst.clone() : undefined;
-
-  var existingVarNames = goals.reduce(function(acc, goal) {
-    if (goal.constructor.name === "Clause") {
-      return acc.concat(goal.getQueryVarNames());
-    }
-    return acc;
-  },[]);
-  if (subst) {
-    existingVarNames = existingVarNames.concat(Object.keys(subst.bindings));
+  var cloningFromEnv;
+  if (goals.constructor.name === "Env" && arguments.length === 1) {
+    cloningFromEnv = goals;
+    this.envId = fromEnv.envId;
+    goals = cloningFromEnv.goals;
+    rules = cloningFromEnv.rules;
+    subst = cloningFromEnv.subst;
+  } else {
+    this.envId = envCount;
+    envCount++;
   }
 
-  this.rules = rules ? rules.map(function(rule, i) {
-    var newRule = rule;
-    if (options && options.reversedSubst) {
-      newRule = rule.makeCopyWithNewVarNames(options.reversedSubst);//.makeCopyWithFreshVarNames("'");
+  // rules
+  var newRules;
+  if (cloningFromEnv) {
+    newRules = rules.map(rule => rule.makeCopy());
+  } else {
+    var existingVarNames = goals.reduce(function(acc, goal) {
+      return goal.constructor.name === "Clause" ? acc.concat(goal.getQueryVarNames()) : acc;
+    },[]);
+    if (subst) {
+      existingVarNames = existingVarNames.concat(Object.keys(subst.bindings));
     }
-    return newRule.makeCopyWithFreshVarNames("'", existingVarNames);
-  }) : undefined;
+    newRules = rules.map(rule => {
+      if (options && options.reversedSubst) {
+        rule = rule.makeCopy({
+          subst: options.reversedSubst
+        });
+      }
+      return rule.makeCopy({
+        suffix: "'",
+        existingVarNames: existingVarNames
+      });
+    });
+  }
 
+  this.goals = goals ? goals.slice() : [];
+  this.subst = subst ? subst.clone() : undefined;
+  this.rules = rules ? newRules : undefined;
   this.children = [];
   this.parent = undefined;
   this.options = options;
@@ -363,6 +390,10 @@ Env.prototype.addChild = function(env) {
   if (env) {
     env.parent = this;
   }
+};
+
+Env.prototype.clone = function() {
+  return new Env(this);
 };
 
 // Pretty Print
@@ -545,11 +576,6 @@ Program.prototype.solve = function(showOnlyCompatible) {
               subst.unbind(varName);
             }
           });
-
-
-
-          // rules[env.children.length] = oldRule;
-          // rules[env.children.length] = rule;
 
           var oldRule = rules[env.children.length];
 
