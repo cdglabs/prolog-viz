@@ -3,7 +3,7 @@ var Constants = require('../constants/Constants');
 var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
 var ohm = require('../libs/ohm.min.js');
-var PrologInterpreter = require('../libs/prolog.js');
+var PrologInterpreter = require('../libs/prolog/prolog.js');
 var EditorActionCreators = require('../actions/EditorActionCreators.js');
 
 var ActionTypes = Constants.ActionTypes;
