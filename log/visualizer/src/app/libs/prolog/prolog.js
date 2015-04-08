@@ -148,32 +148,20 @@ Program.prototype.solve = function(showOnlyCompatible) {
   console.log("=== solve#"+count+" ===");
   count++;
 
-  var self = this;
-
   var rules = this.rules;
   var goals = this.query;
   var subst = new Subst();
-
   var trace = new Trace(new Env(goals, rules, subst));
 
   // skip duplicated solutions
   var solutions = [];
 
-  var resolution = function(body, goals, subst) {
-    var newGoals = body.slice();
-    var goalsTail = goals.slice(1);
-    if (Array.isArray(goalsTail)) {
-      Array.prototype.push.apply(newGoals, goalsTail);
-    }
-    newGoals = newGoals.map(function(term) {
-      return term.rewrite(subst);
-    });
-    return newGoals;
-  };
+  var resolution = (body, goals, subst) => body.slice().concat(goals.slice(1)).map(term => term.rewrite(subst));
 
   var TIME_LIMIT = 500; // ms
   var startTime = Date.now();
-  var solve = function(env) {
+  var solve = env => {
+
     var elapsedTime = Date.now() - startTime;
     if (elapsedTime > TIME_LIMIT) {
       return false;
@@ -188,7 +176,7 @@ Program.prototype.solve = function(showOnlyCompatible) {
     var goals = env.goals;
     var rules = env.rules;
     if (goals.length === 0) {
-      var solution = env.subst.filter(self.getQueryVarNames()).toString();
+      var solution = env.subst.filter(this.getQueryVarNames()).toString();
       env.solution = solution;
 
       if (env.parent) {
@@ -244,27 +232,25 @@ Program.prototype.solve = function(showOnlyCompatible) {
           // reduce equivalent vars in goals and rules
           var varNamesInGoal = goal.getQueryVarNames();
           var reversedSubst = {};
-          varNamesInGoal.forEach(function(varName) {
+          varNamesInGoal.forEach(varName => {
             var value = subst.lookup(varName);
             if (value.constructor.name === "Var") {
               reversedSubst[value.name] = varName;
               subst.unbind(varName);
             }
           });
-          rule = rule.makeCopy({
-            subst: reversedSubst
-          });
+          rule = rule.makeCopy({ subst: reversedSubst });
 
           // remove redundunt substitution form rule, this reduces the #steps for example prereq 171 -> 143
           var varNamesInRule = rule.getQueryVarNames();
           rule.head = rule.head.rewrite(subst);
-          rule.body = rule.body.map(function(c) {
-            return c.rewrite(subst);
-          });
+          rule.body = rule.body.map(c => c.rewrite(subst));
+
+          // unbind removed var names
           var newRuleVarNames = rule.getQueryVarNames();
-          var queryVarNames = self.getQueryVarNames();
-          var substitutedVarNames = varNamesInRule.filter(function(varName) {return newRuleVarNames.indexOf(varName) < 0;});
-          substitutedVarNames.forEach(function(varName) {
+          var queryVarNames = this.getQueryVarNames();
+          var substitutedVarNames = varNamesInRule.filter(varName => newRuleVarNames.indexOf(varName) < 0);
+          substitutedVarNames.forEach(varName => {
             if (queryVarNames.indexOf(varName) < 0) {
               subst.unbind(varName);
             }
@@ -285,7 +271,7 @@ Program.prototype.solve = function(showOnlyCompatible) {
           var newGoals = resolution(rule.body, goals, subst);
           var newEnv = new Env(newGoals, rules, subst, {
             "latestGoals": newGoals.slice(0, rule.body.length),
-            "solution": subst.filter(self.getQueryVarNames()).toString(),
+            "solution": subst.filter(this.getQueryVarNames()).toString(),
             "reversedSubst": reversedSubst,
             "ruleBeforeSubstitution": oldRule.toString(),
             "parentSubst": tempSubst.toString()
@@ -332,10 +318,6 @@ Program.prototype.solve = function(showOnlyCompatible) {
         return solve(trace.currentEnv);
       }
       return false;
-    },
-    getRootEnv: function() {
-      var ret = trace.rootEnv.clone();
-      return ret;
     },
     getTraceIter: function() {
       var tracesCopy = trace.traces.slice();

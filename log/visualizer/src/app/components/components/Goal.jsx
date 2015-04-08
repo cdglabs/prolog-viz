@@ -22,7 +22,6 @@ var Goal = React.createClass({
   propTypes: {
     parent: React.PropTypes.object.isRequired,
     env: React.PropTypes.object.isRequired,
-    // count: React.PropTypes.number.isRequired,
     shouldAnimate: React.PropTypes.bool.isRequired,
   },
 

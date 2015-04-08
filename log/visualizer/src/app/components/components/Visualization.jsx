@@ -15,7 +15,6 @@ var EditorActionCreators = require('../../actions/EditorActionCreators.js');
 function getStateFromStores() {
   return {
     text : EditorStore.getText(),
-    rootEnv : EditorStore.getRootEnv(),
     traceIter : EditorStore.getTraceIter(),
     showOnlyCompatible: EditorStore.getShowOnlyCompatible(),
   };

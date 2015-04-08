@@ -205,13 +205,6 @@ var store = function() {
     getIter: function() {
       return iter;
     },
-    getRootEnv: function() {
-      var ret;
-      if (iter) {
-        ret = iter.getRootEnv();
-      }
-      return ret;
-    },
 
     getTraceIter: function() {
       return traceIter;
