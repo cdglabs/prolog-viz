@@ -5,16 +5,6 @@ var ReactTransitionGroup = React.addons.TransitionGroup;
 var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 var cx = React.addons.classSet;
 
-function objToString (obj) {
-  var pairs = [];
-  for (var p in obj) {
-    if (obj.hasOwnProperty(p)) {
-      pairs.push(p + ' = ' + obj[p]);
-    }
-  }
-  return pairs.join(', ');
-}
-
 function isEnvNothing(env) {
   if (Array.isArray(env.goals) && env.goals.length === 1 && env.goals[0] === "nothing") {
     return true;
@@ -147,14 +137,15 @@ var Goal = React.createClass({
       }
     }
 
-    var shouldHighlights = env.rules.map(function(rule, i) {
+    var ruleStrings = env.rules.map(rule => rule.toString());
+    var shouldHighlights = ruleStrings.map(function(rule, i) {
       return trace && trace.currentRule && rule === trace.currentRule.toString();
     });
     anyHighlight = shouldHighlights.some(function(shouldHighlight) {
       return shouldHighlight === true;
     });
 
-    var ruleStrings = env.rules.map(function(rule, i) {
+    ruleStrings = ruleStrings.map(function(rule, i) {
       if (showOnlyCompatible) {
         if (env.goals[0]) {
           var reg = /\(.*/;
@@ -252,14 +243,7 @@ var Goal = React.createClass({
 
     // === labels ===
     // goals
-    var goalStrings = env.goals;
-    // // solution
-    // if (isSolution) {
-    //   goalStrings = [objToString(env.subst)];
-    //   if (env.solution) {
-    //     goalStrings = [env.solution.toString()];
-    //   }
-    // }
+    var goalStrings = env.goals.map(goal => goal.toString());
 
     var numLatestGoals = env.options && env.options.latestGoals ? env.options.latestGoals.length : 0;
     var goals = <div className="goals">
@@ -297,7 +281,10 @@ var Goal = React.createClass({
 
 
     // subst
-    var substString = objToString(env.subst);
+    var substString = "";
+    if (env.subst) {
+      env.subst.toString();
+    }
     if (env.options && env.options.solution) {
       substString = env.options.solution === "yes" ? "" : env.options.solution;
     }

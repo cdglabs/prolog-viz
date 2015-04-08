@@ -210,19 +210,21 @@ Clause.prototype.makeCopy = function(options) {
   return new Clause(this.name, this.args.map(function(term) {
     switch (term.constructor.name) {
       case "Var":
-        var suffix = options.suffix;
-        var varNamesToSkip = options.varNamesToSkip;
-        var subst = options.subst;
+        if (options) {
+          var suffix = options.suffix;
+          var varNamesToSkip = options.varNamesToSkip;
+          var subst = options.subst;
 
-        if (varNamesToSkip && suffix) {
-          if (varNamesToSkip.indexOf(term.name) < 0) {
-            return new Var(term.name+suffix);
-          } else {
-            return new Var(term.name);
+          if (varNamesToSkip && suffix) {
+            if (varNamesToSkip.indexOf(term.name) < 0) {
+              return new Var(term.name+suffix);
+            } else {
+              return new Var(term.name);
+            }
           }
-        }
-        if (subst && subst[term.name]) {
-          return new Var(subst[term.name]);
+          if (subst && subst[term.name]) {
+            return new Var(subst[term.name]);
+          }
         }
         return new Var(term.name);
       case "Clause":
@@ -234,14 +236,16 @@ Clause.prototype.makeCopy = function(options) {
 };
 
 Rule.prototype.makeCopy = function(options) {
-  var suffix = options.suffix;
-  var existingVarNames = options.existingVarNames;
+  if (options) {
+    var suffix = options.suffix;
+    var existingVarNames = options.existingVarNames;
 
-  if (suffix && existingVarNames) {
-    var ruleVarNames = this.getQueryVarNames();
-    options.varNamesToSkip = ruleVarNames.filter(function(varName) {
-      return existingVarNames.indexOf(varName) < 0;
-    });
+    if (suffix && existingVarNames) {
+      var ruleVarNames = this.getQueryVarNames();
+      options.varNamesToSkip = ruleVarNames.filter(function(varName) {
+        return existingVarNames.indexOf(varName) < 0;
+      });
+    }
   }
 
   var head = this.head.makeCopy(options);
@@ -344,13 +348,20 @@ function Env(goals, rules, subst, options) {
   var cloningFromEnv;
   if (goals.constructor.name === "Env" && arguments.length === 1) {
     cloningFromEnv = goals;
-    this.envId = fromEnv.envId;
     goals = cloningFromEnv.goals;
     rules = cloningFromEnv.rules;
     subst = cloningFromEnv.subst;
+
+    this.envId = cloningFromEnv.envId;
+    this.children = cloningFromEnv.children.map(child => child.clone());
+    // this.parentId =
+    this.options = cloningFromEnv.options;
   } else {
     this.envId = envCount;
     envCount++;
+    this.children = [];
+    this.parent = undefined;
+    this.options = options;
   }
 
   // rules
@@ -380,9 +391,6 @@ function Env(goals, rules, subst, options) {
   this.goals = goals ? goals.slice() : [];
   this.subst = subst ? subst.clone() : undefined;
   this.rules = rules ? newRules : undefined;
-  this.children = [];
-  this.parent = undefined;
-  this.options = options;
 }
 
 Env.prototype.addChild = function(env) {
@@ -447,8 +455,8 @@ Program.prototype.solve = function(showOnlyCompatible) {
 
   var traces = [];
   traces.push({
-    rootEnv: JSON.parse(rootEnv.toString()),
-    currentEnv: JSON.parse(currentEnv.toString())
+    rootEnv: rootEnv.clone(),
+    currentEnv: currentEnv.clone()
   });
 
   // skip duplicated solutions
@@ -493,8 +501,8 @@ Program.prototype.solve = function(showOnlyCompatible) {
 
       if (env.parent) {
         traces.push({
-          rootEnv: JSON.parse(rootEnv.toString()),
-          currentEnv: JSON.parse(env.parent.toString())
+          rootEnv: rootEnv.clone(),
+          currentEnv: env.parent.clone()
         });
       }
 
@@ -519,8 +527,8 @@ Program.prototype.solve = function(showOnlyCompatible) {
         try {
 
           traces.push({
-            rootEnv: JSON.parse(rootEnv.toString()),
-            currentEnv: JSON.parse(env.toString()),
+            rootEnv: rootEnv.clone(),
+            currentEnv: env.clone(),
             currentRule: rule,
             status: "BEFORE",
           });
@@ -581,8 +589,8 @@ Program.prototype.solve = function(showOnlyCompatible) {
 
           // show substitution
           traces.push({
-            rootEnv: JSON.parse(rootEnv.toString()),
-            currentEnv: JSON.parse(env.toString()),
+            rootEnv: rootEnv.clone(),
+            currentEnv: env.clone(),
             currentRule: oldRule,
             status: "SUBST",
             subst: tempSubst
@@ -602,20 +610,12 @@ Program.prototype.solve = function(showOnlyCompatible) {
           env.addChild(newEnv);
 
           var trace = {
-            rootEnv: JSON.parse(rootEnv.toString()),
-            currentEnv: JSON.parse(env.toString()),
+            rootEnv: rootEnv.clone(),
+            currentEnv: env.clone(),
             currentRule: rule,
             status: "NEW_GOAL",
           };
           traces.push(trace);
-
-          // show unification succeeded
-          // traces.push({
-          //   rootEnv: JSON.parse(rootEnv.toString()),
-          //   currentEnv: JSON.parse(env.toString()),
-          //   // currentRule: rule,
-          //   // status: "SUCCESS",
-          // });
 
           return solve(newEnv);
         } catch(e) {
@@ -624,25 +624,25 @@ Program.prototype.solve = function(showOnlyCompatible) {
           var newEnv = new Env(["nothing"], [], undefined);
           env.addChild(newEnv);
 
-          var rootEnvAfter = JSON.parse(rootEnv.toString());
+          var rootEnvAfter = rootEnv.clone();
           traces.push({
             rootEnv: rootEnvAfter,
-            currentEnv: JSON.parse(env.toString()),
+            currentEnv: env.clone(),
             currentRule: rule,
             status: "FAILURE",
           });
           // backtraces
           traces.push({
             rootEnv: rootEnvAfter,
-            currentEnv: JSON.parse(env.toString())
+            currentEnv: env.clone()
           });
         }
       }
 
       if (env.parent) {
         traces.push({
-          rootEnv: JSON.parse(rootEnv.toString()),
-          currentEnv: JSON.parse(env.parent.toString()),
+          rootEnv: rootEnv.clone(),
+          currentEnv: env.parent.clone(),
         });
       }
       return solve(env.parent);
@@ -658,7 +658,7 @@ Program.prototype.solve = function(showOnlyCompatible) {
       return false;
     },
     getRootEnv: function() {
-      var ret = JSON.parse(rootEnv.toString());
+      var ret = rootEnv.clone();
       // console.log(JSON.stringify(ret, null, '\t'));
       // console.log(JSON.stringify(traces, null, '\t'));
       return ret;

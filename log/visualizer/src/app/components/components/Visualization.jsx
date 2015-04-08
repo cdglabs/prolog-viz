@@ -12,16 +12,6 @@ require('codemirror/addon/display/placeholder.js');
 var EditorStore = require('../../stores/EditorStore.js');
 var EditorActionCreators = require('../../actions/EditorActionCreators.js');
 
-function objToString (obj) {
-  var pairs = [];
-  for (var p in obj) {
-    if (obj.hasOwnProperty(p)) {
-      pairs.push(p + ' = ' + obj[p]);
-    }
-  }
-  return pairs.join(', ');
-}
-
 function getStateFromStores() {
   return {
     text : EditorStore.getText(),
@@ -200,6 +190,7 @@ var Visualization = React.createClass({
 
         // render the tree using root env
         var rootEnv = trace.rootEnv;
+        console.log(JSON.stringify(rootEnv), null, "\t");
 
         // use this to target the current node
         var currentEnv = trace.currentEnv;
@@ -231,8 +222,8 @@ var Visualization = React.createClass({
               var longest = acc;
               if (env.options && env.options.solution) {
                 longest = env.options.solution.length > longest.length ? env.options.solution : longest;
-              } else {
-                longest = objToString(e.subst).length > longest.length ? objToString(e.subst) : longest;
+              } else if (e.subst) {
+                longest = e.subst.toString().length > longest.length ? e.subst.toString() : longest;
               }
               return longest;
             }, "");

@@ -184,6 +184,8 @@ var store = function() {
             // clearEverythingElse();
             // abs.setValue(showException(e));
             syntaxError = undefined;
+
+            throw e;
           }
         }
       }
