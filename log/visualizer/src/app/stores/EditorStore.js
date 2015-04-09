@@ -175,16 +175,10 @@ var store = function() {
           matchTrace = L.grammar.matchContents(text, 'tokens');
           EditorStore.emitChange();
         } catch (e) {
-          // console.log("error updating the program");
-          console.log(e);
           if (e instanceof ohm.error.MatchFailure) {
-            // showSyntaxError(e, src);
             syntaxError = e;
           } else {
-            // clearEverythingElse();
-            // abs.setValue(showException(e));
             syntaxError = undefined;
-
             throw e;
           }
         }
@@ -201,9 +195,6 @@ var store = function() {
     },
     getMatchTrace: function() {
       return matchTrace;
-    },
-    getIter: function() {
-      return iter;
     },
 
     getTraceIter: function() {

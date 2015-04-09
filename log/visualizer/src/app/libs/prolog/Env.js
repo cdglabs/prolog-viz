@@ -58,9 +58,7 @@ function Env(goals, rules, subst, options) {
   if (cloningFromEnv) {
     newRules = rules.map(rule => rule.makeCopy());
   } else {
-    var existingVarNames = goals.reduce(function(acc, goal) {
-      return goal.constructor.name === "Clause" ? acc.concat(goal.getQueryVarNames()) : acc;
-    },[]);
+    var existingVarNames = goals.reduce((acc, goal) => goal.constructor.name === "Clause" ? acc.concat(goal.getQueryVarNames()) : acc ,[]);
     if (subst) {
       existingVarNames = existingVarNames.concat(Object.keys(subst.bindings));
     }

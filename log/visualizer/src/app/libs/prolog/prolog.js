@@ -13,7 +13,6 @@ var Trace = require('./Trace.js');
 
 var Prolog = function(grammar) {
   // The parser
-
   var g = grammar;//ohm.grammar("L");
   var toAST = g.synthesizedAttribute({
     Program:       function(rules, query)        { return new Program(toAST(rules), toAST(query)); },
@@ -33,7 +32,6 @@ var Prolog = function(grammar) {
   var L = new Interpreter(g, "Program", toAST);
   // L.evalAST is declared in plumbing.js
   // L.prettyPrintAST and L.prettyPrintValue are declared in prettyPrint.js
-
 
   // You will have to implement `Program.prototype.solve()`, which should return an
   // iterator of substitutions. The implementation of the `evalAST` method below calls
@@ -144,7 +142,7 @@ Interpreter.prototype.prettyPrintAST = Interpreter.prototype.stringify;
 
 
 var count = 0;
-Program.prototype.solve = function(showOnlyCompatible) {
+Program.prototype.solve = function(hideRulesWithIncompatibleName) {
   console.log("=== solve#"+count+" ===");
   count++;
 
@@ -152,6 +150,8 @@ Program.prototype.solve = function(showOnlyCompatible) {
   var goals = this.query;
   var subst = new Subst();
   var trace = new Trace(new Env(goals, rules, subst));
+
+  var queryVarNames = this.getQueryVarNames();
 
   // skip duplicated solutions
   var solutions = [];
@@ -161,7 +161,7 @@ Program.prototype.solve = function(showOnlyCompatible) {
   var TIME_LIMIT = 500; // ms
   var startTime = Date.now();
   var solve = env => {
-
+    // set time limit
     var elapsedTime = Date.now() - startTime;
     if (elapsedTime > TIME_LIMIT) {
       return false;
@@ -171,17 +171,17 @@ Program.prototype.solve = function(showOnlyCompatible) {
       return false;
     }
 
-    trace.currentEnv = env;
+    trace.setCurrentEnv(env);
 
     var goals = env.goals;
     var rules = env.rules;
+    // Base case: goal list is empty
     if (goals.length === 0) {
-      var solution = env.subst.filter(this.getQueryVarNames()).toString();
-      env.solution = solution;
+      var solution = env.subst.filter(queryVarNames).toString();
 
       if (env.parent) {
-        trace.currentEnv = env.parent;
-        trace.record();
+        trace.setCurrentEnv(env.parent);
+        trace.log();
       }
 
       if (solutions.indexOf(solution) < 0) {
@@ -194,93 +194,65 @@ Program.prototype.solve = function(showOnlyCompatible) {
         var rule = rules[env.children.length];
         var subst = env.subst.clone();
 
-        if (showOnlyCompatible) {
+        if (hideRulesWithIncompatibleName) {
           if (goal.name !== rule.head.name) {
-            var newEnv = new Env(["nothing"], [], undefined);
-            env.addChild(newEnv);
+            env.addChild(new Env(["nothing"], [], undefined));
             continue;
           }
         }
 
         env.options.currentRuleIndex = env.children.length;
-        try {
 
+        try {
           env.options.showUnifying = true;
-          trace.record();
+          trace.log();
           delete env.options.showUnifying;
 
           subst.unify(goal, rule.head);
 
           var tempSubst = subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()));
-          // TODO: make sure all vars are in the right direction
-          // tempSubst
 
-          // TODO: replace all variables from query that can ...
-          /*
-           * query: prereqTrans(P, cs137b)
-           * rule: prereqTrans(X', Y') :- prereq(X', Y')
-           * subst: P = X', Y' = cs137b
-           *
-           * newRule: prereqTrans(P, Y') :- prereq(P, Y')
-           * newSubst: Y' = cs137b
-           * */
-
-          //FIXME
-          // this process only happens to body of rules that got unified, does not work with
-          // goals: prereq(P, Z'), prereqTrans(Z', cs137b) -> new goals: prereqTrans(Z', cs137b)
-          // where no new goal is added
-          // seems to be a good thing, see the screen shot
-
-          // reduce equivalent vars in goals and rules
-          var varNamesInGoal = goal.getQueryVarNames();
+          // dedup equivalent vars in goals from rules
           var reversedSubst = {};
-          varNamesInGoal.forEach(varName => {
+          goal.getQueryVarNames().forEach(varName => {
             var value = subst.lookup(varName);
             if (value.constructor.name === "Var") {
               reversedSubst[value.name] = varName;
               subst.unbind(varName);
             }
           });
-          rule = rule.makeCopy({ subst: reversedSubst });
+          var dedupedRule = rule.makeCopy({ subst: reversedSubst });
 
-          // remove redundunt substitution form rule, this reduces the #steps for example prereq 171 -> 143
-          var varNamesInRule = rule.getQueryVarNames();
-          rule.head = rule.head.rewrite(subst);
-          rule.body = rule.body.map(c => c.rewrite(subst));
-
-          // unbind removed var names
-          var newRuleVarNames = rule.getQueryVarNames();
-          var queryVarNames = this.getQueryVarNames();
-          var substitutedVarNames = varNamesInRule.filter(varName => newRuleVarNames.indexOf(varName) < 0);
-          substitutedVarNames.forEach(varName => {
-            if (queryVarNames.indexOf(varName) < 0) {
-              subst.unbind(varName);
-            }
-          });
-
-          var oldRule = rules[env.children.length];
-
+          // rewrite the rule and removed vars from subst
+          var newRule = dedupedRule.rewrite(subst);
+          var varNamesInNewRule = newRule.getQueryVarNames();
+          dedupedRule.getQueryVarNames()
+            .filter(varName => varNamesInNewRule.indexOf(varName) < 0)
+            .forEach(varName => {
+              if (queryVarNames.indexOf(varName) < 0) {
+                subst.unbind(varName);
+              }
+            });
 
           env.options.showSucceeded = true;
 
           env.options.substituting = tempSubst; // this is defferent for each rule/children
-          // show substitution
-          trace.record();
+          trace.log();
           delete env.options.substituting;
 
-          rules[env.children.length] = rule;
+          rules[env.children.length] = newRule;
 
-          var newGoals = resolution(rule.body, goals, subst);
+          var newGoals = resolution(newRule.body, goals, subst);
           var newEnv = new Env(newGoals, rules, subst, {
-            "latestGoals": newGoals.slice(0, rule.body.length),
-            "solution": subst.filter(this.getQueryVarNames()).toString(),
+            "latestGoals": newGoals.slice(0, newRule.body.length),
+            "solution": subst.filter(queryVarNames).toString(),
             "reversedSubst": reversedSubst,
-            "ruleBeforeSubstitution": oldRule.toString(),
+            "ruleBeforeSubstitution": rule.toString(),
             "parentSubst": tempSubst.toString()
             });
-
           env.addChild(newEnv);
-          trace.record();
+
+          trace.log();
           delete env.options.showSucceeded;
 
           delete env.options.currentRuleIndex;
@@ -290,23 +262,22 @@ Program.prototype.solve = function(showOnlyCompatible) {
             console.log(e);
           }
           // backtraces
-          var newEnv = new Env(["nothing"], [], undefined);
-          env.addChild(newEnv);
+          env.addChild(new Env(["nothing"], [], undefined));
 
           env.options.showFailed = true;
-          trace.record();
+          trace.log();
           delete env.options.showFailed;
 
           delete env.options.currentRuleIndex;
           // backtraces
-          trace.record();
+          trace.log();
         }
       }
 
       env.options.currentRuleIndex = -1;
       if (env.parent) {
-        trace.currentEnv = env.parent;
-        trace.record();
+        trace.setCurrentEnv(env.parent);
+        trace.log();
       }
 
       return solve(env.parent);
@@ -315,39 +286,11 @@ Program.prototype.solve = function(showOnlyCompatible) {
 
   return {
     next: function() {
-      // console.log("--- next() ---");
       if (trace.currentEnv) {
         return solve(trace.currentEnv);
       }
       return false;
     },
-    getTraceIter: function() {
-      var tracesCopy = trace.traces.slice();
-      var idx = 0;
-      var max = tracesCopy.length-1;
-      return {
-        forward: function() {
-          idx = Math.min(max, idx+1);
-        },
-        backward: function() {
-          idx = Math.max(0, idx-1);
-        },
-        getCurrentTrace: function() {
-          return tracesCopy[idx];
-        },
-        getMax: function() {
-          return max;
-        },
-        getStep: function() {
-          return idx;
-        },
-        setStep: function(step) {
-          if (step === undefined) {
-            return;
-          }
-          idx = Math.floor(Math.max(Math.min(step, max), 0));
-        }
-      };
-    }
+    getTraceIter: trace.getIterator.bind(trace)
   };
 };
