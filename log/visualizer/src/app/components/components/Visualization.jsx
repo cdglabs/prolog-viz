@@ -201,7 +201,7 @@ var Visualization = React.createClass({
           var failedChildRules = env.children.map(function(child) {
             var ret = false;
 
-            if (child && Array.isArray(child.goals) && child.goals.length === 1 && child.goals[0] === "nothing") {
+            if (child && child.isEmpty()) {
               ret = true;
             }
 
@@ -210,7 +210,7 @@ var Visualization = React.createClass({
 
           if (env.children) {
 
-            var longestSiblingGoal = env.children.reduce(function(acc, e) {
+            var longestSiblingGoal = env.children.filter(env => !env.isEmpty()).reduce(function(acc, e) {
               var longestGoal = e.goals.reduce(function(acc, goal) {
                 return acc.length > goal.toString().length ? acc : goal.toString();
               }, "");

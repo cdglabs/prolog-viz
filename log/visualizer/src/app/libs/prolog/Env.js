@@ -16,8 +16,6 @@ var validOptions = {
   latestGoals: true,
   solution: true,
   reversedSubst: true,
-  ruleBeforeSubstitution: true,
-  parentSubst: true,
 };
 
 var cloneOptions = options => {
@@ -36,7 +34,7 @@ var cloneOptions = options => {
 var envCount = 0;
 function Env(goals, rules, subst, options) {
   var cloningFromEnv;
-  if (goals.constructor.name === "Env" && arguments.length === 1) {
+  if (arguments.length === 1 && goals.constructor.name === "Env") {
     cloningFromEnv = goals;
     goals = cloningFromEnv.goals;
     rules = cloningFromEnv.rules;
@@ -55,33 +53,43 @@ function Env(goals, rules, subst, options) {
 
   // rules
   var newRules;
-  if (cloningFromEnv) {
-    newRules = rules.map(rule => rule.makeCopy());
-  } else {
-    var existingVarNames = goals.reduce((acc, goal) => goal.constructor.name === "Clause" ? acc.concat(goal.getQueryVarNames()) : acc ,[]);
-    if (subst) {
-      existingVarNames = existingVarNames.concat(Object.keys(subst.bindings));
-    }
-    newRules = rules.map(rule => {
-      if (options && options.reversedSubst) {
-        rule = rule.makeCopy({
-          subst: options.reversedSubst
-        });
+  if (rules) {
+    if (cloningFromEnv) {
+      newRules = rules.map(rule => rule.makeCopy());
+    } else {
+      var existingVarNames = goals.reduce((acc, goal) => goal.constructor.name === "Clause" ? acc.concat(goal.getQueryVarNames()) : acc ,[]);
+      if (subst) {
+        existingVarNames = existingVarNames.concat(Object.keys(subst.bindings));
       }
-      return rule.makeCopy({
-        suffix: "'",
-        existingVarNames: existingVarNames
+      newRules = rules.map(rule => {
+        if (options && options.reversedSubst) {
+          rule = rule.makeCopy({
+            subst: options.reversedSubst
+          });
+        }
+        return rule.makeCopy({
+          suffix: "'",
+          existingVarNames: existingVarNames
+        });
       });
-    });
+    }
   }
 
-  this.goals = goals ? goals.slice() : [];
+  this.goals = goals ? goals.slice() : undefined;
   this.subst = subst ? subst.clone() : undefined;
-  this.rules = rules ? newRules : undefined;
+  this.rules = newRules;
 }
 
 Env.prototype.getCurrentRule = function() {
   return this.options.currentRuleIndex !== undefined ? this.rules[this.options.currentRuleIndex] : undefined;
+};
+
+Env.prototype.isEmpty = function() {
+  return this.goals === undefined && this.rules === undefined && this.subst === undefined;
+};
+
+Env.prototype.hasSolution = function() {
+  return Array.isArray(this.goals) && this.goals.length === 0;
 };
 
 Env.prototype.addChild = function(env) {

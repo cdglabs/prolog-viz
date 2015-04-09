@@ -158,113 +158,109 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
 
   var solve = env => {
     var elapsedTime = Date.now() - startTime;
+
     if (elapsedTime > TIME_LIMIT || !env || env.constructor.name !== "Env") {
       return false;
-    }
-
-    // Base case: goal list is empty
-    if (env.goals.length === 0) {
-      // backtrace
+    } else if (env.hasSolution()) {
       trace.setCurrentEnv(env.parent);
       return env.subst;
+    } else if (env.isEmpty()) {
+      return solve(env.parent);
+    } else if (env.children.length >= env.rules.length) {
+      trace.log();
+      return solve(env.parent);
     } else {
       trace.setCurrentEnv(env);
       trace.log();
 
-      while (env.children.length < env.rules.length) {
-        var goal = env.goals[0];
-        var rule = env.rules[env.children.length];
-        var subst = env.subst.clone();
+      var goal = env.goals[0];
+      var rule = env.rules[env.children.length];
+      var subst = env.subst.clone();
 
-        if (hideRulesWithIncompatibleName) {
-          if (goal.name !== rule.head.name) {
-            env.addChild(new Env(["nothing"], [], undefined));
-            continue;
-          }
-        }
+      // if (hideRulesWithIncompatibleName) {
+      //   if (goal.name !== rule.head.name) {
+      //     env.addChild(new Env());
+      //     return solve(env);
+      //   }
+      // }
 
-        env.options.currentRuleIndex = env.children.length;
+      env.options.currentRuleIndex = env.children.length;
 
-        // Step 1
-        env.options.showUnifying = true;
+      // Step 1
+      env.options.showUnifying = true;
+      trace.log();
+      delete env.options.showUnifying;
+
+      var newEnv;
+      try {
+        subst.unify(goal, rule.head);
+
+        env.options.showSucceeded = true;
+
+        var tempSubst = subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()));
+        env.options.substituting = tempSubst; // this is defferent for each rule/children
         trace.log();
-        delete env.options.showUnifying;
+        delete env.options.substituting;
 
-        try {
-          subst.unify(goal, rule.head);
+        // dedup equivalent vars in goals from rules
+        var reversedSubst = {};
+        goal.getQueryVarNames().forEach(varName => {
+          var value = subst.lookup(varName);
+          if (value.constructor.name === "Var") {
+            reversedSubst[value.name] = varName;
+            subst.unbind(varName);
+          }
+        });
+        var dedupedRule = rule.makeCopy({ subst: reversedSubst });
 
-          var tempSubst = subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()));
-
-          // dedup equivalent vars in goals from rules
-          var reversedSubst = {};
-          goal.getQueryVarNames().forEach(varName => {
-            var value = subst.lookup(varName);
-            if (value.constructor.name === "Var") {
-              reversedSubst[value.name] = varName;
+        // rewrite the rule and removed vars from subst
+        var newRule = dedupedRule.rewrite(subst);
+        var varNamesInNewRule = newRule.getQueryVarNames();
+        dedupedRule.getQueryVarNames()
+          .filter(varName => varNamesInNewRule.indexOf(varName) < 0)
+          .forEach(varName => {
+            if (queryVarNames.indexOf(varName) < 0) {
               subst.unbind(varName);
             }
           });
-          var dedupedRule = rule.makeCopy({ subst: reversedSubst });
 
-          // rewrite the rule and removed vars from subst
-          var newRule = dedupedRule.rewrite(subst);
-          var varNamesInNewRule = newRule.getQueryVarNames();
-          dedupedRule.getQueryVarNames()
-            .filter(varName => varNamesInNewRule.indexOf(varName) < 0)
-            .forEach(varName => {
-              if (queryVarNames.indexOf(varName) < 0) {
-                subst.unbind(varName);
-              }
-            });
+        env.rules[env.children.length] = newRule;
+        var newGoals = resolution(newRule.body, env.goals, subst);
+        newEnv = new Env(newGoals, env.rules, subst, {
+          "latestGoals": newGoals.slice(0, newRule.body.length),
+          "solution": subst.filter(queryVarNames),
+          // "reversedSubst": reversedSubst,
+          });
+        env.addChild(newEnv);
 
-          env.options.showSucceeded = true;
+        trace.log();
 
-          env.options.substituting = tempSubst; // this is defferent for each rule/children
-          trace.log();
-          delete env.options.substituting;
-
-          env.rules[env.children.length] = newRule;
-
-          var newGoals = resolution(newRule.body, env.goals, subst);
-          var newEnv = new Env(newGoals, env.rules, subst, {
-            "latestGoals": newGoals.slice(0, newRule.body.length),
-            "solution": subst.filter(queryVarNames).toString(),
-            "reversedSubst": reversedSubst,
-            "ruleBeforeSubstitution": rule.toString(),
-            "parentSubst": tempSubst.toString()
-            });
-          env.addChild(newEnv);
-
-          trace.log();
-          delete env.options.showSucceeded;
-
-          delete env.options.currentRuleIndex;
-
-          return solve(newEnv);
-        } catch(e) {
-          if (e.message !== "unification failed") {
-            console.log(e);
-          }
-          env.addChild(new Env(["nothing"], [], undefined));
-
-          env.options.showFailed = true;
-          trace.log();
-          delete env.options.showFailed;
-
-          // backtrace
-          delete env.options.currentRuleIndex;
-          trace.log();
+        delete env.options.showSucceeded;
+      } catch(e) {
+        if (e.message !== "unification failed") {
+          throw e;
         }
-      }
+        newEnv = new Env();
+        env.addChild(newEnv);
 
+        env.options.showFailed = true;
+        trace.log();
+        delete env.options.showFailed;
+      }
       delete env.options.currentRuleIndex;
-      return solve(env.parent);
+
+      return solve(newEnv);
     }
   };
 
   return {
     next: function() {
       return solve(trace.currentEnv);
+
+      // try {
+      // } catch(e) {
+      //   return false;
+      // }
     },
     getTraceIter: trace.getIterator.bind(trace)
   };

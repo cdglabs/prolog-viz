@@ -5,13 +5,6 @@ var ReactTransitionGroup = React.addons.TransitionGroup;
 var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 var cx = React.addons.classSet;
 
-function isEnvNothing(env) {
-  if (Array.isArray(env.goals) && env.goals.length === 1 && env.goals[0] === "nothing") {
-    return true;
-  }
-  return false;
-}
-
 var Goal = React.createClass({
   mixins: [Classable, tweenState.Mixin],
 
@@ -95,11 +88,11 @@ var Goal = React.createClass({
 
     // class related
     var isCurrentEnv = false;
-    var isSolution = env.goals.length === 0;
+    var isSolution = env.hasSolution();
     var unificationSucceeded = false;
     var unificationFailed = false;
     var anyHighlight = false;
-    var nothing = isEnvNothing(env);
+    var nothing = env.isEmpty();
 
     var shouldHideRuleBody = true;
 
@@ -122,7 +115,7 @@ var Goal = React.createClass({
       }
     }
 
-    var ruleStrings = env.rules.map(rule => rule.toString());
+    var ruleStrings = env.rules ? env.rules.map(rule => rule.toString()) : [];
     var shouldHighlights = ruleStrings.map(function(rule, i) {
       // return trace && trace.currentRule && rule === trace.currentRule.toString();
       return isCurrentEnv && env.options && env.options.currentRuleIndex === i;
@@ -188,21 +181,6 @@ var Goal = React.createClass({
 
       var noChild = childNodes[i] === undefined;
 
-      var previousRuleAndSubst;
-      if (!noChild) {
-        var childEnv = env.children[i];
-        var options = childEnv.options;
-
-        if (options) {
-          var ruleBeforeSubstitution = options.ruleBeforeSubstitution;
-          var parentSubst = options.parentSubst;
-          if (ruleBeforeSubstitution && parentSubst) {
-            previousRuleAndSubst = <div className="previousRuleAndSubst">{ruleBeforeSubstitution}{parentSubst.toString()}</div>
-          }
-
-        }
-      }
-
       var ruleClasses = cx({
         'rule': true,
         'highlight': shouldHighlights[i],
@@ -230,7 +208,7 @@ var Goal = React.createClass({
 
     // === labels ===
     // goals
-    var goalStrings = env.goals.map(goal => goal.toString());
+    var goalStrings = env.goals ? env.goals.map(goal => goal.toString()) : [];
 
     var numLatestGoals = env.options && env.options.latestGoals ? env.options.latestGoals.length : 0;
     var goals = <div className="goals">
@@ -273,7 +251,7 @@ var Goal = React.createClass({
       env.subst.toString();
     }
     if (env.options && env.options.solution) {
-      substString = env.options.solution === "yes" ? "" : env.options.solution;
+      substString = env.options.solution.toString() === "yes" ? "" : env.options.solution.toString();
     }
     var subst = <div className="subst">{substString}</div>;
 
