@@ -1,16 +1,8 @@
-
-/**
- * options: exactCopy, reversedSubst
- *
- * currentRuleIndex
- *
- *             "latestGoals": newGoals.slice(0, rule.body.length),
-             "solution": subst.filter(self.getQueryVarNames()).toString(),
-             "reversedSubst": reversedSubst,
-             "ruleBeforeSubstitution": oldRule.toString(),
-             "parentSubst": tempSubst.toString()
-
- */
+// var validMeta = {
+//   showUnifying: true,
+//   showadsf: true,
+//   reversedSubst: true,
+// };
 
 var validOptions = {
   latestGoals: true,
@@ -18,12 +10,14 @@ var validOptions = {
   reversedSubst: true,
 };
 
-var cloneOptions = options => {
+var cloneObject = options => {
   var clone = {};
   for (var key in options) {
     var value = options[key];
     if (typeof value.clone === "function") {
       clone[key] = value.clone();
+    } else if (Array.isArray(value)) {
+      clone[key] = value.slice();
     } else {
       clone[key] = value;
     }
@@ -33,28 +27,30 @@ var cloneOptions = options => {
 
 var envCount = 0;
 function Env(goals, rules, subst, options) {
-  var cloningFromEnv;
+  var sourceEnv;
   if (arguments.length === 1 && goals.constructor.name === "Env") {
-    cloningFromEnv = goals;
-    goals = cloningFromEnv.goals;
-    rules = cloningFromEnv.rules;
-    subst = cloningFromEnv.subst;
+    sourceEnv = goals;
+    goals = sourceEnv.goals;
+    rules = sourceEnv.rules;
+    subst = sourceEnv.subst;
 
-    this.envId = cloningFromEnv.envId;
-    this.children = cloningFromEnv.children.map(child => child.clone());
-    this.options = cloneOptions(cloningFromEnv.options);
+    this.envId = sourceEnv.envId;
+    this.children = sourceEnv.children.map(child => child.clone());
+    this.options = cloneObject(sourceEnv.options);
+    this.meta = cloneObject(sourceEnv.meta);
   } else {
     this.envId = envCount;
     envCount++;
     this.children = [];
     this.parent = undefined;
     this.options = options || {};
+    this.meta = {};
   }
 
   // rules
   var newRules;
   if (rules) {
-    if (cloningFromEnv) {
+    if (sourceEnv) {
       newRules = rules.map(rule => rule.makeCopy());
     } else {
       var existingVarNames = goals.reduce((acc, goal) => goal.constructor.name === "Clause" ? acc.concat(goal.getQueryVarNames()) : acc ,[]);
@@ -80,10 +76,14 @@ function Env(goals, rules, subst, options) {
   this.rules = newRules;
 }
 
+// meta data
 Env.prototype.getCurrentRule = function() {
-  return this.options.currentRuleIndex !== undefined ? this.rules[this.options.currentRuleIndex] : undefined;
+  return this.meta && this.meta.highlightRuleIndex !== undefined ? this.rules[this.meta.highlightRuleIndex] : undefined;
 };
 
+// options
+
+// derived data
 Env.prototype.isEmpty = function() {
   return this.goals === undefined && this.rules === undefined && this.subst === undefined;
 };

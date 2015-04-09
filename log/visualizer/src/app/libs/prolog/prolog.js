@@ -184,23 +184,24 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
       //   }
       // }
 
-      env.options.currentRuleIndex = env.children.length;
+      var meta = {
+        highlightRuleIndex: env.children.length
+      };
 
       // Step 1
-      env.options.showUnifying = true;
-      trace.log();
-      delete env.options.showUnifying;
+      trace.log(assign(meta, {
+        showUnifying: true
+      }));
 
       var newEnv;
       try {
         subst.unify(goal, rule.head);
 
-        env.options.showSucceeded = true;
-
-        var tempSubst = subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()));
-        env.options.substituting = tempSubst; // this is defferent for each rule/children
-        trace.log();
-        delete env.options.substituting;
+        // Step 2.1
+        trace.log(assign(meta, {
+          showSucceeded: true,
+          substituting: subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()))
+        }));
 
         // dedup equivalent vars in goals from rules
         var reversedSubst = {};
@@ -233,9 +234,10 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
           });
         env.addChild(newEnv);
 
-        trace.log();
-
-        delete env.options.showSucceeded;
+        // Step 3
+        trace.log(assign(meta, {
+          showSucceeded: true,
+        }));
       } catch(e) {
         if (e.message !== "unification failed") {
           throw e;
@@ -243,12 +245,11 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
         newEnv = new Env();
         env.addChild(newEnv);
 
-        env.options.showFailed = true;
-        trace.log();
-        delete env.options.showFailed;
+        // Step 2.2
+        trace.log(assign(meta, {
+          showFailed: true,
+        }));
       }
-      delete env.options.currentRuleIndex;
-
       return solve(newEnv);
     }
   };
@@ -256,11 +257,6 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
   return {
     next: function() {
       return solve(trace.currentEnv);
-
-      // try {
-      // } catch(e) {
-      //   return false;
-      // }
     },
     getTraceIter: trace.getIterator.bind(trace)
   };

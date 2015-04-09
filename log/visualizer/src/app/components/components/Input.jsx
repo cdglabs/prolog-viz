@@ -59,12 +59,12 @@ var Input = React.createClass({
     if (traceIter) {
       var trace = traceIter.getCurrentTrace();
       var currentEnv = trace.currentEnv;
-      if (currentEnv && currentEnv.options) {
-        if (currentEnv.options.showUnifying) {
+      if (currentEnv && currentEnv.meta) {
+        if (currentEnv.meta.showUnifying) {
           this.highlight(trace, 'highlightRuleBefore');
-        } else if (currentEnv.options.showSucceeded) {
+        } else if (currentEnv.meta.showSucceeded) {
           this.highlight(trace, 'highlightRuleSuccess');
-        } else if (currentEnv.options.showFailed) {
+        } else if (currentEnv.meta.showFailed) {
           this.highlight(trace, 'highlightRuleFailure');
         } else {
           this.highlight();

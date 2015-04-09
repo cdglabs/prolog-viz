@@ -215,7 +215,10 @@ var store = function() {
       }
     },
     setStep: function(step) {
-      traceIter.setStep(step);
+      if (traceIter.getStep !== step) {
+        traceIter.setStep(step);
+        return true;
+      }
     }
   };
 };
@@ -265,8 +268,9 @@ EditorStore.dispatchToken = AppDispatcher.register(function(payload) {
       break;
 
     case ActionTypes.SET_STEP:
-      EditorStore.setStep(action.value);
-      EditorStore.emitChange();
+      if (EditorStore.setStep(action.value)) {
+        EditorStore.emitChange();
+      }
       break;
 
     case ActionTypes.SET_SHOW_COMPATIBLE:

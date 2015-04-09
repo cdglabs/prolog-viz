@@ -103,11 +103,11 @@ var Goal = React.createClass({
     if (trace) {
       isCurrentEnv = true;
 
-      unificationSucceeded = env.options.showSucceeded;
-      unificationFailed = env.options.showFailed;
+      unificationSucceeded = env.meta.showSucceeded;
+      unificationFailed = env.meta.showFailed;
 
-      if (env.options.substituting) {
-        var message = "Subsituting: "+env.options.substituting.toString();
+      if (env.meta.substituting) {
+        var message = "Subsituting: "+env.meta.substituting.toString();
         var lineWidgetClasses = cx({
           'lineWidget': true,
         });
@@ -118,7 +118,7 @@ var Goal = React.createClass({
     var ruleStrings = env.rules ? env.rules.map(rule => rule.toString()) : [];
     var shouldHighlights = ruleStrings.map(function(rule, i) {
       // return trace && trace.currentRule && rule === trace.currentRule.toString();
-      return isCurrentEnv && env.options && env.options.currentRuleIndex === i;
+      return isCurrentEnv && env.meta && env.meta.highlightRuleIndex === i;
     });
 
     anyHighlight = shouldHighlights.some(function(shouldHighlight) {
@@ -247,9 +247,6 @@ var Goal = React.createClass({
 
     // subst
     var substString = "";
-    if (env.subst) {
-      env.subst.toString();
-    }
     if (env.options && env.options.solution) {
       substString = env.options.solution.toString() === "yes" ? "" : env.options.solution.toString();
     }

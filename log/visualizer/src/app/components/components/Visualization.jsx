@@ -187,10 +187,7 @@ var Visualization = React.createClass({
       if (trace) {
         var self = this;
 
-        // render the tree using root env
         var rootEnv = trace.rootEnv;
-
-        // use this to target the current node
         var currentEnv = trace.currentEnv;
 
         vis = (function walkEnv(env, options) {
@@ -198,19 +195,11 @@ var Visualization = React.createClass({
             return;
           }
 
-          var failedChildRules = env.children.map(function(child) {
-            var ret = false;
+          var failedChildRules = env.children.map(childEnv => childEnv.isEmpty());
 
-            if (child && child.isEmpty()) {
-              ret = true;
-            }
-
-            return ret;
-          });
-
+          var children;
           if (env.children) {
-
-            var longestSiblingGoal = env.children.filter(env => !env.isEmpty()).reduce(function(acc, e) {
+            var longestSiblingGoal = env.children.filter(childEnv => !childEnv.isEmpty()).reduce(function(acc, e) {
               var longestGoal = e.goals.reduce(function(acc, goal) {
                 return acc.length > goal.toString().length ? acc : goal.toString();
               }, "");
@@ -226,10 +215,7 @@ var Visualization = React.createClass({
               return longest;
             }, "");
 
-            // console.log(longestSiblingGoal);
-            // console.log(longestSiblingSubst);
-
-            var children = env.children.map(function(childEnv, i) {
+            children = env.children.map(function(childEnv, i) {
               // console.log(env)
               // console.log(env.trace ? env.trace.status : "");
               return walkEnv(childEnv, {
@@ -255,13 +241,6 @@ var Visualization = React.createClass({
             shouldHighlightLatestGoals: shouldHighlightLatestGoals,
           }, options);
 
-          // if ((options && options.isDirectlyInsideCurrentEnv)) {
-          //   console.log("here");
-          // }
-
-          // the latest goals in the next env should be highlighted if
-
-                                                  // derve that it will be the next current env
           if (env.envId === currentEnv.envId) {
             goalProps.trace = trace;
           }
