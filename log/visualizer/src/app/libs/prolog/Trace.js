@@ -2,8 +2,6 @@ function Trace(rootEnv) {
   this.rootEnv = rootEnv;
   this.currentEnv = rootEnv;
   this.traces = [];
-
-  this.log();
 }
 
 Trace.prototype.log = function() {
