@@ -53,7 +53,7 @@ var Demo = React.createClass({
           {githubButton}
         </AppBar>
 
-        <RouteHandler key={"doNotChange"} /*this.getPath()*/ />
+        <RouteHandler key={"pv"} /*this.getPath()*/ />
 
       </AppCanvas>
 
