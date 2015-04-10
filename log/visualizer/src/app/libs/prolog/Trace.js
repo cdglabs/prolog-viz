@@ -12,6 +12,13 @@ Trace.prototype.log = function(message) {
   });
 };
 
+Trace.prototype.logLastFrame = function() {
+  this.traces.push({
+    rootEnv: this.rootEnv.clone(),
+    currentEnv: undefined,
+  });
+};
+
 Trace.prototype.setCurrentEnv = function(currentEnv) {
   this.currentEnv = currentEnv;
 };

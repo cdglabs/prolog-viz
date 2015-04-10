@@ -85,6 +85,7 @@ var Goal = React.createClass({
     var longestSiblingLabel = this.props.longestSiblingLabel;
 
     var isCurrentEnv = !!trace;
+    var isLastFrame = this.props.lastFrame;
 
     if (env.hasSolution()) {
       // TODO
@@ -96,11 +97,10 @@ var Goal = React.createClass({
     }
 
     // === rule labels ===
-
     // TODO: show only compatible
-    var ruleStrings = env.rules.map((rule) => (rule.toString()+" ").replace(/:-.*/, rule.hasSucceeded() ? ":- " : ":- ...") );
-    var rewrittenRuleStrings = env.rules.map((rule) => rule.rewritten ? (rule.rewritten.toString()+" ").replace(/:-.*/, rule.hasSucceeded() ? ":- " : ":- ...") : "");
-    var substStrings = env.rules.map((rule) => rule.substituting ? "substituting: "+rule.substituting.toString() : "");
+    var ruleStrings = env.rules.map((rule) => rule.toString(true, true));
+    var rewrittenRuleStrings = env.rules.map((rule, i) => rule.rewritten ? rule.rewritten.toString(true, isCurrentEnv && env.getCurRuleIndex() === i && trace.message !== "3") : "");
+    var substStrings = env.rules.map((rule) => rule.substituting ? "↓ subst: "+rule.substituting.toString() : "");
 
     var max = (a, b) => a.length > b.length ? a : b;
     var arrayMax = arr => arr.reduce((a, b) => max(a.toString(), b.toString()), "")
@@ -163,6 +163,12 @@ var Goal = React.createClass({
         }
       }
 
+      if (isLastFrame) {
+        showOriginalRule = true;
+        showSubstituting = true;
+        showRewrittenRule = ruleStrings[i] !== rewrittenRuleStrings[i];
+      }
+
       var duplicatedCurrentGoal = rule.hasSucceeded() ? <div className="duplicatedCurrentGoal">{env.goals[0] ? env.goals[0].toString() : undefined}</div> : undefined;
       return <div className="ruleAndChild">
               <div className="ruleWrapper">
@@ -178,7 +184,10 @@ var Goal = React.createClass({
                   {showRewrittenRule ? longestRewrittenRuleStrings : undefined}
                 </div>
               </div>
-              {showChildNode ? childNodes[i] : undefined}
+              {showChildNode ? <div className="goalWrapper">
+                                {isLastFrame && showRewrittenRule ? "\n\n" : ""}
+                                {childNodes[i]}
+                              </div> : undefined}
             </div>
     })}</div>;
 

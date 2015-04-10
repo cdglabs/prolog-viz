@@ -53,7 +53,6 @@
   flex: 0 0 auto;
   align-items: baseline;
   // flex-wrap: nowrap;
-  // flex: 1 0 auto;
 
   white-space: pre;
 
@@ -65,15 +64,8 @@
 
   >.labels {
     margin-right: 1em;
-
-    // background-color: @grey-100;
-    // box-sizing: border-box;
     display: flex;
-    // margin: 1px 0;
-    // text-align: center;
     flex: 0 0 auto;
-
-    // justify-content: flex-start;
 
     align-items: flex-start;
     flex-direction: column;
@@ -112,18 +104,18 @@
     }
   }
 
-  >.rulesAndChildren > * {
-    padding-left: 1em;
-    border-left: 1px solid @primaryBorderColor;
-  }
-
   >.rulesAndChildren {
+
+    > * {
+      padding-left: 1em;
+      border-left: 1px solid @primaryBorderColor;
+    }
 
     flex: 1 0 auto;
     display: flex;
     flex-direction: column;
 
-    .ruleAndChild+.ruleAndChild > .goal > .rulesAndChildren > .ruleAndChild:first-child {
+    .ruleAndChild+.ruleAndChild > .goalWrapper > .goal > .rulesAndChildren > .ruleAndChild:first-child {
       margin-top: 1em;
     }
 
@@ -139,30 +131,26 @@
         display: flex;
         flex-direction: column;
         align-items: baseline;
-      }
 
-      .duplicatedCurrentGoal {
-        position: absolute;
-        left: 0;
-        font-weight: bold;
-        // opacity: 0.4;
-        // z-index: -2;
+        >.duplicatedCurrentGoal {
+          position: absolute;
+          left: 0;
+          font-weight: bold;
+          color: @grey-500;
+        }
+        >.duplicatedCurrentGoal.overlapped {
+          display: none;
+        }
 
-        color: @grey-500;
-      }
-      .duplicatedCurrentGoal.overlapped {
-        display: none;
-      }
-
-      .rule {
-        display: flex;
-        flex-direction: column;
-        align-items: baseline;
-      }
-
-      .rule.shouldStrike {
-        text-decoration: line-through;
-        background-color: transparent;
+        >.rule {
+          display: flex;
+          flex-direction: column;
+          align-items: baseline;
+        }
+        >.rule.shouldStrike {
+          text-decoration: line-through;
+          background-color: transparent;
+        }
       }
     }
   }
@@ -252,17 +240,10 @@
     display: none;
   }
 }
+
 .goal.shouldHideRulesAndChildren {
   .rulesAndChildren {
     display: none;
-  }
-  // .goals {
-  //   :not(.latestGoal) {
-  //     display: none;
-  //   }
-  // }
-  .subst {
-    // display: none;
   }
 }
 

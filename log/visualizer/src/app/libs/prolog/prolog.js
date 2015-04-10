@@ -155,6 +155,7 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
 
   var solve = env => {
     if (Date.now() - startTime > TIME_LIMIT || !env || env.constructor.name !== "Env") {
+      trace.logLastFrame();
       return false;
     } else if (env.hasSolution()) {
       if (env.parent) {

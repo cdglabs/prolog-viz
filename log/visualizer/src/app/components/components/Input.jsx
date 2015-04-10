@@ -116,10 +116,10 @@ var Input = React.createClass({
   },
 
   highlight: function(trace, className) {
-    if (!trace) { return; }
-
     var cm = this.refs.codeMirror.editor;
     cm.getAllMarks().forEach(function(m) { m.clear(); });
+
+    if (!trace) { return; }
 
     var currentRule = trace.currentEnv.getCurRule();
     var interval = currentRule ? currentRule.interval : undefined;

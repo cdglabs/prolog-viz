@@ -167,10 +167,8 @@ var Visualization = React.createClass({
     if (this.state.traceIter) {
       var trace = this.state.traceIter.getCurrentTrace();
       if (trace) {
-
         var rootEnv = trace.rootEnv;
         var currentEnv = trace.currentEnv;
-
         content = (function walkEnv(env, options) {
           if (!env) {
             return;
@@ -205,12 +203,9 @@ var Visualization = React.createClass({
             shouldAnimate: true,
             showOnlyCompatible: showOnlyCompatible,
             shouldHighlightLatestGoals: !!parentEnv && parentEnv.getCurRuleIndex() === options.nthChild && parentEnv.envId === currentEnv.envId && trace.message === "3",
+            trace: (!!currentEnv && env.envId === currentEnv.envId) ? trace : undefined,
+            lastFrame: !currentEnv,
           }, options);
-
-          if (env.envId === currentEnv.envId) {
-            goalProps.trace = trace;
-          }
-
           return <Goal key={env.envId} {...goalProps} />;
         }).bind(this)(rootEnv, {});
       }
