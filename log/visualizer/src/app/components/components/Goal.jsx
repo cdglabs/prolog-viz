@@ -80,7 +80,7 @@ var Goal = React.createClass({
     var childNodes = this.props.children;
     var trace = this.props.trace;
     var shouldHighlightLatestGoals = this.props.shouldHighlightLatestGoals;
-    var showOnlyCompatible = this.props.showOnlyCompatible;
+    var hideRulesWithIncompatibleName = this.props.showOnlyCompatible;
 
     var longestSiblingLabel = this.props.longestSiblingLabel;
 
@@ -97,10 +97,14 @@ var Goal = React.createClass({
     }
 
     // === rule labels ===
-    // TODO: show only compatible
-    var ruleStrings = env.rules.map((rule) => rule.toString(true, true));
-    var rewrittenRuleStrings = env.rules.map((rule, i) => rule.rewritten ? rule.rewritten.toString(true, isCurrentEnv && env.getCurRuleIndex() === i && trace.message !== "3") : "");
-    var substStrings = env.rules.map((rule) => rule.substituting ? "↓ subst: "+rule.substituting.toString() : "");
+    var rules = env.rules;
+    if (hideRulesWithIncompatibleName) {
+      rules = rules.map(rule => env.goals[0] && env.goals[0].name === rule.head.name ? rule : "");
+    }
+
+    var ruleStrings = rules.map((rule) => rule.toString(true, true));
+    var rewrittenRuleStrings = rules.map((rule, i) => rule.rewritten ? rule.rewritten.toString(true, isCurrentEnv && env.getCurRuleIndex() === i && trace.message !== "3") : "");
+    var substStrings = rules.map((rule) => rule.substituting ? "↓ subst: "+rule.substituting.toString()+" " : "");
 
     var max = (a, b) => a.length > b.length ? a : b;
     var arrayMax = arr => arr.reduce((a, b) => max(a.toString(), b.toString()), "")
@@ -109,14 +113,14 @@ var Goal = React.createClass({
     var longestRewrittenRuleStrings = arrayMax(rewrittenRuleStrings);
     var longestSubstStrings = arrayMax(substStrings);
 
-    var rulesAndChildren = <div className="rulesAndChildren">{env.rules.map(function(rule, i) {
+    var rulesAndChildren = <div className="rulesAndChildren">{rules.map(function(rule, i) {
       if (!rule) {
         return;
       }
 
       if (rule.substituting) {
         var substitutingClasses = cx({
-          'lineWidget': true,
+          'substituting': true,
           'visible': env.getCurRuleIndex() === i
         });
         var substituting = <div className={substitutingClasses}>{substStrings[i]}</div>;
@@ -174,9 +178,9 @@ var Goal = React.createClass({
               <div className="ruleWrapper">
                 {duplicatedCurrentGoal}
                 <div className={ruleClasses}>
-                  {showOriginalRule ? ruleStrings[i] : undefined}
+                  {showOriginalRule ? <div className="original">{ruleStrings[i]}</div> : undefined}
                   {showSubstituting ? substituting : undefined}
-                  {showRewrittenRule ? rewrittenRuleStrings[i] : undefined}
+                  {showRewrittenRule ? <div className="new">{rewrittenRuleStrings[i]}</div> : undefined}
                 </div>
                 <div className="longestPlaceholder">
                   {showOriginalRule ? longestRuleStrings : undefined}
@@ -184,11 +188,11 @@ var Goal = React.createClass({
                   {showRewrittenRule ? longestRewrittenRuleStrings : undefined}
                 </div>
               </div>
-              {showChildNode ? <div className="goalWrapper">
-                                {isLastFrame && showRewrittenRule ? "\n\n" : ""}
+              {showChildNode ? <div className={cx({goalWrapper: true, hideMargin: isLastFrame && showRewrittenRule})}>
+                                {isLastFrame && showRewrittenRule ? "\n\n" : undefined}
                                 {childNodes[i]}
                               </div> : undefined}
-            </div>
+            </div>;
     })}</div>;
 
     // === labels ===

@@ -174,19 +174,19 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
       trace.log();
       return solve(env.parent);
     } else {
-      trace.setCurrentEnv(env);
-      trace.log();
-
       var goal = env.goals[0];
       var rule = env.rules[env.children.length];
       var subst = env.subst.clone();
 
-      // if (hideRulesWithIncompatibleName) {
-      //   if (goal.name !== rule.head.name) {
-      //     env.addChild(new Env());
-      //     return solve(env);
-      //   }
-      // }
+      if (hideRulesWithIncompatibleName) {
+        if (goal.name !== rule.head.name) {
+          env.addChild(new Env());
+          return solve(env);
+        }
+      }
+
+      trace.setCurrentEnv(env);
+      trace.log();
 
       env.setCurRuleIndex(env.children.length);
 

@@ -76,7 +76,7 @@ var store = function() {
     },
 
     getText: function() {
-      return text ? text : "";
+      return text || "";
     },
     setText: function(value) {
       text = value;

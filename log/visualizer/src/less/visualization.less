@@ -5,6 +5,7 @@
 
 @primaryTextColor: @black;
 @secondaryTextColor: @grey-800;
+@thirdTextColor: @grey-700;
 
 .visualization {
   // z-index: 1;
@@ -115,7 +116,7 @@
     display: flex;
     flex-direction: column;
 
-    .ruleAndChild+.ruleAndChild > .goalWrapper > .goal > .rulesAndChildren > .ruleAndChild:first-child {
+    .ruleAndChild+.ruleAndChild > .goalWrapper:not(.hideMargin) > .goal > .rulesAndChildren > .ruleAndChild:first-child {
       margin-top: 1em;
     }
 
@@ -146,6 +147,10 @@
           display: flex;
           flex-direction: column;
           align-items: baseline;
+
+          > .substituting {
+            color: @thirdTextColor;
+          }
         }
         >.rule.shouldStrike {
           text-decoration: line-through;
@@ -185,7 +190,7 @@
         .rule.highlight.succeeded {
           .highlightRuleSuccess;
 
-          .lineWidget {
+          .substituting {
             // padding: 4px;
             color: @deep-orange-900;
           }
