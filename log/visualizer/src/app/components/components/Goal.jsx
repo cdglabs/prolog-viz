@@ -79,171 +79,132 @@ var Goal = React.createClass({
     var env = this.props.env;
     var childNodes = this.props.children;
     var trace = this.props.trace;
-    var failedChildRules = this.props.failedChildRules;
     var shouldHighlightLatestGoals = this.props.shouldHighlightLatestGoals;
     var showOnlyCompatible = this.props.showOnlyCompatible;
 
-    var longestSiblingGoal = this.props.longestSiblingGoal;
-    var longestSiblingSubst = this.props.longestSiblingSubst;
+    var longestSiblingLabel = this.props.longestSiblingLabel;
 
-    // class related
-    var isCurrentEnv = false;
-    var isSolution = env.hasSolution();
-    var unificationSucceeded = false;
-    var unificationFailed = false;
-    var anyHighlight = false;
-    var nothing = env.isEmpty();
+    var isCurrentEnv = !!trace;
 
-    var shouldHideRuleBody = true;
-
-    // === rule labels ===
-    // use this to display information inside the current node
-    // renamed rule, rewritten goal
-    var lineWidget;
-    if (trace) {
-      isCurrentEnv = true;
-
-      unificationSucceeded = env.meta.showSucceeded;
-      unificationFailed = env.meta.showFailed;
-
-      if (env.meta.substituting) {
-        var message = "Subsituting: "+env.meta.substituting.toString();
-        var lineWidgetClasses = cx({
-          'lineWidget': true,
-        });
-        lineWidget = <div className={lineWidgetClasses}>{message}</div>;
-      }
+    if (env.hasSolution()) {
+      // TODO
+      // return only subst
+      // return <div></div>;
+    }
+    if (env.isEmpty()) {
+      return <div></div>;
     }
 
-    var ruleStrings = env.rules ? env.rules.map(rule => rule.toString()) : [];
-    var shouldHighlights = ruleStrings.map(function(rule, i) {
-      // return trace && trace.currentRule && rule === trace.currentRule.toString();
-      return isCurrentEnv && env.meta && env.meta.highlightRuleIndex === i;
-    });
+    // === rule labels ===
 
-    anyHighlight = shouldHighlights.some(function(shouldHighlight) {
-      return shouldHighlight === true;
-    });
+    // TODO: show only compatible
+    var ruleStrings = env.rules.map((rule) => (rule.toString()+" ").replace(/:-.*/, rule.hasSucceeded() ? ":- " : ":- ...") );
+    var rewrittenRuleStrings = env.rules.map((rule) => rule.rewritten ? (rule.rewritten.toString()+" ").replace(/:-.*/, rule.hasSucceeded() ? ":- " : ":- ...") : "");
+    var substStrings = env.rules.map((rule) => rule.substituting ? "substituting: "+rule.substituting.toString() : "");
 
-    ruleStrings = ruleStrings.map(function(rule, i) {
-      if (showOnlyCompatible) {
-        if (env.goals[0]) {
-          var reg = /\(.*/;
-          if (env.goals[0].replace(reg, "") !== rule.replace(reg, "")) {
-            return;
-          }
-        }
-      }
+    var max = (a, b) => a.length > b.length ? a : b;
+    var arrayMax = arr => arr.reduce((a, b) => max(a.toString(), b.toString()), "")
 
-      var childEnv;
-      if (childNodes[i]) {
-        childEnv = childNodes[i].props.env;
-      }
-      var shouldShowEclipseInPlaceOfRuleBody = false;
-      if (childNodes.length <= i) {
-        shouldShowEclipseInPlaceOfRuleBody = true;
-      } else {
-        if (childEnv) {
-          if (Array.isArray(childEnv.goals) && childEnv.goals.length === 1 && childEnv.goals[0] === "nothing") {
-            shouldShowEclipseInPlaceOfRuleBody = true;
-          } else {
-            shouldShowEclipseInPlaceOfRuleBody = false;
-          }
-        }
-      }
+    var longestRuleStrings = arrayMax(ruleStrings);
+    var longestRewrittenRuleStrings = arrayMax(rewrittenRuleStrings);
+    var longestSubstStrings = arrayMax(substStrings);
 
-      var ruleString = rule.toString();
-      if (shouldHideRuleBody || !shouldHighlights[i]) {
-        ruleString = ruleString.replace(/:-.*/, shouldShowEclipseInPlaceOfRuleBody ? ":- ..." : ":- ");
-      }
-      return ruleString;
-    });
-    var longestRule = ruleStrings.reduce(function(acc, e) {
-      if (!e) { return acc; }
-      return acc.length > e.length ? acc : e;
-    }, "");
-
-    var rulesAndChildren = <div className="rulesAndChildren">{ruleStrings.map(function(rule, i) {
+    var rulesAndChildren = <div className="rulesAndChildren">{env.rules.map(function(rule, i) {
       if (!rule) {
         return;
       }
 
-      var lineWidgetPlaceholder;
-      if (shouldHighlights[i]) {
-        lineWidgetPlaceholder = lineWidget;
+      if (rule.substituting) {
+        var substitutingClasses = cx({
+          'lineWidget': true,
+          'visible': env.getCurRuleIndex() === i
+        });
+        var substituting = <div className={substitutingClasses}>{substStrings[i]}</div>;
       }
-
-      // if a rule leads to failed node, cross it
-      var shouldStrike = false;
-      if (failedChildRules && failedChildRules[i]) {
-        shouldStrike = true;
-      }
-
-      var noChild = childNodes[i] === undefined;
 
       var ruleClasses = cx({
         'rule': true,
-        'highlight': shouldHighlights[i],
-        'unificationSucceeded': unificationSucceeded,
-        'unificationFailed': unificationFailed,
-        'shouldStrike': shouldStrike,
-        'noChild': noChild
+        'highlight': env.getCurRuleIndex() === i,
+        'succeeded': rule.hasSucceeded(),
+        'failed': rule.hasFailed(),
+        'shouldStrike': rule.hasFailed(),
       });
 
-      var duplicatedCurrentGoal = noChild || shouldStrike ? undefined : <div className="duplicatedCurrentGoal">{env.goals[0]}</div>;
-      // return <div className="ruleAndChildWrapper">
-      //         {previousRuleAndSubst}
+      var showOriginalRule = false;
+      var showSubstituting = false;
+      var showRewrittenRule = false;
+      var showChildNode = false;
+      if (isCurrentEnv && env.getCurRuleIndex() === i) {
+        switch(trace.message) {
+          case "1":
+            showOriginalRule = true;
+            break;
+          case "2.1":
+            showOriginalRule = true;
+            showSubstituting = true;
+            showRewrittenRule = ruleStrings[i] !== rewrittenRuleStrings[i];
+            break;
+          case "3":
+            showRewrittenRule = true;
+            showChildNode = true;
+            break;
+          case "2.2":
+            showOriginalRule = true;
+            break;
+          default:
+            break;
+        }
+      } else {
+        if (rewrittenRuleStrings[i]) {
+          showRewrittenRule = true;
+          showChildNode = true;
+        } else {
+          showOriginalRule = true;
+        }
+      }
+
+      var duplicatedCurrentGoal = rule.hasSucceeded() ? <div className="duplicatedCurrentGoal">{env.goals[0] ? env.goals[0].toString() : undefined}</div> : undefined;
       return <div className="ruleAndChild">
               <div className="ruleWrapper">
-                <div className="longestRule">{longestRule}</div>
                 {duplicatedCurrentGoal}
                 <div className={ruleClasses}>
-                  {rule}{lineWidgetPlaceholder}
+                  {showOriginalRule ? ruleStrings[i] : undefined}
+                  {showSubstituting ? substituting : undefined}
+                  {showRewrittenRule ? rewrittenRuleStrings[i] : undefined}
+                </div>
+                <div className="longestPlaceholder">
+                  {showOriginalRule ? longestRuleStrings : undefined}
+                  {showSubstituting ? longestSubstStrings : undefined}
+                  {showRewrittenRule ? longestRewrittenRuleStrings : undefined}
                 </div>
               </div>
-              {childNodes[i]}
+              {showChildNode ? childNodes[i] : undefined}
             </div>
-          // </div>;
     })}</div>;
 
     // === labels ===
     // goals
-    var goalStrings = env.goals ? env.goals.map(goal => goal.toString()) : [];
-
-    var numLatestGoals = env.options && env.options.latestGoals ? env.options.latestGoals.length : 0;
-    var goals = <div className="goals">
-                  {goalStrings.map(function(goal, i, goals) {
-                    // if (i !== goals.length -1) {
-                    //   goal+=", ";
-                    // }
-
-                    var isCurrentGoal = i === 0;
-                    var isLatestGoal = i < numLatestGoals;
-                    var isFirstNonLatestGoal = numLatestGoals > 0 && i === numLatestGoals;
-                    var highlight = false;
-                    var highlightLatest = false;
-                    if (isCurrentGoal) {
-                      highlight = anyHighlight || unificationSucceeded;
-                    }
-                    if (isLatestGoal) {
-                      highlightLatest = shouldHighlightLatestGoals;
-                    }
-
+    var numLatestGoals = env.options.numLatestGoals;
+    var gcConfig = {
+      'goals': true,
+      'highlightLatest': shouldHighlightLatestGoals,
+    };
+    if (env.getCurRuleIndex() >= 0) {
+      gcConfig.highlightCurrent = true;
+      gcConfig.succeeded = env.getCurRule().hasSucceeded();
+      gcConfig.failed = env.getCurRule().hasFailed();
+    }
+    var goals = <div className={cx(gcConfig)}>
+                  {env.goals.map(function(goal, i, goals) {
                     var goalLabelClasses = cx({
                       'goalLabel': true,
-                      'currentGoal': isCurrentGoal,
-                      'latestGoal': isLatestGoal,
-                      'firstNonLastestGoal': isFirstNonLatestGoal,
-                      'highlight': highlight,
-                      'highlightLatest': highlightLatest,
-                      'unificationSucceeded': unificationSucceeded,
-                      'unificationFailed': unificationFailed,
+                      'currentGoal': i === 0,
+                      'latestGoal': i < numLatestGoals,
+                      'firstNonLastestGoal': numLatestGoals > 0 && i === numLatestGoals,
                     });
-
-                    return <div className={goalLabelClasses}>{goal}</div>;
+                    return <div className={goalLabelClasses}>{goal.toString()}</div>;
                   })}
                 </div>;
-
 
     // subst
     var substString = "";
@@ -263,16 +224,14 @@ var Goal = React.createClass({
     };
     var labels = <div key={"label"} className={labelsClasses} {...labelsProps}>
         <div className="contents">{goals}{subst}</div>
-        <div className="longestPlaceholder">{longestSiblingGoal}</div>
-        <div className="longestPlaceholder">{longestSiblingSubst}</div>
+        <div className="longestPlaceholder">{longestSiblingLabel}</div>
       </div>;
 
     // === goal ===
     var goalClasses = cx({
       'goal': true,
-      'nothing': nothing,
       'currentEnv': isCurrentEnv,
-      'solution': isSolution,
+      'solution': env.hasSolution(),
       'shouldHideRulesAndChildren': shouldHighlightLatestGoals
     });
     var goalProps = {

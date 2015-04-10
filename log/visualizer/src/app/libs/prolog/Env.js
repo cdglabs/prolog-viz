@@ -1,26 +1,25 @@
-// var validMeta = {
-//   showUnifying: true,
-//   showadsf: true,
-//   reversedSubst: true,
-// };
+/*
+Env = {
+  options: {
+    numLatestGoals:
+    queryVarNames:
+    ruleIndex:
+  }
+  goals:
+  subst:
+  rules: {
+    substituting:
+    rewritten
+    status:
+    interval:
+  }
+}
+*/
 
-var validOptions = {
-  latestGoals: true,
-  solution: true,
-  reversedSubst: true,
-};
-
-var cloneObject = options => {
+var clone = options => {
   var clone = {};
   for (var key in options) {
-    var value = options[key];
-    if (typeof value.clone === "function") {
-      clone[key] = value.clone();
-    } else if (Array.isArray(value)) {
-      clone[key] = value.slice();
-    } else {
-      clone[key] = value;
-    }
+    clone[key] = options[key];
   }
   return clone;
 };
@@ -34,17 +33,16 @@ function Env(goals, rules, subst, options) {
     rules = sourceEnv.rules;
     subst = sourceEnv.subst;
 
+    this.currentRuleIndex = sourceEnv.currentRuleIndex;
     this.envId = sourceEnv.envId;
     this.children = sourceEnv.children.map(child => child.clone());
-    this.options = cloneObject(sourceEnv.options);
-    this.meta = cloneObject(sourceEnv.meta);
+    this.options = clone(sourceEnv.options);
   } else {
     this.envId = envCount;
     envCount++;
     this.children = [];
     this.parent = undefined;
     this.options = options || {};
-    this.meta = {};
   }
 
   // rules
@@ -76,9 +74,14 @@ function Env(goals, rules, subst, options) {
   this.rules = newRules;
 }
 
-// meta data
-Env.prototype.getCurrentRule = function() {
-  return this.meta && this.meta.highlightRuleIndex !== undefined ? this.rules[this.meta.highlightRuleIndex] : undefined;
+Env.prototype.getCurRule = function() {
+  return this.rules[this.options.ruleIndex];
+};
+Env.prototype.getCurRuleIndex = function() {
+  return this.options.ruleIndex;
+};
+Env.prototype.setCurRuleIndex = function(index) {
+  this.options.ruleIndex = Math.max(index, -1);
 };
 
 // options

@@ -59,15 +59,21 @@ var Input = React.createClass({
     if (traceIter) {
       var trace = traceIter.getCurrentTrace();
       var currentEnv = trace.currentEnv;
-      if (currentEnv && currentEnv.meta) {
-        if (currentEnv.meta.showUnifying) {
-          this.highlight(trace, 'highlightRuleBefore');
-        } else if (currentEnv.meta.showSucceeded) {
-          this.highlight(trace, 'highlightRuleSuccess');
-        } else if (currentEnv.meta.showFailed) {
-          this.highlight(trace, 'highlightRuleFailure');
-        } else {
-          this.highlight();
+      if (trace.message) {
+        switch(trace.message) {
+          case "1":
+            this.highlight(trace, 'highlightRuleBefore');
+            break;
+          case "2.1":
+          case "3":
+            this.highlight(trace, 'highlightRuleSuccess');
+            break;
+          case "2.2":
+            this.highlight(trace, 'highlightRuleFailure');
+            break;
+          default:
+            this.highlight();
+            break;
         }
       } else {
         this.highlight();
@@ -126,7 +132,7 @@ var Input = React.createClass({
 
     if (!trace) { return; }
 
-    var currentRule = trace.currentEnv.getCurrentRule();
+    var currentRule = trace.currentEnv.getCurRule();
     var interval = currentRule ? currentRule.interval : undefined;
 
     if (cm && interval) {
@@ -182,7 +188,7 @@ var Input = React.createClass({
         msg += "Rewriting goal";
         break;
       case "SUBST":
-        msg += "Subsituting";
+        msg += "substituting";
         break;
       case "REWRITING_BODY":
         msg += "Rewriting body";

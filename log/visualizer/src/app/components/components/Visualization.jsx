@@ -33,37 +33,25 @@ var Visualization = React.createClass({
 
   componentDidMount: function() {
     EditorStore.addChangeListener(this._onChange);
-    // this.refs.codeMirror.editor.on('cursorActivity', this.handleCursorActivity);
 
-    var self = this;
     var printEl;
-
-    var beforePrint = function() {
-    // document.getElementById('printImage').src =
-    //     'http://stackoverflow.com/favicon.ico';
-
-      // html2canvas(self.refs.vis.getDOMNode()).then(function(canvas) {
-      //   var img    = canvas.toDataURL("image/png");
-      //   document.write('<img src="'+img+'"/>');
-      //
-      //     // document.body.appendChild(canvas);
-      // });
-
+    var beforePrint = () => {
       if (printEl) {
         printEl.remove();
       }
 
-      programEl = document.createElement("div");
+      // TODO: use the zoom property
+      var programEl = document.createElement("div");
       programEl.className = "originalProgram";
-      programEl.textContent = self.state.text;
+      programEl.textContent = this.state.text;
 
       printEl = document.createElement("div");
       printEl.className = "printContent";
       printEl.appendChild(programEl);
-      printEl.appendChild(self.refs.vis.getDOMNode().cloneNode(true));
+      printEl.appendChild(this.refs.content.getDOMNode().cloneNode(true));
       document.body.appendChild(printEl);
     };
-    var afterPrint = function() {
+    var afterPrint = () => {
       if (printEl) {
         printEl.remove();
       }
@@ -82,7 +70,6 @@ var Visualization = React.createClass({
 
     window.onbeforeprint = beforePrint;
     window.onafterprint = afterPrint;
-
   },
 
   componentWillUnmount: function() {
@@ -122,24 +109,20 @@ var Visualization = React.createClass({
                         labelsRect.bottom-numBorders < elRect.top ||
                         labelsRect.top > elRect.bottom);
         if (overlap) {
-          // console.log("overlapped");
-          // console.log(labelsRect);
-          // console.log(el);
-          // console.log(elRect);
           el.classList.add("overlapped");
         }
       });
     }
-
   },
 
   showNode: function (oNode) {
     var nLeft = 0, nTop = 0;
-    var node = this.refs.vis.getDOMNode();
+    var node = this.refs.content.getDOMNode();
 
     for (var oItNode = oNode; oItNode && oItNode !== node; nLeft += oItNode.offsetLeft, nTop += oItNode.offsetTop, oItNode = oItNode.offsetParent);
-    node.scrollTop = nTop;
-    node.scrollLeft = nLeft;
+    var margin = 10;
+    node.scrollTop = nTop-margin;
+    node.scrollLeft = nLeft-margin;
 
     // highlight the node
     // oNode.classList.add("highlightRule");
@@ -177,95 +160,67 @@ var Visualization = React.createClass({
   },
 
   render: function() {
-
     var showOnlyCompatible = this.state.showOnlyCompatible;
 
-    var vis = <h1>A tree goes here</h1>;
+    var content = <div className="errorMessage">Apparently, something went wrong :(</div>;
 
     if (this.state.traceIter) {
       var trace = this.state.traceIter.getCurrentTrace();
       if (trace) {
-        var self = this;
 
         var rootEnv = trace.rootEnv;
         var currentEnv = trace.currentEnv;
 
-        vis = (function walkEnv(env, options) {
+        content = (function walkEnv(env, options) {
           if (!env) {
             return;
           }
 
-          var failedChildRules = env.children.map(childEnv => childEnv.isEmpty());
+          var max = (a, b) => a.length > b.length ? a : b;
+          var arrayMax = arr => arr.reduce((a, b) => max(a.toString(), b.toString()), "");
 
           var children;
           if (env.children) {
-            var longestSiblingGoal = env.children.filter(childEnv => !childEnv.isEmpty()).reduce(function(acc, e) {
-              var longestGoal = e.goals.reduce(function(acc, goal) {
-                return acc.length > goal.toString().length ? acc : goal.toString();
-              }, "");
-              return acc.length > longestGoal.length ? acc : longestGoal;
-            }, "");
-            var longestSiblingSubst = env.children.reduce(function(acc, e) {
-              var longest = acc;
-              if (env.options && env.options.solution) {
-                longest = env.options.solution.length > longest.length ? env.options.solution : longest;
-              } else if (e.subst) {
-                longest = e.subst.toString().length > longest.length ? e.subst.toString() : longest;
-              }
-              return longest;
-            }, "");
+            var longestSiblingGoal = arrayMax(env.children
+              .filter(childEnv => !childEnv.isEmpty())
+              .map(childEnv => arrayMax(childEnv.goals)));
+            var longestSiblingSolution = arrayMax(env.children
+              .filter(childEnv => !childEnv.isEmpty())
+              .map(childEnv => env.options.solution ? env.options.solution.toString() : ""));
 
-            children = env.children.map(function(childEnv, i) {
-              // console.log(env)
-              // console.log(env.trace ? env.trace.status : "");
-              return walkEnv(childEnv, {
-                isDirectlyInsideCurrentEnv: env.envId === currentEnv.envId,
-                indexUnderParentEnv: i,
-                numberOfChildrenOfParentEnv: env.children.length,
-                isParentEnvStatusNewGoal: trace.status === "NEW_GOAL",
-                longestSiblingGoal: longestSiblingGoal,
-                longestSiblingSubst: longestSiblingSubst,
-              });
-            });
+            children = env.children.map((childEnv, i) => walkEnv(childEnv, {
+                nthChild: i,
+                parentEnv: env,
+                longestSiblingLabel: max(longestSiblingGoal, longestSiblingSolution),
+              })
+            );
           }
 
-          var shouldHighlightLatestGoals = (options && options.isDirectlyInsideCurrentEnv && options.isParentEnvStatusNewGoal && options.indexUnderParentEnv === options.numberOfChildrenOfParentEnv-1)
+          var parentEnv = options.parentEnv;
 
           var goalProps = assign({
-            parent: self,
+            parent: this,
             env: env,
             children: children,
             shouldAnimate: true,
-            failedChildRules: failedChildRules,
             showOnlyCompatible: showOnlyCompatible,
-            shouldHighlightLatestGoals: shouldHighlightLatestGoals,
+            shouldHighlightLatestGoals: !!parentEnv && parentEnv.getCurRuleIndex() === options.nthChild && parentEnv.envId === currentEnv.envId && trace.message === "3",
           }, options);
 
           if (env.envId === currentEnv.envId) {
             goalProps.trace = trace;
           }
 
-          // add key
           return <Goal key={env.envId} {...goalProps} />;
-        })(rootEnv, {});
-
+        }).bind(this)(rootEnv, {});
       }
     }
 
-    var classes = this.getClasses('visualization', {
-      // "prin": true
-    });
-
-
-/*
-<div className="controls">
-  <Toggle name="toggleName1" value="toggleValue1" label="Show failed nodes" onToggle={this.onShowFailureChange}/>
-</div>
-*/
+    var classes = this.getClasses('visualization', {});
     return (
-      <div className="visualization">{/*TODO: no longer needed*/}
-        <div ref="vis" className="content">
-          {vis}
+      <div className={classes}>{/*TODO: no longer needed*/}
+        <div ref="content" className="content">
+          {content}
         </div>
       </div>
       );

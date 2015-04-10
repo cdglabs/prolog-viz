@@ -149,24 +149,27 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
   var startTime = Date.now();
 
   var queryVarNames = this.getQueryVarNames();
-  var rules = this.rules;
-  var goals = this.query;
-  var subst = new Subst();
-  var trace = new Trace(new Env(goals, rules, subst));
+  var trace = new Trace(new Env(this.query, this.rules, new Subst()));
 
   var resolution = (body, goals, subst) => body.slice().concat(goals.slice(1)).map(term => term.rewrite(subst));
 
   var solve = env => {
-    var elapsedTime = Date.now() - startTime;
-
-    if (elapsedTime > TIME_LIMIT || !env || env.constructor.name !== "Env") {
+    if (Date.now() - startTime > TIME_LIMIT || !env || env.constructor.name !== "Env") {
       return false;
     } else if (env.hasSolution()) {
+      if (env.parent) {
+        env.parent.setCurRuleIndex(-1);
+      }
       trace.setCurrentEnv(env.parent);
       return env.subst;
     } else if (env.isEmpty()) {
+      env.parent.setCurRuleIndex(-1);
       return solve(env.parent);
     } else if (env.children.length >= env.rules.length) {
+      if (env.parent) {
+        env.parent.setCurRuleIndex(-1);
+      }
+      trace.setCurrentEnv(env);
       trace.log();
       return solve(env.parent);
     } else {
@@ -184,24 +187,17 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
       //   }
       // }
 
-      var meta = {
-        highlightRuleIndex: env.children.length
-      };
+      env.setCurRuleIndex(env.children.length);
 
       // Step 1
-      trace.log(assign(meta, {
-        showUnifying: true
-      }));
+      trace.log("1");
 
       var newEnv;
       try {
         subst.unify(goal, rule.head);
 
         // Step 2.1
-        trace.log(assign(meta, {
-          showSucceeded: true,
-          substituting: subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()))
-        }));
+        rule.substituting = subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()));
 
         // dedup equivalent vars in goals from rules
         var reversedSubst = {};
@@ -213,7 +209,6 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
           }
         });
         var dedupedRule = rule.makeCopy({ subst: reversedSubst });
-
         // rewrite the rule and removed vars from subst
         var newRule = dedupedRule.rewrite(subst);
         var varNamesInNewRule = newRule.getQueryVarNames();
@@ -224,31 +219,30 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
               subst.unbind(varName);
             }
           });
+        rule.rewritten = newRule;
 
-        env.rules[env.children.length] = newRule;
         var newGoals = resolution(newRule.body, env.goals, subst);
-        newEnv = new Env(newGoals, env.rules, subst, {
-          "latestGoals": newGoals.slice(0, newRule.body.length),
-          "solution": subst.filter(queryVarNames),
-          // "reversedSubst": reversedSubst,
+        newEnv = new Env(newGoals, env.rules, subst, { // TODO
+          "numLatestGoals": newRule.body.length,
+          "solution": subst.filter(queryVarNames), // this could be parital solution
           });
         env.addChild(newEnv);
 
+        // Step 2.1
+        trace.log("2.1");
         // Step 3
-        trace.log(assign(meta, {
-          showSucceeded: true,
-        }));
+        trace.log("3");
       } catch(e) {
         if (e.message !== "unification failed") {
           throw e;
         }
+        rule.rewritten = null;
+
         newEnv = new Env();
         env.addChild(newEnv);
 
         // Step 2.2
-        trace.log(assign(meta, {
-          showFailed: true,
-        }));
+        trace.log("2.2");
       }
       return solve(newEnv);
     }

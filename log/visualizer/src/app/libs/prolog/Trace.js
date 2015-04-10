@@ -4,13 +4,12 @@ function Trace(rootEnv) {
   this.traces = [];
 }
 
-Trace.prototype.log = function(meta) {
-  this.currentEnv.meta = meta;
+Trace.prototype.log = function(message) {
   this.traces.push({
     rootEnv: this.rootEnv.clone(),
-    currentEnv: this.currentEnv.clone()
+    currentEnv: this.currentEnv.clone(),
+    message: message
   });
-  delete this.currentEnv.meta;
 };
 
 Trace.prototype.setCurrentEnv = function(currentEnv) {

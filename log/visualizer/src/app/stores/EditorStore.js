@@ -167,7 +167,9 @@ var store = function() {
           program = L.parse(text);
           iter = program.solve(showOnlyCompatible);
           var count = 0;
-          while (iter.next() && count < 5) {
+          var TIME_LIMIT = 100; // ms
+          var startTime = Date.now();
+          while (iter.next() /*&& count < 5*/ && Date.now() - startTime < TIME_LIMIT  ) {
             count++;
           }
           traceIter = iter.getTraceIter();
