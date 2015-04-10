@@ -128,7 +128,19 @@ var examples = [
           'father(homer, maggie).\n' +
           'grandfather(X, Y) :- father(X, Z), father(Z, Y).\n' +
           'grandfather(X, Y)?',
-  }
+  },
+  {
+    name: 'nats infinite loop',
+    code: 'nat(s(X)) :- nat(X).\n' +
+          'nat(z).\n' +
+          'nat(X)?',
+  },
+  {
+    name: 'infinite loop',
+    code: 'p(X):-q(X).\n' +
+          'q(X):-p(X).\n' +
+          'q(X)?',
+  },
 ];
 
 // TODO: setters should be private to file scope

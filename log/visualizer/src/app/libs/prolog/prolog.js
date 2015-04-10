@@ -145,7 +145,7 @@ var count = 0;
 Program.prototype.solve = function(hideRulesWithIncompatibleName) {
   console.log("=== solve#"+count+" ===");
   count++;
-  var TIME_LIMIT = 500; // ms
+  var TIME_LIMIT = 100; // ms
   var startTime = Date.now();
 
   var queryVarNames = this.getQueryVarNames();

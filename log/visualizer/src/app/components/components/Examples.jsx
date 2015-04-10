@@ -48,7 +48,7 @@ var Examples = React.createClass({
       return <div className="example">
               <Link to="examples" params={{exampelName: urlencode.encode(example.name)}}>{example.name}</Link>
             </div>;
-    })
+    });
 
     return (
       <div className={classes} >

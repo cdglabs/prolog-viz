@@ -118,14 +118,6 @@ var Goal = React.createClass({
         return;
       }
 
-      if (rule.substituting) {
-        var substitutingClasses = cx({
-          'substituting': true,
-          'visible': env.getCurRuleIndex() === i
-        });
-        var substituting = <div className={substitutingClasses}>{substStrings[i]}</div>;
-      }
-
       var ruleClasses = cx({
         'rule': true,
         'highlight': env.getCurRuleIndex() === i,
@@ -171,6 +163,14 @@ var Goal = React.createClass({
         showOriginalRule = true;
         showSubstituting = true;
         showRewrittenRule = ruleStrings[i] !== rewrittenRuleStrings[i];
+      }
+
+      if (rule.substituting) {
+        var substitutingClasses = cx({
+          'substituting': true,
+          'visible': env.getCurRuleIndex() === i
+        });
+        var substituting = <div className={substitutingClasses}>{showRewrittenRule ? substStrings[i] : "→"+substStrings[i].slice(1)}</div>;
       }
 
       var duplicatedCurrentGoal = rule.hasSucceeded() ? <div className="duplicatedCurrentGoal">{env.goals[0] ? env.goals[0].toString() : undefined}</div> : undefined;

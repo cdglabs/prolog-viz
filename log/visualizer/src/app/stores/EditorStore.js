@@ -64,10 +64,7 @@ var store = function() {
 
   var cursorIndex;
 
-  var trace;
-
   var syntaxError;
-  var syntaxHighlight;
   var matchTrace;
 
   return {
@@ -93,7 +90,6 @@ var store = function() {
     getShowOnlyCompatible: function() {
       return showOnlyCompatible;
     },
-
     setShowOnlyCompatible: function(on) {
       showOnlyCompatible = on;
       this.updateProgram();
@@ -106,53 +102,6 @@ var store = function() {
             .loadGrammarsFromScriptElement(document.getElementById(domId))
             .grammar(grammar);
           L = PrologInterpreter(g);
-          syntaxHighlight = L.grammar && L.grammar.semanticAction({
-            number: function(_) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "number" }
-              );
-            },
-            ident: function(_, _) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "ident" }
-              );
-            },
-            keyword: function(_) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "keyword" }
-              );
-            },
-            variable: function(_, _) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "variable" }
-              );
-            },
-            symbol: function(_, _) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "symbol" }
-              );
-            },
-            comment: function(_) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "comment" }
-              );
-            },
-            _list: ohm.actions.map,
-            _terminal: function() {},
-            _default: ohm.actions.passThrough
-          });
         } catch (err) {
           g = undefined;
           console.log(err);
@@ -174,8 +123,8 @@ var store = function() {
           }
           traceIter = iter.getTraceIter();
           syntaxError = undefined;
-          matchTrace = L.grammar.matchContents(text, 'tokens');
-          EditorStore.emitChange();
+          // matchTrace = L.grammar.matchContents(text, 'tokens');
+          this.emitChange();
         } catch (e) {
           if (e instanceof ohm.error.MatchFailure) {
             syntaxError = e;
@@ -188,9 +137,6 @@ var store = function() {
     },
     getProgram: function() {
       return program;
-    },
-    getSyntaxHighlight: function() {
-      return syntaxHighlight;
     },
     getSyntaxError: function() {
       return syntaxError;
@@ -225,10 +171,16 @@ var store = function() {
   };
 };
 
-var EditorStore = assign({}, EventEmitter.prototype, store(), {
+var EditorStore = assign({}, EventEmitter.prototype, {
 
   emitChange: function() {
-    this.emit(CHANGE_EVENT);
+    setTimeout(() => {
+        if (!AppDispatcher.isDispatching()) {
+          this.emit(CHANGE_EVENT);
+        } else {
+          this.emitChange();
+        }
+    }, 3);
   },
 
   /**
@@ -242,7 +194,7 @@ var EditorStore = assign({}, EventEmitter.prototype, store(), {
     this.removeListener(CHANGE_EVENT, callback);
   },
 
-});
+}, store());
 
 EditorStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
@@ -284,7 +236,6 @@ EditorStore.dispatchToken = AppDispatcher.register(function(payload) {
       console.log("No implementation for action: "+action.type);
       break;
   }
-
 });
 
 module.exports = EditorStore;
