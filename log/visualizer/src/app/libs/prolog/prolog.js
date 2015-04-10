@@ -154,7 +154,7 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
   var resolution = (body, goals, subst) => body.slice().concat(goals.slice(1)).map(term => term.rewrite(subst));
 
   var solve = env => {
-    if (Date.now() - startTime > TIME_LIMIT || !env || env.constructor.name !== "Env") {
+    if (Date.now() - startTime > TIME_LIMIT || !env || env.constructor.name !== "Env" || env.getDepth() > 20) {
       trace.logLastFrame();
       return false;
     } else if (env.hasSolution()) {

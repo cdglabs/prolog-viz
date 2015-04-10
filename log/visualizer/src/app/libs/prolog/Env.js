@@ -84,6 +84,16 @@ Env.prototype.setCurRuleIndex = function(index) {
   this.options.ruleIndex = Math.max(index, -1);
 };
 
+Env.prototype.getDepth = function() {
+  var depth = 0;
+  var env = this;
+  while(env) {
+    env = env.parent;
+    depth ++;
+  }
+  return depth;
+};
+
 // options
 
 // derived data

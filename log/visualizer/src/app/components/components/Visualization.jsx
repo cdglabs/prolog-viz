@@ -136,13 +136,14 @@ var Visualization = React.createClass({
     }
     var oBookmark = this.getDOMNode().querySelector(sBookmark);
     // var oBookmark = document.getElementById(sBookmark);
-    if (oBookmark) {
+    // if (oBookmark) {
         // special treatment for <td/>
         // if (oBookmark.parentNode.tagName === "TD") {
         //   oBookmark = oBookmark.parentNode;
         // }
-        this.showNode(oBookmark);
-    }
+    // }
+    this.showNode(oBookmark);
+
   },
 
   onEditorTextChange: function(e) {
@@ -202,7 +203,7 @@ var Visualization = React.createClass({
             children: children,
             shouldAnimate: true,
             showOnlyCompatible: showOnlyCompatible,
-            shouldHighlightLatestGoals: !!parentEnv && parentEnv.getCurRuleIndex() === options.nthChild && parentEnv.envId === currentEnv.envId && trace.message === "3",
+            shouldHighlightLatestGoals: !!currentEnv && !!parentEnv && parentEnv.getCurRuleIndex() === options.nthChild && parentEnv.envId === currentEnv.envId && trace.message === "3",
             trace: (!!currentEnv && env.envId === currentEnv.envId) ? trace : undefined,
             lastFrame: !currentEnv,
           }, options);

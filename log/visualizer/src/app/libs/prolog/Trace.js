@@ -1,6 +1,7 @@
 function Trace(rootEnv) {
   this.rootEnv = rootEnv;
   this.currentEnv = rootEnv;
+  this.depth = 0;
   this.traces = [];
 }
 
