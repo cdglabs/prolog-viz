@@ -113,6 +113,17 @@ var Goal = React.createClass({
     var longestRewrittenRuleStrings = arrayMax(rewrittenRuleStrings);
     var longestSubstStrings = arrayMax(substStrings);
 
+    var toSubscript = (string) => {
+      var regex = /(_\d*)/;
+      return string.split(regex).map((substr, i) => {
+        if (i%2 === 0) {
+          return substr;
+        } else {
+          return <sub>{substr.slice(1)}</sub>;
+        }
+      });
+    };
+
     var rulesAndChildren = <div className="rulesAndChildren">{rules.map(function(rule, i) {
       if (!rule) {
         return;
@@ -165,22 +176,30 @@ var Goal = React.createClass({
         showRewrittenRule = ruleStrings[i] !== rewrittenRuleStrings[i];
       }
 
-      if (rule.substituting) {
+      // console.log(toSubscript(ruleStrings[i]));
+      var originalRule;
+      var substituting;
+      var rewrittenRule;
+      if (showOriginalRule) {
+        originalRule = <div className="original">{toSubscript(ruleStrings[i])}</div>;
+      }
+      if (showSubstituting && rule.substituting) {
         var substitutingClasses = cx({
           'substituting': true,
           'visible': env.getCurRuleIndex() === i
         });
-        var substituting = <div className={substitutingClasses}>{showRewrittenRule ? substStrings[i] : "→"+substStrings[i].slice(1)}</div>;
+        substituting = <div className={substitutingClasses}>{toSubscript(showRewrittenRule ? substStrings[i] : "→"+substStrings[i].slice(1))}</div>;
+      }
+      if (showRewrittenRule) {
+        rewrittenRule = <div className="new">{toSubscript(rewrittenRuleStrings[i])}</div>;
       }
 
-      var duplicatedCurrentGoal = rule.hasSucceeded() ? <div className="duplicatedCurrentGoal">{env.goals[0] ? env.goals[0].toString() : undefined}</div> : undefined;
+      var duplicatedCurrentGoal = rule.hasSucceeded() ? <div className="duplicatedCurrentGoal">{env.goals[0] ? toSubscript(env.goals[0].toString()) : undefined}</div> : undefined;
       return <div className="ruleAndChild">
               <div className="ruleWrapper">
                 {duplicatedCurrentGoal}
                 <div className={ruleClasses}>
-                  {showOriginalRule ? <div className="original">{ruleStrings[i]}</div> : undefined}
-                  {showSubstituting ? substituting : undefined}
-                  {showRewrittenRule ? <div className="new">{rewrittenRuleStrings[i]}</div> : undefined}
+                  {originalRule}{substituting}{rewrittenRule}
                 </div>
                 <div className="longestPlaceholder">
                   {showOriginalRule ? longestRuleStrings : undefined}
@@ -215,7 +234,7 @@ var Goal = React.createClass({
                       'latestGoal': i < numLatestGoals,
                       'firstNonLastestGoal': numLatestGoals > 0 && i === numLatestGoals,
                     });
-                    return <div className={goalLabelClasses}>{goal.toString()}</div>;
+                    return <div className={goalLabelClasses}>{toSubscript(goal.toString())}</div>;
                   })}
                 </div>;
 
@@ -224,7 +243,7 @@ var Goal = React.createClass({
     if (env.options && env.options.solution) {
       substString = env.options.solution.toString() === "yes" ? "" : env.options.solution.toString();
     }
-    var subst = <div className="subst">{substString}</div>;
+    var subst = <div className="subst">{toSubscript(substString)}</div>;
 
     // label
     var labelsClasses = cx({
