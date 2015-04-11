@@ -4,8 +4,6 @@ mui = './node_modules/material-ui/src';
 var gutil = require('gulp-util');
 
 // TODO: set a flag: gulp-util, env.target, isProduction
-// TODO: ugilify
-// TODO: minify css
 
 module.exports = {
   browserSync: {
@@ -24,7 +22,8 @@ module.exports = {
     src + '/less/**',
     mui + '/less/**'
         ],
-    dest: dest
+    dest: dest,
+    debug: gutil.env.type !== 'production'
   },
   markup: {
     src: src + "/www/**",
