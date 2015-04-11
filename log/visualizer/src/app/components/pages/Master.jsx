@@ -6,6 +6,13 @@ var AppCanvas = mui.AppCanvas;
 var Menu = mui.Menu;
 var IconButton = mui.IconButton;
 RouteHandler = Router.RouteHandler;
+var Help = require('../components/Help.jsx');
+var Dialog = mui.Dialog;
+var marked = require('marked');
+
+// using brfs transform
+var fs = require('fs');
+var text = fs.readFileSync(__dirname + '/About.md', 'utf8');
 
 function getStateFromStores() {
   return {
@@ -32,6 +39,10 @@ var Demo = React.createClass({
     EditorActionCreators.didMount();
   },
 
+  onHelpButtonTouchTap: function() {
+    this.refs.about.show();
+  },
+
   render: function() {
     var title = "Prolog Visualizer";
 
@@ -40,7 +51,23 @@ var Demo = React.createClass({
         className="github-icon-button"
         iconClassName="muidocs-icon-custom-github"
         href="https://github.com/zhxnlai/printf"
-        linkButton={true} tooltip="GitHub"/>
+        linkButton={true}/>
+    );
+    var helpButton = (
+      <IconButton className="help-button" onTouchTap={this.onHelpButtonTouchTap}>
+        <Help/>
+      </IconButton>
+    );
+
+    //Standard Actions
+    var standardActions = [
+      { text: 'Close' },
+    ];
+    var rawMarkup = marked(text);
+    var about = (
+      <Dialog ref="about" title="About Prolog Visualizer" actions={standardActions}>
+        <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
+      </Dialog>
     );
 
     return (
@@ -50,13 +77,15 @@ var Demo = React.createClass({
           title={title}
           zDepth={1}
           showMenuIconButton={false}>
-          {githubButton}
+          <div className="appbar-icon-group">
+            {helpButton}
+            {githubButton}
+          </div>
         </AppBar>
 
         <RouteHandler key={"pv"} /*this.getPath()*/ />
-
+        {about}
       </AppCanvas>
-
     );
   }
 });
