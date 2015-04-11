@@ -4,7 +4,7 @@ var assign = require('object-assign');
 var Router = require('react-router');
 var urlencode = require('urlencode');
 
-var CodeMirror = require('react-code-mirror');
+var CodeMirror = require('./ReactCodeMirror.jsx');
 var ohm = require('../../libs/ohm.min.js');
 
 var EditorStore = require('../../stores/EditorStore.js');

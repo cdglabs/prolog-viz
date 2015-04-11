@@ -8,8 +8,8 @@
 @thirdTextColor: @grey-700;
 
 .visualization {
-  // z-index: 1;
   height: 100%;
+  // width: 100%;
   position: relative;
 }
 .content {
@@ -71,37 +71,38 @@
     align-items: flex-start;
     flex-direction: column;
 
-    .contents {
+    >.contents {
       display: flex;
       flex-direction: column;
-    }
 
-    .goals {
-      display: flex;
-      flex-direction: column;
-      align-items: baseline;
+      >.goals {
+        display: flex;
+        flex-direction: column;
+        align-items: baseline;
 
-      .currentGoal {
-        font-weight: bold;
+        .currentGoal {
+          font-weight: bold;
+        }
+
+        .firstNonLastestGoal:not(:only-child) {
+          border-top: 1px dashed @primaryBorderColor;
+        }
       }
 
-      .firstNonLastestGoal:not(:only-child) {
-        border-top: 1px dashed @primaryBorderColor;
+      >.goals.highlightLatest {
+        .latestGoal {
+          .highlightRuleSuccess;
+        }
       }
-    }
 
-    .goals.highlightLatest {
-      .latestGoal {
-        .highlightRuleSuccess;
+      >.subst:not(:empty) {
+        border-top: 1px solid @secondaryBorderColor;
       }
-    }
 
-    .subst:not(:empty) {
-      border-top: 1px solid @secondaryBorderColor;
-    }
+      >.subst {
+        color: @secondaryTextColor;
+      }
 
-    .subst {
-      color: @secondaryTextColor;
     }
   }
 
@@ -238,7 +239,7 @@
   .subst {
     // display: none;
     border: none !important;
-    color: @green-600;
+    color: @green-600 !important;
     font-weight: bold;
   }
   .rulesAndChildren {

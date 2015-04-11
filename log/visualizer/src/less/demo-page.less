@@ -70,18 +70,34 @@
 }
 
 @media all and (max-width: 640px) {
+  .master {
+    // height: 100% !important;
+  }
   .demo-page {
-    flex-flow: column;
-    flex-direction: column;
+    display: block;
+    // height: auto !important;
+
+    overflow: auto;
+
+    // flex-flow: column;
+    // flex-direction: column;
 
     .leftPanel {
-      flex: 1;
+      // flex: 1 0 auto;
+      height: auto;
       border-right: 0;
       border-bottom: 1px solid @grey-200;
     }
 
     .rightPanel {
-      flex: 1;
+      // flex: 1 0 auto;
+      height: auto;
+
+      > .visualization {
+        >.content {
+          overflow: visible;
+        }
+      }
     }
   }
 }

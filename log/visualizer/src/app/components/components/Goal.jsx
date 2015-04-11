@@ -114,6 +114,9 @@ var Goal = React.createClass({
     var longestSubstStrings = arrayMax(substStrings);
 
     var toSubscript = (string) => {
+      if (string === undefined) {
+        return;
+      }
       var regex = /(_\d*)/;
       return string.split(regex).map((substr, i) => {
         if (i%2 === 0) {
@@ -202,9 +205,9 @@ var Goal = React.createClass({
                   {originalRule}{substituting}{rewrittenRule}
                 </div>
                 <div className="longestPlaceholder">
-                  {showOriginalRule ? longestRuleStrings : undefined}
-                  {showSubstituting ? longestSubstStrings : undefined}
-                  {showRewrittenRule ? longestRewrittenRuleStrings : undefined}
+                  {showOriginalRule ? <div>{toSubscript(longestRuleStrings)}</div> : undefined}
+                  {showSubstituting ? <div>{toSubscript(longestSubstStrings)}</div> : undefined}
+                  {showRewrittenRule ? <div>{toSubscript(longestRewrittenRuleStrings)}</div> : undefined}
                 </div>
               </div>
               {showChildNode ? <div className={cx({goalWrapper: true, hideMargin: isLastFrame && showRewrittenRule})}>
@@ -239,9 +242,9 @@ var Goal = React.createClass({
                 </div>;
 
     // subst
-    var substString = "";
+    var substString;
     if (env.options && env.options.solution) {
-      substString = env.options.solution.toString() === "yes" ? "" : env.options.solution.toString();
+      substString = env.options.solution.toString() === "yes" ? undefined : env.options.solution.toString();
     }
     var subst = <div className="subst">{toSubscript(substString)}</div>;
 
