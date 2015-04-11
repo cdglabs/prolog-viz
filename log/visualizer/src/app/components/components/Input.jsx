@@ -5,7 +5,7 @@ var Router = require('react-router');
 var urlencode = require('urlencode');
 
 var CodeMirror = require('./ReactCodeMirror.jsx');
-var ohm = require('../../libs/ohm.min.js');
+// var ohm = require('../../libs/ohm.min.js');
 
 var EditorStore = require('../../stores/EditorStore.js');
 var EditorActionCreators = require('../../actions/EditorActionCreators.js');

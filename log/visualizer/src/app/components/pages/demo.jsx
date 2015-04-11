@@ -3,9 +3,8 @@ var Router = require('react-router');
 var assign = require('object-assign');
 
 var Input = require('../components/Input.jsx');
-var Info = require('../components/Info.jsx');
-var Control = require('../components/Control.jsx')
-var Examples = require('../components/Examples.jsx')
+var Control = require('../components/Control.jsx');
+var Examples = require('../components/Examples.jsx');
 var Visualization = require('../components/Visualization.jsx');
 
 var EditorStore = require('../../stores/EditorStore.js');
