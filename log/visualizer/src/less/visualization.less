@@ -5,10 +5,11 @@
 
 @primaryTextColor: @black;
 @secondaryTextColor: @grey-800;
+@thirdTextColor: @grey-700;
 
 .visualization {
-  // z-index: 1;
   height: 100%;
+  // width: 100%;
   position: relative;
 }
 .content {
@@ -16,7 +17,6 @@
   width: 100%;
   overflow: auto;
   padding: 1em;
-  display: flex;
 
   // for auto scrolling
   position: relative;
@@ -29,25 +29,22 @@
 
   // * { .ease-out(); }
 
+  .errorMessage {
+    flex: 1 0 auto;
+    align-self: center;
+    text-align: center;
+    .mui-font-style-button;
+    .monoFont;
+  }
 
-}
-
-.controls {
-  right: 0;
-  position: absolute;
-  bottom: 1em;
-}
-
-.ruleStyle {
-  // background-color: @grey-300;
-  white-space: pre;
 }
 
 .goal {
-  // padding: 0.5em 0;
   background-color: transparent;
 
   .longestPlaceholder {
+    display: flex;
+    flex-direction: column;
     height: 0;
     visibility: hidden;
   }
@@ -57,7 +54,8 @@
   flex: 0 0 auto;
   align-items: baseline;
   // flex-wrap: nowrap;
-  // flex: 1 0 auto;
+
+  white-space: pre;
 
   // for duplicated current goals
   position: relative;
@@ -65,139 +63,62 @@
   .monoFont;
   font-size: 12px;
 
-  .labels {
-    // height: 100%;
+  >.labels {
     margin-right: 1em;
-    // z-index: 1;
-
-    // background-color: @grey-100;
-    // box-sizing: border-box;
     display: flex;
-    // margin: 1px 0;
-    // text-align: center;
     flex: 0 0 auto;
-
-    // justify-content: flex-start;
-
-    // background-color: @backgroundColor;
-    // z-index: -1;
 
     align-items: flex-start;
     flex-direction: column;
 
-    .contents {
+    >.contents {
       display: flex;
       flex-direction: column;
-    }
 
-    .goals {
-      display: flex;
-      flex-direction: column;
-      align-items: baseline;
+      >.goals {
+        display: flex;
+        flex-direction: column;
+        align-items: baseline;
 
-      // background-color: #DDD;
-      .latestGoal {
-        // background-color: none;
-        .ruleStyle;
+        .currentGoal {
+          font-weight: bold;
+        }
+
+        .firstNonLastestGoal:not(:only-child) {
+          border-top: 1px dashed @primaryBorderColor;
+        }
       }
 
-      .currentGoal {
-        font-weight: bold;
-      }
-      .currentGoal.highlight {
-        .highlightRuleBefore;
-      }
-      .currentGoal.highlight.unificationSucceeded {
-        .highlightRuleSuccess;
-      }
-      .currentGoal.highlight.unificationFailed {
-        .highlightRuleFailure;
+      >.goals.highlightLatest {
+        .latestGoal {
+          .highlightRuleSuccess;
+        }
       }
 
-      .currentGoal.latestGoal.highlightLatest {
-        .highlightRuleSuccess;
-      }
-      .latestGoal.highlightLatest {
-        .highlightRuleSuccess;
+      >.subst:not(:empty) {
+        border-top: 1px solid @secondaryBorderColor;
       }
 
-      .firstNonLastestGoal:not(:only-child) {
-        // background-color: red;
-        // .ruleStyle;
-        border-top: 1px dashed @primaryBorderColor;
-        // box-sizing: border-box;
+      >.subst {
+        color: @secondaryTextColor;
       }
 
-      // .currentGoal:not(:only-child)::after {
-      //   content: ", "
-      // }
-
-
-    }
-
-    .subst:not(:empty) {
-      border-top: 1px solid @secondaryBorderColor;
-    }
-
-    .subst {
-      color: @secondaryTextColor;
     }
   }
 
-  .rulesAndChildren > * {
-    padding-left: 1em;
-    border-left: 1px solid @primaryBorderColor;
-  }
+  >.rulesAndChildren {
 
-  .rulesAndChildren {
+    > * {
+      padding-left: 1em;
+      border-left: 1px solid @primaryBorderColor;
+    }
 
-    // flex: 0 0 auto;
     flex: 1 0 auto;
-
     display: flex;
     flex-direction: column;
 
-    @paddingInBetween: 1em;
-    .ruleAndChild:first-child {
-      // padding-top: @paddingInBetween;
-    }
-
-    // padding-top: @paddingInBetween;
-
-    .ruleAndChild+.ruleAndChild > .goal > .rulesAndChildren > .ruleAndChild:first-child {
-      margin-top: @paddingInBetween;
-    }
-
-    .ruleAndChild+.ruleAndChild > .goal > .rulesAndChildren > .ruleAndChild:last-child {
-      // margin-bottom: @paddingInBetween;
-    }
-
-    .ruleAndChild+.ruleAndChild {
-      // border-top: 1px solid @primaryBorderColor;
-      // margin-top: 0.5em;
-      // padding-top: 0.5em;
-
-      .ruleAndChild+.ruleAndChild {
-
-        // padding-top: 2px;
-      }
-      // .ruleAndChild:last-child {
-      //   // margin-bottom: @paddingInBetween;
-      // }
-      // .ruleAndChild:first-child {
-      //   margin-top: @paddingInBetween;
-      // }
-
-    }
-
-
-    .previousRuleAndSubst {
-      // position: absolute;
-      display: flex;
-      flex-direction: column;
-      color: @grey-600;
-      display: none;
-
+    .ruleAndChild+.ruleAndChild > .goalWrapper:not(.hideMargin) > .goal > .rulesAndChildren > .ruleAndChild:first-child {
+      margin-top: 1em;
     }
 
     .ruleAndChild {
@@ -208,87 +129,100 @@
       // position: relative;
       // justify-content: center;
 
-
       .ruleWrapper {
-        // border-top: 1px solid @primaryBorderColor;
+        display: flex;
+        flex-direction: column;
+        align-items: baseline;
 
-      }
-
-      .duplicatedCurrentGoal {
-        position: absolute;
-        left: 0;
-        font-weight: bold;
-        // opacity: 0.4;
-        // z-index: -2;
-
-        color: @grey-500;
-      }
-      .duplicatedCurrentGoal.overlapped {
-        display: none;
-      }
-
-      .longestRule {
-        visibility: hidden;
-        height: 0;
-        // position: absolute;
-      }
-      .rule {
-        // flex: 0 0 auto;
-        display: inline-block;
-        .ruleStyle;
-      }
-
-      .rule.noChild {
-        background-color: transparent;
-      }
-      .rule.highlight {
-        .highlightRuleBefore;
-      }
-      .rule.highlight.unificationSucceeded {
-        .highlightRuleSuccess;
-
-        .lineWidget {
-          // padding: 0 4px;
-          padding: 4px;
-
-          .highlightRuleSuccess;
-          color: @deep-orange-900;
+        >.duplicatedCurrentGoal {
+          position: absolute;
+          left: 0;
+          font-weight: bold;
+          color: @grey-500;
         }
-      }
-      .rule.highlight.unificationFailed {
-        .highlightRuleFailure;
-      }
+        >.duplicatedCurrentGoal.overlapped {
+          display: none;
+        }
 
-      .rule.shouldStrike {
-        text-decoration: line-through;
-        background-color: transparent;
+        >.rule {
+          display: flex;
+          flex-direction: column;
+          align-items: baseline;
+
+          > .substituting {
+            color: @thirdTextColor;
+          }
+        }
+        >.rule.shouldStrike {
+          text-decoration: line-through;
+          background-color: transparent;
+        }
       }
     }
   }
-
-  // counter
-  // counter-reset: step-counter;
-  // .labelChild::before {
-  //     content: counter(step-counter);
-  //     counter-increment: step-counter;
-  //     margin-right: 5px;
-  //     font-size: 80%;
-  // }
 }
 
-.goal.currentEnv > .labels > .contents {
+.goal.currentEnv {
+  > .labels > .contents {
     outline: @primaryBorderColor dashed 1px;
 
+    >.goals.highlightCurrent {
+      >.currentGoal {
+        .highlightRuleBefore;
+      }
+    }
+    >.goals.highlightCurrent.succeeded {
+      >.currentGoal {
+        .highlightRuleSuccess;
+      }
+    }
+    >.goals.highlightCurrent.failed {
+      >.currentGoal {
+        .highlightRuleFailure;
+      }
+    }
   }
+  >.rulesAndChildren {
+    >.ruleAndChild {
+      >.ruleWrapper {
+        .rule.highlight {
+          .highlightRuleBefore;
+        }
+        .rule.highlight.succeeded {
+          .highlightRuleSuccess;
 
-  // border: 2px dashed @grey-500;
-  // background-color: @grey-50;
-  // background-color: @grey-300;
-
-
-.goal.nothing {
-  display: none;
+          .substituting {
+            // padding: 4px;
+            color: @deep-orange-900;
+          }
+        }
+        .rule.highlight.failed {
+          .highlightRuleFailure;
+        }
+      }
+    }
+  }
 }
+
+.goal:not(.currentEnv) {
+  > .labels > .contents {
+    .goals.highlightCurrent {
+      .currentGoal {
+        .highlightRulePath;
+      }
+    }
+  }
+  >.rulesAndChildren {
+    >.ruleAndChild {
+      >.ruleWrapper {
+        .rule.highlight.succeeded {
+          .highlightRulePath;
+        }
+      }
+    }
+  }
+}
+
 .goal.solution {
   color: @green-600;
 
@@ -305,26 +239,18 @@
   .subst {
     // display: none;
     border: none !important;
-    color: @green-600;
+    color: @green-600 !important;
     font-weight: bold;
   }
   .rulesAndChildren {
     display: none;
   }
 }
+
 .goal.shouldHideRulesAndChildren {
   .rulesAndChildren {
     display: none;
   }
-  // .goals {
-  //   :not(.latestGoal) {
-  //     display: none;
-  //   }
-  // }
-  .subst {
-    // display: none;
-  }
-
 }
 
 @selectionColor: #B5D5FF;
@@ -336,6 +262,10 @@
 }
 .highlightRuleBefore {
   background-color: @yellow-200 !important;
+}
+.highlightRulePath {
+  // text-decoration: underline;
+  background-color: @grey-200 !important;
 }
 
 .highlightApplication {

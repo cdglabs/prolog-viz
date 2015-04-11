@@ -3,14 +3,14 @@ var Constants = require('../constants/Constants');
 var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
 var ohm = require('../libs/ohm.min.js');
-var PrologInterpreter = require('../libs/prolog.js');
+var PrologInterpreter = require('../libs/prolog/prolog.js');
 var EditorActionCreators = require('../actions/EditorActionCreators.js');
 
 var ActionTypes = Constants.ActionTypes;
 
 var CHANGE_EVENT = 'change';
 
-var DEFAULT_TEXT = "father(orville, abe).\nfather(abe, homer).\nfather(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\nparent(X, Y) :- father(X, Y).\ngrandfather(X, Y) :- father(X, Z), parent(Z, Y).\ngrandfather(X, Y)?";
+var DEFAULT_TEXT = "father(orville, abe).\nfather(abe, homer).\nfather(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\ngrandfather(X, Y) :- father(X, Z), father(Z, Y).\ngrandfather(X, Y)?";
 
 // Misc Helpers
 // ------------
@@ -64,10 +64,7 @@ var store = function() {
 
   var cursorIndex;
 
-  var trace;
-
   var syntaxError;
-  var syntaxHighlight;
   var matchTrace;
 
   return {
@@ -76,7 +73,7 @@ var store = function() {
     },
 
     getText: function() {
-      return text ? text : "";
+      return text || "";
     },
     setText: function(value) {
       text = value;
@@ -93,7 +90,6 @@ var store = function() {
     getShowOnlyCompatible: function() {
       return showOnlyCompatible;
     },
-
     setShowOnlyCompatible: function(on) {
       showOnlyCompatible = on;
       this.updateProgram();
@@ -106,53 +102,6 @@ var store = function() {
             .loadGrammarsFromScriptElement(document.getElementById(domId))
             .grammar(grammar);
           L = PrologInterpreter(g);
-          syntaxHighlight = L.grammar && L.grammar.semanticAction({
-            number: function(_) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "number" }
-              );
-            },
-            ident: function(_, _) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "ident" }
-              );
-            },
-            keyword: function(_) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "keyword" }
-              );
-            },
-            variable: function(_, _) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "variable" }
-              );
-            },
-            symbol: function(_, _) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "symbol" }
-              );
-            },
-            comment: function(_) {
-              cm.doc.markText(
-                cm.doc.posFromIndex(this.interval.startIdx),
-                cm.doc.posFromIndex(this.interval.endIdx),
-                { className: "comment" }
-              );
-            },
-            _list: ohm.actions.map,
-            _terminal: function() {},
-            _default: ohm.actions.passThrough
-          });
         } catch (err) {
           g = undefined;
           console.log(err);
@@ -167,23 +116,21 @@ var store = function() {
           program = L.parse(text);
           iter = program.solve(showOnlyCompatible);
           var count = 0;
-          while (iter.next() && count < 5) {
+          var TIME_LIMIT = 100; // ms
+          var startTime = Date.now();
+          while (iter.next() /*&& count < 5*/ && Date.now() - startTime < TIME_LIMIT  ) {
             count++;
           }
           traceIter = iter.getTraceIter();
           syntaxError = undefined;
-          matchTrace = L.grammar.matchContents(text, 'tokens');
-          EditorStore.emitChange();
+          // matchTrace = L.grammar.matchContents(text, 'tokens');
+          this.emitChange();
         } catch (e) {
-          // console.log("error updating the program");
-          // console.log(e);
           if (e instanceof ohm.error.MatchFailure) {
-            // showSyntaxError(e, src);
             syntaxError = e;
           } else {
-            // clearEverythingElse();
-            // abs.setValue(showException(e));
             syntaxError = undefined;
+            throw e;
           }
         }
       }
@@ -191,24 +138,11 @@ var store = function() {
     getProgram: function() {
       return program;
     },
-    getSyntaxHighlight: function() {
-      return syntaxHighlight;
-    },
     getSyntaxError: function() {
       return syntaxError;
     },
     getMatchTrace: function() {
       return matchTrace;
-    },
-    getIter: function() {
-      return iter;
-    },
-    getRootEnv: function() {
-      var ret;
-      if (iter) {
-        ret = iter.getRootEnv();
-      }
-      return ret;
     },
 
     getTraceIter: function() {
@@ -229,15 +163,24 @@ var store = function() {
       }
     },
     setStep: function(step) {
-      traceIter.setStep(step);
+      if (traceIter.getStep !== step) {
+        traceIter.setStep(step);
+        return true;
+      }
     }
   };
 };
 
-var EditorStore = assign({}, EventEmitter.prototype, store(), {
+var EditorStore = assign({}, EventEmitter.prototype, {
 
   emitChange: function() {
-    this.emit(CHANGE_EVENT);
+    setTimeout(() => {
+        if (!AppDispatcher.isDispatching()) {
+          this.emit(CHANGE_EVENT);
+        } else {
+          this.emitChange();
+        }
+    }, 3);
   },
 
   /**
@@ -251,7 +194,7 @@ var EditorStore = assign({}, EventEmitter.prototype, store(), {
     this.removeListener(CHANGE_EVENT, callback);
   },
 
-});
+}, store());
 
 EditorStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
@@ -279,8 +222,9 @@ EditorStore.dispatchToken = AppDispatcher.register(function(payload) {
       break;
 
     case ActionTypes.SET_STEP:
-      EditorStore.setStep(action.value);
-      EditorStore.emitChange();
+      if (EditorStore.setStep(action.value)) {
+        EditorStore.emitChange();
+      }
       break;
 
     case ActionTypes.SET_SHOW_COMPATIBLE:
@@ -292,7 +236,6 @@ EditorStore.dispatchToken = AppDispatcher.register(function(payload) {
       console.log("No implementation for action: "+action.type);
       break;
   }
-
 });
 
 module.exports = EditorStore;

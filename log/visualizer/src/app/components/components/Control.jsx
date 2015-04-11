@@ -9,9 +9,6 @@ var ForwardIcon = require('../components/ForwardIcon.jsx');
 var BackwardIcon = require('../components/BackwardIcon.jsx');
 var assign = require('object-assign');
 
-var CodeMirror = require('react-code-mirror');
-require('codemirror/addon/display/placeholder.js');
-
 var EditorStore = require('../../stores/EditorStore.js');
 var EditorActionCreators = require('../../actions/EditorActionCreators.js');
 
@@ -80,6 +77,34 @@ var Control = React.createClass({
     EditorActionCreators.setShowCompatible(on);
   },
 
+  onAutoplayChange: function(e, on) {
+    var count = 0;
+    if (on) {
+      this.interval = setInterval(() => {
+        var step = 0;
+        var maxStep = 0;
+        var traceIter = this.state.traceIter;
+        if (traceIter) {
+          step = traceIter.getStep();
+          maxStep = traceIter.getMax();
+        }
+        if (step === maxStep) {
+          count++;
+          if (count > 10) {
+            EditorActionCreators.setStep(0);
+          }
+        } else {
+          this.forward();
+          count = 0;
+        }
+      }, 1000);
+    } else {
+      if (this.interval) {
+        clearInterval(this.interval);
+      }
+    }
+  },
+
   render: function() {
     var classes = this.getClasses('control', {
       // "prin": true
@@ -110,23 +135,17 @@ var Control = React.createClass({
             <ForwardIcon/>
             </IconButton>
 
-            // <FlatButton className="left" label="Back" onTouchTap={this.backward}/>
-
     var back = <IconButton className="left" onTouchTap={this.backward}>
             <BackwardIcon/>
             </IconButton>
 
-    // var back = <BackwardIcon
-    //         className="left"
-    //         onTouchTap={this.backward}/>
-
-            // <FlatButton className="right" label="Forward" onTouchTap={this.forward}/>
-
+    // TODO: add a play button
 
     return (
       <div className={classes}>
         <div className="toggle">
-          <Toggle name="toggleName1" value="toggleValue1" label="Hide rules with incompatible name" defaultToggled={this.state.showOnlyCompatible} onToggle={this.onShowCompatibleNameChange}/>
+          <Toggle name="toggleName1" value="toggleValue1" label="Autoplay" defaultToggled={this.state.onAutoplayChange} onToggle={this.onAutoplayChange}/>
+          <Toggle name="toggleName2" value="toggleValue2" label="Hide rules with incompatible name" defaultToggled={this.state.showOnlyCompatible} onToggle={this.onShowCompatibleNameChange}/>
         </div>
 
         <div className="slider">

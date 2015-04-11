@@ -1,12 +1,15 @@
 var React = require('react');
 var Classable = require('../../mixins/classable.js');
 var assign = require('object-assign');
+var Router = require('react-router');
+var urlencode = require('urlencode');
 
-var CodeMirror = require('react-code-mirror');
-var ohm = require('../../libs/ohm.min.js');
+var CodeMirror = require('./ReactCodeMirror.jsx');
+// var ohm = require('../../libs/ohm.min.js');
 
 var EditorStore = require('../../stores/EditorStore.js');
 var EditorActionCreators = require('../../actions/EditorActionCreators.js');
+var ExamplesStore = require('../../stores/ExamplesStore.js');
 
 function getStateFromStores() {
   return {
@@ -15,13 +18,16 @@ function getStateFromStores() {
     program: EditorStore.getProgram(),
     traceIter: EditorStore.getTraceIter(),
     syntaxError: EditorStore.getSyntaxError(),
-    syntaxHighlight: EditorStore.getSyntaxHighlight(),
-    matchTrace: EditorStore.getMatchTrace(),
+    examples : ExamplesStore.getExamples(),
   };
 }
 
 var Input = React.createClass({
-  mixins: [Classable],
+  mixins: [Classable, Router.State, Router.Navigation],
+
+  contextTypes: {
+    router: React.PropTypes.func
+  },
 
   getInitialState: function() {
     return getStateFromStores();
@@ -30,6 +36,56 @@ var Input = React.createClass({
   componentDidMount: function() {
     EditorStore.addChangeListener(this._onChange);
     // this.refs.codeMirror.editor.on('cursorActivity', this.handleCursorActivity);
+
+    // var L = this.state.L;
+    // this.syntaxHighlight = L.grammar && L.grammar.semanticAction({
+    //   number: function(_) {
+    //     cm.doc.markText(
+    //       cm.doc.posFromIndex(this.interval.startIdx),
+    //       cm.doc.posFromIndex(this.interval.endIdx),
+    //       { className: "number" }
+    //     );
+    //   },
+    //   ident: function(_, _) {
+    //     cm.doc.markText(
+    //       cm.doc.posFromIndex(this.interval.startIdx),
+    //       cm.doc.posFromIndex(this.interval.endIdx),
+    //       { className: "ident" }
+    //     );
+    //   },
+    //   keyword: function(_) {
+    //     cm.doc.markText(
+    //       cm.doc.posFromIndex(this.interval.startIdx),
+    //       cm.doc.posFromIndex(this.interval.endIdx),
+    //       { className: "keyword" }
+    //     );
+    //   },
+    //   variable: function(_, _) {
+    //     cm.doc.markText(
+    //       cm.doc.posFromIndex(this.interval.startIdx),
+    //       cm.doc.posFromIndex(this.interval.endIdx),
+    //       { className: "variable" }
+    //     );
+    //   },
+    //   symbol: function(_, _) {
+    //     cm.doc.markText(
+    //       cm.doc.posFromIndex(this.interval.startIdx),
+    //       cm.doc.posFromIndex(this.interval.endIdx),
+    //       { className: "symbol" }
+    //     );
+    //   },
+    //   comment: function(_) {
+    //     cm.doc.markText(
+    //       cm.doc.posFromIndex(this.interval.startIdx),
+    //       cm.doc.posFromIndex(this.interval.endIdx),
+    //       { className: "comment" }
+    //     );
+    //   },
+    //   _list: ohm.actions.map,
+    //   _terminal: function() {},
+    //   _default: ohm.actions.passThrough
+    // });
+
   },
 
   componentWillUnmount: function() {
@@ -55,72 +111,80 @@ var Input = React.createClass({
   },
 
   componentDidUpdate: function() {
+
+    var exampleName = urlencode.decode(this.getParams().exampelName);
+    if (exampleName) {
+      var text;
+      this.state.examples.forEach(function(example) {
+        if (example.name === exampleName) {
+          text = example.code;
+        }
+      });
+      if (text) {
+        var cm = this.refs.codeMirror.editor;
+        if (cm) {
+          if (text !== cm.getValue()) {
+            this.showingExample = true;
+            cm.setValue(text);
+            this.showingExample = false;
+          }
+        }
+      }
+    }
+
     var traceIter = this.state.traceIter;
+    var syntaxError = this.state.syntaxError;
+    var syntaxHighlight = this.state.syntaxHighlight;
+
     if (traceIter) {
       var trace = traceIter.getCurrentTrace();
-      if (trace.currentRule) {
-        switch(trace.status) {
-          case "BEFORE":
-          case "REWRITING_HEAD":
+      if (trace.message && !syntaxError) {
+        switch(trace.message) {
+          case "1":
             this.highlight(trace, 'highlightRuleBefore');
             break;
-          case "SUCCESS":
-          case "SUBST":
-          case "REWRITING_BODY":
-          case "NEW_GOAL":
+          case "2.1":
+          case "3":
             this.highlight(trace, 'highlightRuleSuccess');
             break;
-          case "FAILURE":
+          case "2.2":
             this.highlight(trace, 'highlightRuleFailure');
             break;
           default:
             this.highlight();
+            break;
         }
       } else {
         this.highlight();
       }
     }
 
-    var syntaxError = this.state.syntaxError;
-    var syntaxHighlight = this.state.syntaxHighlight;
-    if (syntaxError) {
-      this.highlight();
-      console.log(syntaxError);
-    }
     var cm = this.refs.codeMirror.editor;
     this.showSyntaxError(syntaxError, cm.getValue());
     if (syntaxHighlight) {
-      // syntaxHighlight(this.state.matchTrace);
     }
-
   },
 
   showSyntaxError: function(e, src) {
     var cm = this.refs.codeMirror.editor;
-    var self = this;
-    setTimeout(
-      function() {
-        if (self.lineWidget) {
-          cm.removeLineWidget(self.lineWidget);
+    setTimeout(() => {
+        if (this.lineWidget) {
+          cm.removeLineWidget(this.lineWidget);
         }
         if (e && cm.getValue() === src) {
-          function repeat(x, n) {
+          var repeat = function(x, n) {
             var xs = [];
             while (n-- > 0) {
               xs.push(x);
             }
             return xs.join('');
-          }
+          };
           var msg = 'Expected: ' + e.getExpectedText();
           var pos = cm.posFromIndex(e.getPos());
-          // var error = toDOM(['parseError', repeat(' ', pos.ch) + '^\n' + msg]);
-          // parseErrorWidget = conc.addLineWidget(pos.line, error);
-          // $(error).hide().slideDown();
           var msgEl = document.createElement("div");
           msgEl.className = "errorMsg";
           msgEl.appendChild(document.createTextNode(repeat(' ', pos.ch) + '^\n' + msg));
-
-          self.lineWidget = cm.addLineWidget(pos.line, msgEl, {coverGutter: false, noHScroll: true});
+          this.lineWidget = cm.addLineWidget(pos.line, msgEl, {coverGutter: false, noHScroll: true});
         }
       },
       500
@@ -131,90 +195,14 @@ var Input = React.createClass({
     var cm = this.refs.codeMirror.editor;
     cm.getAllMarks().forEach(function(m) { m.clear(); });
 
-    var interval = trace && trace.currentRule ? trace.currentRule.interval : undefined;
-
-    if (cm && interval) {
-      var startPos = cm.posFromIndex(interval.startIdx),
-          endPos = cm.posFromIndex(interval.endIdx);
-      cm.markText(startPos, endPos, { className: className });
-
-      // this.highlightWidget(trace, endPos.line);
-    } else {
-      // this.highlightWidget();
-
-      // console.log("code mirror not available");
-    }
-  },
-
-  highlightWidget: function(trace, line) {
-    var cm = this.refs.codeMirror.editor;
-    if (this.lineWidget) {
-      cm.removeLineWidget(this.lineWidget);
-    }
-
-    if (!trace) {
-      return;
-    }
-
-    var msg = "";
-
-    // if (trace.rewrittenHead && !trace.rewrittenBody) {
-    //   msg += trace.rewrittenHead.toString()+"\n";
-    // }
-    //
-    // if (trace.rewrittenHead && trace.rewrittenBody) {
-    //   msg += trace.rewrittenHead.toString()+" :- "+trace.rewrittenBody.toString()+"\n";
-    // }
-
-    if (trace.currentRule) {
-      msg += trace.currentRule.toString() + " -- Renamed rule\n";
-    }
-
-    if (trace.goal) {
-      msg += trace.goal.toString();
-    }
-    if (trace.subst) {
-      msg += " -> "+trace.subst.toString();
-    }
-
-    msg += " -- "
-    switch(trace.status) {
-      case "BEFORE":
-        msg += "Matching goal";
-        break;
-      case "REWRITING_HEAD":
-        msg += "Rewriting goal";
-        break;
-      case "SUBST":
-        msg += "Subsituting";
-        break;
-      case "REWRITING_BODY":
-        msg += "Rewriting body";
-        break;
-      case "NEW_GOAL":
-        if (trace.goal.toString().length > 0) {
-          msg += "New goal";
-        } else {
-          msg += "Found a solution";
-        }
-        break;
-      case "SUCCESS":
-        msg += "Unification Succeeded";
-        break;
-      case "FAILURE":
-        msg += "Unification Failed";
-        break;
-      default:
-    }
-
-    if (cm && msg) {
-      var msgEl = document.createElement("div");
-      msgEl.className = "errorMsg";
-      msgEl.appendChild(document.createTextNode(msg));
-
-      this.lineWidget = cm.addLineWidget(line, msgEl, {coverGutter: false, noHScroll: true});
-    } else {
-      // console.log("code mirror not available");
+    if (trace) {
+      var currentRule = trace.currentEnv.getCurRule();
+      var interval = currentRule ? currentRule.interval : undefined;
+      if (interval) {
+        var startPos = cm.posFromIndex(interval.startIdx),
+            endPos = cm.posFromIndex(interval.endIdx);
+        cm.markText(startPos, endPos, { className: className });
+      }
     }
   },
 
@@ -225,9 +213,17 @@ var Input = React.createClass({
       clearTimeout(this.timeout);
     }
 
-    this.timeout = setTimeout(function() {
+    if (this.showingExample) {
+      // EditorActionCreators.changeText(e.target.value);
       EditorActionCreators.changeText(e.target.value);
-    }, 500);
+
+    } else {
+      // the change is caused by user input
+      this.timeout = setTimeout(() => {
+        this.replaceWith('root');
+        EditorActionCreators.changeText(e.target.value);
+      }, 500);
+    }
   },
 
   render: function() {
@@ -242,7 +238,6 @@ var Input = React.createClass({
       defaultValue: this.state.text,
       height: "dynamic",
       minHeight: 600,
-      // width: "100%",
     };
 
     return (

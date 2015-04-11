@@ -2,7 +2,7 @@ var React = require('react');
 var Classable = require('../../mixins/classable.js');
 var assign = require('object-assign');
 var Router = require('react-router');
-var Link = Router.Link;
+// var Link = Router.Link;
 var urlencode = require('urlencode');
 
 var ExamplesStore = require('../../stores/ExamplesStore.js');
@@ -15,7 +15,7 @@ function getStateFromStores() {
 }
 
 var Examples = React.createClass({
-  mixins: [Classable],
+  mixins: [Classable, Router.Navigation],
 
   getInitialState: function() {
     return getStateFromStores();
@@ -40,15 +40,20 @@ var Examples = React.createClass({
     // value: React.PropTypes.string.isRequired,
   },
 
+  onLinkClicked: function(name) {
+    this.replaceWith('examples', {exampelName: urlencode.encode(name)});
+  },
+
   render: function() {
     var classes = this.getClasses('examples', {
     });
 
-    var rows = this.state.examples.map(function(example) {
-      return <div className="example">
-              <Link to="examples" params={{exampelName: urlencode.encode(example.name)}}>{example.name}</Link>
-            </div>;
-    })
+    // <Link to="examples" params={{exampelName: urlencode.encode(example.name)}}></Link>
+    var rows = this.state.examples.map(example =>
+      <div key={example.name} className="example">
+        <a onClick={this.onLinkClicked.bind(this, example.name)}>{example.name}</a>
+      </div>
+    );
 
     return (
       <div className={classes} >
