@@ -1,6 +1,9 @@
 This Prolog visualizer is created by Zhixuan Lai and Alessandro Warth at CDG labs LA.
 
-Open Source Projects:
+###### Usage:
+- Save the visualization to PDF by pressing ⌘+P
+
+###### Made possible by:
 - [React](http://facebook.github.io/react/)
 - [react-router](https://github.com/rackt/react-router/)
 - [flux](http://material-ui.com/#/)
