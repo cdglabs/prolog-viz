@@ -39,11 +39,41 @@ var Visualization = React.createClass({
       programEl.className = "originalProgram";
       programEl.textContent = this.state.text;
 
+      var treeEl = this.refs.content.getDOMNode().cloneNode(true);
+
+      function recursive_erase_id(node) {
+          if (node.removeAttribute) { // Or node.nodeType == Node.ELEMENT_NODE
+                                      // Or even node.nodeType == 1 (IE and Opera does not define the NodeType constants!)
+              node.removeAttribute('data-reactid');
+          }
+
+          var children = node.childNodes;
+          for (var i = 0, j = children.length; i < j; i++) {
+              recursive_erase_id(children.item(i)); // Depth-first.
+          }
+      }
+
+      recursive_erase_id(treeEl);
+
+      var printContent = document.createElement("div");
+      printContent.className = "printContent";
+      printContent.appendChild(programEl);
+      printContent.appendChild(treeEl);
+
+      var aspectContent = document.createElement("div");
+      aspectContent.className = "aspectContent";
+      aspectContent.appendChild(printContent);
+
       printEl = document.createElement("div");
-      printEl.className = "printContent";
-      printEl.appendChild(programEl);
-      printEl.appendChild(this.refs.content.getDOMNode().cloneNode(true));
+      printEl.className = "aspectWrapper";
+      printEl.appendChild(aspectContent);
       document.body.appendChild(printEl);
+
+      var contentRect = printContent.getBoundingClientRect();
+      var wrapperRect = printEl.getBoundingClientRect();
+
+      var scale = 1/Math.max(contentRect.height/wrapperRect.height, contentRect.width/wrapperRect.width);
+      printContent.style.transform = "scale("+scale+")";
     };
     var afterPrint = () => {
       if (printEl) {
