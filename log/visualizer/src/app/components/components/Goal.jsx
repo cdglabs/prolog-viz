@@ -122,7 +122,7 @@ var Goal = React.createClass({
         if (i%2 === 0) {
           return substr;
         } else {
-          return <sub>{substr.slice(1)}</sub>;
+          return <sub key={i}>{substr.slice(1)}</sub>;
         }
       });
     };
@@ -198,7 +198,7 @@ var Goal = React.createClass({
       }
 
       var duplicatedCurrentGoal = rule.hasSucceeded() ? <div className="duplicatedCurrentGoal">{env.goals[0] ? toSubscript(env.goals[0].toString()) : undefined}</div> : undefined;
-      return <div className="ruleAndChild">
+      return <div key={"RandC#"+i} className="ruleAndChild">
               <div className="ruleWrapper">
                 {duplicatedCurrentGoal}
                 <div className={ruleClasses}>
@@ -237,7 +237,7 @@ var Goal = React.createClass({
                       'latestGoal': i < numLatestGoals,
                       'firstNonLastestGoal': numLatestGoals > 0 && i === numLatestGoals,
                     });
-                    return <div className={goalLabelClasses}>{toSubscript(goal.toString())}</div>;
+                    return <div key={"goal#"+i} className={goalLabelClasses}>{toSubscript(goal.toString())}</div>;
                   })}
                 </div>;
 
@@ -257,7 +257,7 @@ var Goal = React.createClass({
       // onMouseLeave: parent.onMouseOutPExpr,
       // onClick: parent.onClickPExpr.bind(parent, node),
     };
-    var labels = <div key={"label"} className={labelsClasses} {...labelsProps}>
+    var labels = <div key={"labels"} className={labelsClasses} {...labelsProps}>
         <div className="contents">{goals}{subst}</div>
         <div className="longestPlaceholder">{longestSiblingLabel}</div>
       </div>;

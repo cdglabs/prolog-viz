@@ -1,13 +1,7 @@
 var React = require('react');
 var Classable = require('../../mixins/classable.js');
-var mui = require('material-ui');
-var Toggle = mui.Toggle;
 var Goal = require('./Goal.jsx');
-
 var assign = require('object-assign');
-
-var CodeMirror = require('react-code-mirror');
-require('codemirror/addon/display/placeholder.js');
 
 var EditorStore = require('../../stores/EditorStore.js');
 var EditorActionCreators = require('../../actions/EditorActionCreators.js');

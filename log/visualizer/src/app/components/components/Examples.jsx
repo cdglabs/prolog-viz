@@ -50,7 +50,7 @@ var Examples = React.createClass({
 
     // <Link to="examples" params={{exampelName: urlencode.encode(example.name)}}></Link>
     var rows = this.state.examples.map(example =>
-      <div className="example">
+      <div key={example.name} className="example">
         <a onClick={this.onLinkClicked.bind(this, example.name)}>{example.name}</a>
       </div>
     );

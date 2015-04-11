@@ -9,9 +9,6 @@ var ForwardIcon = require('../components/ForwardIcon.jsx');
 var BackwardIcon = require('../components/BackwardIcon.jsx');
 var assign = require('object-assign');
 
-var CodeMirror = require('react-code-mirror');
-require('codemirror/addon/display/placeholder.js');
-
 var EditorStore = require('../../stores/EditorStore.js');
 var EditorActionCreators = require('../../actions/EditorActionCreators.js');
 
