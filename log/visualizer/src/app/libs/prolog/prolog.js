@@ -160,11 +160,14 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName, TIME_LIMIT) {
       trace.logLastFrame();
       return false;
     } else if (env.hasSolution()) {
+      env.isFinal = true;
       trace.setCurrentEnv(env.parent);
       return env.subst;
     } else if (env.isEmpty()) {
+      env.isFinal = true;
       return solve(env.parent);
     } else if (env.children.length >= env.rules.length) {
+      env.isFinal = true;
       env.setCurRuleIndex(-1);
       trace.setCurrentEnv(env);
       trace.log();

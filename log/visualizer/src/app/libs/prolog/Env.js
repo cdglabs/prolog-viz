@@ -112,9 +112,12 @@ Env.prototype.addChild = function(env) {
   }
 };
 
-// TODO: performance optimization using object hash
 Env.prototype.clone = function() {
-  return new Env(this);
+  return this.isFinal ? this : new Env(this);
+};
+
+Env.prototype.cloneTime = function() {
+  return count;
 };
 
 Env.prototype.toString = function() {
