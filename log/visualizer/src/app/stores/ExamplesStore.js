@@ -184,3 +184,38 @@ var ExamplesStore = assign({}, EventEmitter.prototype, store(), {
 // });
 
 module.exports = ExamplesStore;
+
+/*
+male(james1).
+male(charles1).
+male(charles2).
+male(james2).
+male(george1).
+
+female(catherine).
+female(elizabeth).
+female(sophia).
+
+parent(charles1, james1).
+parent(elizabeth, james1).
+parent(charles2, charles1).
+parent(catherine, charles1).
+parent(james2, charles1).
+parent(sophia, elizabeth).
+parent(george1, sophia).
+
+mother(X, Y) :- parent(X, Y), female(X).
+father(X, Y) :- parent(X, Y), male(X).
+sibling(X, Y) :- parent(Z, X), parent(Z, Y).
+
+sister(X, Y) :- sibling(X, Y), female(X).
+brother(X, Y) :- sibling(X, Y), male(X).
+
+aunt(X, Y) :- sibling(Z, Y), parent(X, Z), female(X).
+uncle(X, Y) :- sibling(Z, Y), parent(X, Z), male(X).
+
+grandparent(X, Y) :- parent(X, Y), parent(Y, Z).
+cousin(X, Y) :- parent(Z, Y), sibling(S, Z), parent(S, X).
+
+grandparent(A, B)?
+*/

@@ -141,12 +141,11 @@ Interpreter.prototype.eval = function(code) {
 Interpreter.prototype.prettyPrintAST = Interpreter.prototype.stringify;
 
 var count = 0;
-Program.prototype.solve = function(hideRulesWithIncompatibleName) {
+Program.prototype.solve = function(hideRulesWithIncompatibleName, TIME_LIMIT) {
   // console.log("=== solve#"+count+" ===");
   count++;
   // this limit is set by React: https://github.com/facebook/react/blob/dea7efbe16596bbab7965331e277de113aeaff27/src/core/ReactInstanceHandles.js#L25
   var MAX_TREE_DEPTH = 100;
-  var TIME_LIMIT = 100; // ms
   // each goal has 4 levels: goal > rulesAndChildren > ruleAndChild > goalWrapper > goal
   var DEPTH_LIMIT = Math.floor(MAX_TREE_DEPTH/4-4);
   var startTime = Date.now();
@@ -161,18 +160,12 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
       trace.logLastFrame();
       return false;
     } else if (env.hasSolution()) {
-      if (env.parent) {
-        env.parent.setCurRuleIndex(-1);
-      }
       trace.setCurrentEnv(env.parent);
       return env.subst;
     } else if (env.isEmpty()) {
-      env.parent.setCurRuleIndex(-1);
       return solve(env.parent);
     } else if (env.children.length >= env.rules.length) {
-      if (env.parent) {
-        env.parent.setCurRuleIndex(-1);
-      }
+      env.setCurRuleIndex(-1);
       trace.setCurrentEnv(env);
       trace.log();
       return solve(env.parent);
@@ -189,6 +182,7 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
       }
 
       trace.setCurrentEnv(env);
+      env.setCurRuleIndex(-1);
       trace.log();
 
       env.setCurRuleIndex(env.children.length);

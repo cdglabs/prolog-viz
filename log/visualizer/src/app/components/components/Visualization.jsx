@@ -146,7 +146,7 @@ var Visualization = React.createClass({
     for (var oItNode = oNode; oItNode && oItNode !== node; nLeft += oItNode.offsetLeft, nTop += oItNode.offsetTop, oItNode = oItNode.offsetParent);
     var margin = 10;
     node.scrollTop = nTop-margin;
-    node.scrollLeft = nLeft-margin;
+    node.scrollLeft = nLeft-margin*10;
 
     // highlight the node
     // oNode.classList.add("highlightRule");

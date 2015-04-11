@@ -112,6 +112,7 @@ Env.prototype.addChild = function(env) {
   }
 };
 
+// TODO: performance optimization using object hash
 Env.prototype.clone = function() {
   return new Env(this);
 };

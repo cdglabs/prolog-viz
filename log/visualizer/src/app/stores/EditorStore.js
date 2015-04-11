@@ -114,12 +114,10 @@ var store = function() {
       if (g) {
         try {
           program = L.parse(text);
-          iter = program.solve(showOnlyCompatible);
-          var count = 0;
-          var TIME_LIMIT = 100; // ms
+          var TIME_LIMIT = 150;
+          iter = program.solve(showOnlyCompatible, TIME_LIMIT);
           var startTime = Date.now();
           while (iter.next() /*&& count < 5*/ && Date.now() - startTime < TIME_LIMIT  ) {
-            count++;
           }
           traceIter = iter.getTraceIter();
           syntaxError = undefined;
