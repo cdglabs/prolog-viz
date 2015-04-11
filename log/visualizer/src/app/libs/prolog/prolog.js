@@ -140,12 +140,15 @@ Interpreter.prototype.eval = function(code) {
 // that parse trees will be arrays (though maybe it's better to keep things general).
 Interpreter.prototype.prettyPrintAST = Interpreter.prototype.stringify;
 
-
 var count = 0;
 Program.prototype.solve = function(hideRulesWithIncompatibleName) {
-  console.log("=== solve#"+count+" ===");
+  // console.log("=== solve#"+count+" ===");
   count++;
+  // this limit is set by React: https://github.com/facebook/react/blob/dea7efbe16596bbab7965331e277de113aeaff27/src/core/ReactInstanceHandles.js#L25
+  var MAX_TREE_DEPTH = 100;
   var TIME_LIMIT = 100; // ms
+  // each goal has 4 levels: goal > rulesAndChildren > ruleAndChild > goalWrapper > goal
+  var DEPTH_LIMIT = Math.floor(MAX_TREE_DEPTH/4-4);
   var startTime = Date.now();
 
   var queryVarNames = this.getQueryVarNames();
@@ -154,7 +157,7 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName) {
   var resolution = (body, goals, subst) => body.slice().concat(goals.slice(1)).map(term => term.rewrite(subst));
 
   var solve = env => {
-    if (Date.now() - startTime > TIME_LIMIT || !env || env.constructor.name !== "Env" || env.getDepth() > 20) {
+    if (Date.now() - startTime > TIME_LIMIT || !env || env.constructor.name !== "Env" || env.getDepth() >= DEPTH_LIMIT) {
       trace.logLastFrame();
       return false;
     } else if (env.hasSolution()) {
