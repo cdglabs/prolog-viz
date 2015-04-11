@@ -197,7 +197,13 @@ var Goal = React.createClass({
         rewrittenRule = <div className="new">{toSubscript(rewrittenRuleStrings[i])}</div>;
       }
 
-      var duplicatedCurrentGoal = rule.hasSucceeded() ? <div className="duplicatedCurrentGoal">{env.goals[0] ? toSubscript(env.goals[0].toString()) : undefined}</div> : undefined;
+      var duplicatedCurrentGoal;
+      if (rule.hasSucceeded()) {
+        var firstGoal = env.goals[0] ? toSubscript(env.goals[0].toString()) : undefined;
+        duplicatedCurrentGoal = (
+          <div className="duplicatedCurrentGoal">{firstGoal}</div>
+        );
+      }
       return <div key={"RandC#"+i} className="ruleAndChild">
               <div className="ruleWrapper">
                 {duplicatedCurrentGoal}

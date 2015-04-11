@@ -125,7 +125,11 @@ var Visualization = React.createClass({
     var elements = document.getElementsByClassName("duplicatedCurrentGoal");
     if (elements) {
       Array.prototype.forEach.call(elements, function(el) {
+        // goal > labels+rulesAndChildren > ruleAndChild > ruleWrapper > duplicatedCurrentGoal
         var labels = el.parentNode.parentNode.parentNode.previousSibling;
+        if (!labels) {
+          return;
+        }
         var labelsRect = labels.getBoundingClientRect();
         var elRect = el.getBoundingClientRect();
         var overlap = !(labelsRect.right < elRect.left ||
@@ -134,6 +138,9 @@ var Visualization = React.createClass({
                         labelsRect.top > elRect.bottom);
         if (overlap) {
           el.classList.add("overlapped");
+
+          // el.style.outline = "black solid 1px";
+          // labels.style.outline = "black solid 1px";
         }
       });
     }
