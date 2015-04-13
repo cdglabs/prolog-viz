@@ -17,6 +17,8 @@ var uglify = require('gulp-uglify');
 var streamify = require('gulp-streamify');
 var gutil = require('gulp-util');
 var fs = require('fs');
+var uglify = require('gulp-uglify');
+var gulpif = require('gulp-if');
 
 gulp.task('browserify', function(callback) {
 
@@ -35,6 +37,10 @@ gulp.task('browserify', function(callback) {
       debug: config.debug
     });
 
+    var condition = function (file) {
+      return !config.debug;
+    };
+
     var bundle = function() {
       // Log when bundling starts
       bundleLogger.start(bundleConfig.outputName);
@@ -52,6 +58,7 @@ gulp.task('browserify', function(callback) {
 
         // uglify
         // .pipe(config.debug ? gutil.noop() : streamify(uglify()))
+        .pipe(gulpif(condition, streamify(uglify({compress: false, mangle: false}))))
 
         // Specify the output destination
         .pipe(gulp.dest(bundleConfig.dest))
@@ -67,7 +74,7 @@ gulp.task('browserify', function(callback) {
 
     var reportFinished = function() {
       // Log when bundling completes
-      bundleLogger.end(bundleConfig.outputName)
+      bundleLogger.end(bundleConfig.outputName);
 
       if(bundleQueue) {
         bundleQueue--;

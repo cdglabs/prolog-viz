@@ -29,6 +29,7 @@
     "browserify": "^6.3.3",
     "gulp": "^3.8.10",
     "gulp-gh-pages": "^0.4.0",
+    "gulp-if": "^1.2.5",
     "gulp-less": "^1.3.6",
     "gulp-minify-css": "^0.3.11",
     "gulp-notify": "^2.0.1",
