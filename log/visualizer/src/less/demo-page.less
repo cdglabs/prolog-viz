@@ -61,6 +61,13 @@
   .demo-page {
     .leftPanel {
       flex: 1;
+
+      .input {
+        .CodeMirror {
+          height: auto;
+        }
+      }
+
     }
 
     .rightPanel {
@@ -72,26 +79,36 @@
 @media all and (max-width: 640px) {
   .master {
     // height: 100% !important;
+    // position: absolute;
   }
   .demo-page {
-    display: block;
-    // height: auto !important;
 
-    overflow: auto;
+    position: absolute;
 
-    // flex-flow: column;
-    // flex-direction: column;
+    // display: block;
+    height: auto !important;
+    // overflow: auto;
 
     .leftPanel {
+      display: block;
+      // float:left;
       // flex: 1 0 auto;
       height: auto;
-      border-right: 0;
-      border-bottom: 1px solid @grey-200;
+      // border-right: 0;
+      // border-bottom: 1px solid @grey-200;
+
+      // .examples {
+      //   max-height: 200px;
+      //   overflow: auto;
+      // }
     }
 
     .rightPanel {
+      // display: block;
+      // float:left;
+
       // flex: 1 0 auto;
-      height: auto;
+      // height: auto;
 
       > .visualization {
         >.content {
