@@ -1,8 +1,6 @@
 var React = require('react');
 var Classable = require('../../mixins/classable.js');
 var tweenState = require('react-tween-state');
-var ReactTransitionGroup = React.addons.TransitionGroup;
-var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 var cx = React.addons.classSet;
 
 var Goal = React.createClass({
@@ -192,11 +190,8 @@ var Goal = React.createClass({
       }
 
       var duplicatedCurrentGoal;
-      if (rule.hasSucceeded()) {
-        var firstGoal = env.goals[0] ? toSubscript(env.goals[0].toString()) : undefined;
-        duplicatedCurrentGoal = (
-          <div className="duplicatedCurrentGoal">{firstGoal}</div>
-        );
+      if (rule.hasSucceeded() && env.goals[0]) {
+        duplicatedCurrentGoal = <div className="duplicatedCurrentGoal">{toSubscript(env.goals[0].toString())}</div>;
       }
       return <div key={"RandC#"+i} className="ruleAndChild">
               <div className="ruleWrapper">
@@ -263,6 +258,7 @@ var Goal = React.createClass({
     var goalClasses = cx({
       'goal': true,
       'currentEnv': isCurrentEnv,
+      'isLastFrame': isLastFrame,
       'shouldHideRulesAndChildren': shouldHighlightLatestGoals
     });
     var goalProps = {

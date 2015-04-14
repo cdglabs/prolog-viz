@@ -231,7 +231,7 @@ var Visualization = React.createClass({
             env: env,
             children: children,
             shouldAnimate: true,
-            showOnlyCompatible: showOnlyCompatible,
+            hideRulesWithIncompatibleName: showOnlyCompatible,
             shouldHighlightLatestGoals: !!currentEnv && !!parentEnv && parentEnv.getCurRuleIndex() === options.nthChild && parentEnv.envId === currentEnv.envId && trace.message === "3",
             trace: (!!currentEnv && env.envId === currentEnv.envId) ? trace : undefined,
             isLastFrame: !currentEnv,

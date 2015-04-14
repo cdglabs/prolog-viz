@@ -24,6 +24,6 @@ function bundle() {
   return b.bundle()
     // log errors if they happen
     .on('error', gutil.log.bind(gutil, 'Browserify Error'))
-    .pipe(source('bundle.js'))
+    .pipe(source(config.bundleConfigs[0].outputName))
     .pipe(gulp.dest(config.bundleConfigs[0].dest));
 }
