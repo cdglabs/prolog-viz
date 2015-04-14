@@ -91,6 +91,7 @@ gulp.task('browserify', function(callback) {
       bundler = watchify(bundler);
       // Rebundle on update
       bundler.on('update', bundle);
+      bundler.on('log', gutil.log); // output build logs to terminal
     }
 
     var reportFinished = function() {
