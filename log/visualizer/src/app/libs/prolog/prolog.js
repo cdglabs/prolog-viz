@@ -1,13 +1,7 @@
 var ohm = require('../ohm.min.js');
 var assign = require('object-assign');
 
-var AST = require('./AST.js');
-var Program = AST.Program;
-var Rule = AST.Rule;
-var Clause = AST.Clause;
-var Var = AST.Var;
-var Subst = AST.Subst;
-
+var {Program, Rule, Clause, Var, Subst} = require('./AST.js');
 var Env = require('./Env.js');
 var Trace = require('./Trace.js');
 
@@ -156,7 +150,7 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName, TIME_LIMIT) {
   var resolution = (body, goals, subst) => body.slice().concat(goals.slice(1)).map(term => term.rewrite(subst));
 
   var solve = env => {
-    if (Date.now() - startTime > TIME_LIMIT || !env || env.constructor.name !== "Env" || env.getDepth() >= DEPTH_LIMIT) {
+    if (Date.now() - startTime > TIME_LIMIT || !env || env.constructor.name !== Env.name || env.getDepth() >= DEPTH_LIMIT) {
       trace.logLastFrame();
       return false;
     } else if (env.hasSolution()) {
@@ -204,7 +198,7 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName, TIME_LIMIT) {
         var reversedSubst = {};
         goal.getQueryVarNames().forEach(varName => {
           var value = subst.lookup(varName);
-          if (value.constructor.name === "Var") {
+          if (value.constructor.name === Var.name) {
             reversedSubst[value.name] = varName;
             subst.unbind(varName);
           }
@@ -253,6 +247,8 @@ Program.prototype.solve = function(hideRulesWithIncompatibleName, TIME_LIMIT) {
     next: function() {
       return solve(trace.currentEnv);
     },
-    getTraceIter: trace.getIterator.bind(trace)
+    getTraceIter: function() {
+      return trace.getIterator();
+    }
   };
 };

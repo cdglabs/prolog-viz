@@ -11,9 +11,9 @@
   "browserify": {
     "transform": [
       [
-        "reactify",
-        {
-          "es6": true
+        "babelify", {
+          "blacklist": ["useStrict"],
+          "compact": false
         }
       ],
       [
@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "autoprefixer-core": "^5.1.7",
+    "babelify": "^6.0.2",
     "brfs": "^1.4.0",
     "browser-sync": "^1.7.2",
     "browserify": "^6.3.3",

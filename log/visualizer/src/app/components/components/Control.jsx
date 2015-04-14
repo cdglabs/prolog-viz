@@ -139,8 +139,6 @@ var Control = React.createClass({
             <BackwardIcon/>
             </IconButton>
 
-    // TODO: add a play button
-
     return (
       <div className={classes}>
         <div className="toggle">

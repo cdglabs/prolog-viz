@@ -34,7 +34,6 @@ var Visualization = React.createClass({
         printEl.remove();
       }
 
-      // TODO: use the zoom property
       var programEl = document.createElement("div");
       programEl.className = "originalProgram";
       programEl.textContent = this.state.text;
@@ -199,8 +198,7 @@ var Visualization = React.createClass({
     if (this.state.traceIter) {
       var trace = this.state.traceIter.getCurrentTrace();
       if (trace) {
-        var rootEnv = trace.rootEnv;
-        var currentEnv = trace.currentEnv;
+        var {rootEnv, currentEnv} = trace.rootEnv;
         content = (function walkEnv(env, options) {
           if (!env) {
             return;
@@ -236,7 +234,7 @@ var Visualization = React.createClass({
             showOnlyCompatible: showOnlyCompatible,
             shouldHighlightLatestGoals: !!currentEnv && !!parentEnv && parentEnv.getCurRuleIndex() === options.nthChild && parentEnv.envId === currentEnv.envId && trace.message === "3",
             trace: (!!currentEnv && env.envId === currentEnv.envId) ? trace : undefined,
-            lastFrame: !currentEnv,
+            isLastFrame: !currentEnv,
           }, options);
           return <Goal key={env.envId} {...goalProps} />;
         }).bind(this)(rootEnv, {});
@@ -245,7 +243,7 @@ var Visualization = React.createClass({
 
     var classes = this.getClasses('visualization', {});
     return (
-      <div className={classes}>{/*TODO: no longer needed*/}
+      <div className={classes}>
         <div ref="content" className="content">
           {content}
         </div>

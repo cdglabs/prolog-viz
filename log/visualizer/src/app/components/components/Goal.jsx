@@ -75,17 +75,11 @@ var Goal = React.createClass({
     // }
 
     // props
-    var parent = this.props.parent;
-    var env = this.props.env;
-    var childNodes = this.props.children;
-    var trace = this.props.trace;
-    var shouldHighlightLatestGoals = this.props.shouldHighlightLatestGoals;
-    var hideRulesWithIncompatibleName = this.props.showOnlyCompatible;
-
-    var longestSiblingLabel = this.props.longestSiblingLabel;
-
+    var {parent, env, children, trace,
+        shouldHighlightLatestGoals,
+        hideRulesWithIncompatibleName,
+        longestSiblingLabel, isLastFrame} = this.props;
     var isCurrentEnv = !!trace;
-    var isLastFrame = this.props.lastFrame;
 
     if (env.hasSolution()) {
       // TODO
@@ -179,7 +173,6 @@ var Goal = React.createClass({
         showRewrittenRule = ruleStrings[i] !== rewrittenRuleStrings[i];
       }
 
-      // console.log(toSubscript(ruleStrings[i]));
       var originalRule;
       var substituting;
       var rewrittenRule;
@@ -218,14 +211,14 @@ var Goal = React.createClass({
               </div>
               {showChildNode ? <div className={cx({goalWrapper: true, hideMargin: isLastFrame && showRewrittenRule})}>
                                 {isLastFrame && showRewrittenRule ? "\n\n" : undefined}
-                                {childNodes[i]}
+                                {children[i]}
                               </div> : undefined}
             </div>;
     })}</div>;
 
     // === labels ===
     // goals
-    var numLatestGoals = env.options.numLatestGoals;
+    var {numLatestGoals, solution} = env.options;
     var gcConfig = {
       'goals': true,
       'highlightLatest': shouldHighlightLatestGoals,
@@ -248,10 +241,7 @@ var Goal = React.createClass({
                 </div>;
 
     // subst
-    var substString;
-    if (env.options && env.options.solution) {
-      substString = env.options.solution.toString() === "yes" ? undefined : env.options.solution.toString();
-    }
+    var substString = !solution || solution.toString() === "yes" ? undefined : solution.toString();
     var subst = <div className="subst">{toSubscript(substString)}</div>;
 
     // label

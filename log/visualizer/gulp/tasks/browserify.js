@@ -41,6 +41,15 @@ gulp.task('browserify', function(callback) {
       return !config.debug;
     };
 
+/*
+[
+  "reactify",
+  {
+    "es6": true
+  }
+],
+
+*/
     var bundle = function() {
       // Log when bundling starts
       bundleLogger.start(bundleConfig.outputName);
@@ -58,7 +67,19 @@ gulp.task('browserify', function(callback) {
 
         // uglify
         // .pipe(config.debug ? gutil.noop() : streamify(uglify()))
-        .pipe(gulpif(condition, streamify(uglify({compress: false, mangle: false}))))
+
+        .pipe(gulpif(condition,
+          streamify(uglify({
+            compress: {
+              unused: false
+            },
+            mangle: true,
+            // output: {
+            //   beautify: true,
+            //   max_line_len: 80
+            // }
+          }))
+        ))
 
         // Specify the output destination
         .pipe(gulp.dest(bundleConfig.dest))
