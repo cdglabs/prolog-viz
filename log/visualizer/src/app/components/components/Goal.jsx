@@ -82,9 +82,10 @@ var Goal = React.createClass({
     var isCurrentEnv = !!trace;
 
     if (env.hasSolution()) {
-      // TODO
-      // return only subst
-      // return <div></div>;
+      var classes = cx({
+        'solution': true,
+      });
+      return <div className={classes}>{env.options.solution.toString()}</div>;
     }
     if (env.isEmpty()) {
       return <div></div>;
@@ -262,7 +263,6 @@ var Goal = React.createClass({
     var goalClasses = cx({
       'goal': true,
       'currentEnv': isCurrentEnv,
-      'solution': env.hasSolution(),
       'shouldHideRulesAndChildren': shouldHighlightLatestGoals
     });
     var goalProps = {

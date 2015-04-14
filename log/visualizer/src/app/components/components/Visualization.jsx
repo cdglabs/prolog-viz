@@ -198,7 +198,7 @@ var Visualization = React.createClass({
     if (this.state.traceIter) {
       var trace = this.state.traceIter.getCurrentTrace();
       if (trace) {
-        var {rootEnv, currentEnv} = trace.rootEnv;
+        var {rootEnv, currentEnv} = trace;
         content = (function walkEnv(env, options) {
           if (!env) {
             return;
