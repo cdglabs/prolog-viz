@@ -12,36 +12,10 @@ var CHANGE_EVENT = 'change';
 
 var DEFAULT_TEXT = "father(orville, abe).\nfather(abe, homer).\nfather(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\ngrandfather(X, Y) :- father(X, Z), father(Z, Y).\ngrandfather(X, Y)?";
 
-// Misc Helpers
-// ------------
-String.prototype.splice = function(idx, rem, s) {
-  return (this.slice(0, idx) + s + this.slice(idx + Math.abs(rem)));
-};
-
-function clone(obj) {
-  var result = {};
-  for (var k in obj) {
-    if (obj.hasOwnProperty(k))
-      result[k] = obj[k];
-  }
-  return result;
-}
 
 // HTML5 storage API
-var SOURCE_KEY = "printf_input";
-var ARGS_SOURCE_KEY = "printf_args";
+var SOURCE_KEY = "prologVisualizer__";
 var storageAvailable = typeof(Storage) !== "undefined";
-
-// detect mobile browser
-var IS_MOBILE = typeof navigator === 'undefined' || (
-  navigator.userAgent.match(/Android/i)
-    || navigator.userAgent.match(/webOS/i)
-    || navigator.userAgent.match(/iPhone/i)
-    || navigator.userAgent.match(/iPad/i)
-    || navigator.userAgent.match(/iPod/i)
-    || navigator.userAgent.match(/BlackBerry/i)
-    || navigator.userAgent.match(/Windows Phone/i)
-);
 
 // TODO: setters should be private to file scope
 var store = function() {
@@ -54,24 +28,14 @@ var store = function() {
 
   var showOnlyCompatible = false;
 
-  if(storageAvailable) {
-    if (localStorage.getItem(SOURCE_KEY)) {
-      text = localStorage.getItem(SOURCE_KEY);
-    }
+  if(storageAvailable && localStorage.getItem(SOURCE_KEY)) {
+    text = localStorage.getItem(SOURCE_KEY);
   }
-  var highlightedNode;
-  var highlightedTopLevelNode;
-
-  var cursorIndex;
 
   var syntaxError;
   var matchTrace;
 
   return {
-    getIsMobile: function() {
-      return IS_MOBILE;
-    },
-
     getText: function() {
       return text || "";
     },
