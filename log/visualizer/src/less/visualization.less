@@ -17,6 +17,8 @@
   width: 100%;
   overflow: auto;
   padding: 1em;
+  // padding-left: 1em;
+  // padding-top: 1em;
 
   // for auto scrolling
   position: relative;
@@ -37,6 +39,9 @@
     .monoFont;
   }
 
+  >.goal {
+    padding-right: 2em;
+  }
 }
 
 .goal {
@@ -192,11 +197,11 @@
         .rule.highlight {
           .highlightRuleBefore;
         }
+
         .rule.highlight.succeeded {
           .highlightRuleSuccess;
 
           .substituting {
-            // padding: 4px;
             color: @deep-orange-900;
           }
         }
@@ -239,7 +244,117 @@
   }
 }
 
-@selectionColor: #B5D5FF;
+.content {
+  cursor: default;
+
+  .tooltip {
+    font-weight: normal;
+    background: #333;
+    background: rgba(0,0,0,.8);
+    border-radius: 0.25em;
+    color: #fff;
+    padding: 0.25em 0.5em;
+    position: absolute;
+    z-index: 98;
+    display: block;
+    pointer-events: none;
+  }
+
+  // .goalLabel.currentGoal:hover:before {
+  //   .callout;
+  // }
+
+  // goals
+  .goalLabel.latestGoal:hover:after {
+    .tooltip;
+    content: "⇧ latest goal";
+  }
+
+  .goalLabel.currentGoal:hover:after {
+    .tooltip;
+    content: "⇧ current goal";
+  }
+
+  .goalLabel:hover:after {
+    .tooltip;
+    content: "⇧ a goal";
+  }
+
+  .solution:hover:after {
+    .tooltip;
+    content: "⇧ a solution";
+  }
+
+  .subst:hover:after {
+    .tooltip;
+    content: "⇧ partial solution";
+  }
+
+  // rules
+  .rule.highlight:hover:after {
+    .tooltip;
+    content: "⇧ rule coming from";
+  }
+
+  .rule.succeeded:hover:after {
+    .tooltip;
+    content: "⇧ succeeded rule";
+  }
+
+  .rule:hover:after {
+    .tooltip;
+    content: "⇧ unexplored rule";
+  }
+
+  .rule.shouldStrike:hover:after {
+    .tooltip;
+    content: "⇧ failed rule";
+  }
+
+  .duplicatedCurrentGoal:hover:after {
+    .tooltip;
+    content: "⇧ duplicated current goal";
+  }
+
+  .goal.currentEnv {
+    .goals.highlightCurrent {
+      >.currentGoal:hover:after {
+        .tooltip;
+        content: "⇧ Unifying with goal";
+      }
+    }
+    .goals.highlightCurrent.succeeded {
+      >.currentGoal:hover:after {
+        .tooltip;
+        content: "⇧ Unification succeeded";
+      }
+    }
+    .goals.highlightCurrent.failed {
+      >.currentGoal:hover:after {
+        .tooltip;
+        content: "⇧ Unification failed";
+      }
+    }
+
+    .rule.highlight.succeeded:hover:after {
+      .tooltip;
+      content: "⇧ Unification succeeded";
+    }
+
+    .rule.highlight.failed:hover:after {
+      .tooltip;
+      content: "⇧ Unification failed";
+    }
+
+    .rule.highlight:not(.succeeded):not(.failed):hover:after {
+      .tooltip;
+      content: "⇧ Unifying with rule";
+    }
+
+  }
+
+}
+
 .highlightRuleSuccess {
   background-color: @green-200 !important;
 }
@@ -252,9 +367,4 @@
 .highlightRulePath {
   // text-decoration: underline;
   background-color: @grey-200 !important;
-}
-
-.highlightApplication {
-  background-color: CornflowerBlue;
-  color: white;
 }
