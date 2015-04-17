@@ -9,69 +9,21 @@ var EditorActionCreators = require('../actions/EditorActionCreators.js');
 var ActionTypes = Constants.ActionTypes;
 
 var CHANGE_EVENT = 'change';
-
 var DEFAULT_TEXT = "father(orville, abe).\nfather(abe, homer).\nfather(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\ngrandfather(X, Y) :- father(X, Z), father(Z, Y).\ngrandfather(X, Y)?";
-
-// Misc Helpers
-// ------------
-String.prototype.splice = function(idx, rem, s) {
-  return (this.slice(0, idx) + s + this.slice(idx + Math.abs(rem)));
-};
-
-function clone(obj) {
-  var result = {};
-  for (var k in obj) {
-    if (obj.hasOwnProperty(k))
-      result[k] = obj[k];
-  }
-  return result;
-}
-
 // HTML5 storage API
-var SOURCE_KEY = "printf_input";
-var ARGS_SOURCE_KEY = "printf_args";
+var SOURCE_KEY = "prologVisualizer__";
 var storageAvailable = typeof(Storage) !== "undefined";
-
-// detect mobile browser
-var IS_MOBILE = typeof navigator === 'undefined' || (
-  navigator.userAgent.match(/Android/i)
-    || navigator.userAgent.match(/webOS/i)
-    || navigator.userAgent.match(/iPhone/i)
-    || navigator.userAgent.match(/iPad/i)
-    || navigator.userAgent.match(/iPod/i)
-    || navigator.userAgent.match(/BlackBerry/i)
-    || navigator.userAgent.match(/Windows Phone/i)
-);
 
 // TODO: setters should be private to file scope
 var store = function() {
   var g; // grammar
-  var text = DEFAULT_TEXT; // code
+  var text = storageAvailable && localStorage.getItem(SOURCE_KEY) ? localStorage.getItem(SOURCE_KEY) : DEFAULT_TEXT; // code
   var L; // interpreter
-  var program; // result of toAST
-  var iter;
   var traceIter;
-
   var showOnlyCompatible = false;
-
-  if(storageAvailable) {
-    if (localStorage.getItem(SOURCE_KEY)) {
-      text = localStorage.getItem(SOURCE_KEY);
-    }
-  }
-  var highlightedNode;
-  var highlightedTopLevelNode;
-
-  var cursorIndex;
-
   var syntaxError;
-  var matchTrace;
 
   return {
-    getIsMobile: function() {
-      return IS_MOBILE;
-    },
-
     getText: function() {
       return text || "";
     },
@@ -81,10 +33,6 @@ var store = function() {
         localStorage.setItem(SOURCE_KEY, value);
       }
       this.updateProgram();
-    },
-
-    getInterpreter: function() {
-      return L;
     },
 
     getShowOnlyCompatible: function() {
@@ -110,20 +58,12 @@ var store = function() {
       this.updateProgram();
       return g;
     },
+
     updateProgram: function() {
       if (g) {
         try {
-          program = L.parse(text);
-          iter = program.solve(showOnlyCompatible);
-          var count = 0;
-          var TIME_LIMIT = 100; // ms
-          var startTime = Date.now();
-          while (iter.next() /*&& count < 5*/ && Date.now() - startTime < TIME_LIMIT  ) {
-            count++;
-          }
-          traceIter = iter.getTraceIter();
+          traceIter = L.solve(text, showOnlyCompatible);
           syntaxError = undefined;
-          // matchTrace = L.grammar.matchContents(text, 'tokens');
           this.emitChange();
         } catch (e) {
           if (e instanceof ohm.error.MatchFailure) {
@@ -135,14 +75,8 @@ var store = function() {
         }
       }
     },
-    getProgram: function() {
-      return program;
-    },
     getSyntaxError: function() {
       return syntaxError;
-    },
-    getMatchTrace: function() {
-      return matchTrace;
     },
 
     getTraceIter: function() {

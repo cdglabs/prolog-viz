@@ -25,7 +25,6 @@ module.exports = {
   }),
 
 
-  // TODO: FIXME XXX
   PayloadSources: keyMirror({
     SERVER_ACTION: null,
     VIEW_ACTION: null

@@ -61,6 +61,13 @@
   .demo-page {
     .leftPanel {
       flex: 1;
+
+      .input {
+        .CodeMirror {
+          height: auto;
+        }
+      }
+
     }
 
     .rightPanel {
@@ -72,26 +79,36 @@
 @media all and (max-width: 640px) {
   .master {
     // height: 100% !important;
+    // position: absolute;
   }
   .demo-page {
-    display: block;
-    // height: auto !important;
 
-    overflow: auto;
+    position: absolute;
 
-    // flex-flow: column;
-    // flex-direction: column;
+    // display: block;
+    height: auto !important;
+    // overflow: auto;
 
     .leftPanel {
+      display: block;
+      // float:left;
       // flex: 1 0 auto;
       height: auto;
-      border-right: 0;
-      border-bottom: 1px solid @grey-200;
+      // border-right: 0;
+      // border-bottom: 1px solid @grey-200;
+
+      // .examples {
+      //   max-height: 200px;
+      //   overflow: auto;
+      // }
     }
 
     .rightPanel {
+      // display: block;
+      // float:left;
+
       // flex: 1 0 auto;
-      height: auto;
+      // height: auto;
 
       > .visualization {
         >.content {
@@ -102,28 +119,48 @@
   }
 }
 
-.originalProgram {
-  white-space: pre;
-  .monoFont;
-  margin-left: 1em;
-  margin-top: 1em;
-  line-height: 1.2;
-  font-size: 10px;
-}
-
+// --- print ---
 @media print {
  /* All your print styles go here */
 
-  body > :not(.printContent) {
+  body > :not(.aspectWrapper) {
     display: none !important;
   }
 
-  .printContent {
-    // position: fixed;
+  .originalProgram {
+    white-space: pre;
+    .monoFont;
+    margin-left: 1em;
+    margin-top: 1em;
+    line-height: 1.2;
+    font-size: 10px;
+  }
+
+  // http://stackoverflow.com/questions/1311068/scale-a-div-to-fit-in-window-but-preserve-aspect-ratio
+  .aspectWrapper {
+    display: inline-block; /* shrink to fit */
+    width: 100%; /* whatever width you like */
+    position: relative; /* so .content can use position: absolute */
+
+    .aspectContent {
+      position: absolute;
+      top: 0; bottom: 0; right: 0; left: 0; /* follow the parent's edges */
+      // outline: thin dashed green; /* just so you can see the box */
+      // overflow: hidden;
+    }
+  }
+  .aspectWrapper::after {
+    padding-top: 100%; /* percentage of containing block _width_ */
     display: block;
+    content: '';
+  }
+
+  .printContent {
+    display: inline-block;
     top: 0;
     left: 0;
     z-index: 10;
+    transform-origin: top left;
 
     .content {
       overflow: visible;

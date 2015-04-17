@@ -34,16 +34,45 @@ var Visualization = React.createClass({
         printEl.remove();
       }
 
-      // TODO: use the zoom property
       var programEl = document.createElement("div");
       programEl.className = "originalProgram";
       programEl.textContent = this.state.text;
 
+      var treeEl = this.refs.content.getDOMNode().cloneNode(true);
+
+      function recursive_erase_id(node) {
+          if (node.removeAttribute) { // Or node.nodeType == Node.ELEMENT_NODE
+                                      // Or even node.nodeType == 1 (IE and Opera does not define the NodeType constants!)
+              node.removeAttribute('data-reactid');
+          }
+
+          var children = node.childNodes;
+          for (var i = 0, j = children.length; i < j; i++) {
+              recursive_erase_id(children.item(i)); // Depth-first.
+          }
+      }
+
+      recursive_erase_id(treeEl);
+
+      var printContent = document.createElement("div");
+      printContent.className = "printContent";
+      printContent.appendChild(programEl);
+      printContent.appendChild(treeEl);
+
+      var aspectContent = document.createElement("div");
+      aspectContent.className = "aspectContent";
+      aspectContent.appendChild(printContent);
+
       printEl = document.createElement("div");
-      printEl.className = "printContent";
-      printEl.appendChild(programEl);
-      printEl.appendChild(this.refs.content.getDOMNode().cloneNode(true));
+      printEl.className = "aspectWrapper";
+      printEl.appendChild(aspectContent);
       document.body.appendChild(printEl);
+
+      var contentRect = printContent.getBoundingClientRect();
+      var wrapperRect = printEl.getBoundingClientRect();
+
+      var scale = 1/Math.max(contentRect.height/wrapperRect.height, contentRect.width/wrapperRect.width);
+      printContent.style.transform = "scale("+scale+")";
     };
     var afterPrint = () => {
       if (printEl) {
@@ -95,7 +124,11 @@ var Visualization = React.createClass({
     var elements = document.getElementsByClassName("duplicatedCurrentGoal");
     if (elements) {
       Array.prototype.forEach.call(elements, function(el) {
+        // goal > labels+rulesAndChildren > ruleAndChild > ruleWrapper > duplicatedCurrentGoal
         var labels = el.parentNode.parentNode.parentNode.previousSibling;
+        if (!labels) {
+          return;
+        }
         var labelsRect = labels.getBoundingClientRect();
         var elRect = el.getBoundingClientRect();
         var overlap = !(labelsRect.right < elRect.left ||
@@ -104,6 +137,9 @@ var Visualization = React.createClass({
                         labelsRect.top > elRect.bottom);
         if (overlap) {
           el.classList.add("overlapped");
+
+          // el.style.outline = "black solid 1px";
+          // labels.style.outline = "black solid 1px";
         }
       });
     }
@@ -116,7 +152,7 @@ var Visualization = React.createClass({
     for (var oItNode = oNode; oItNode && oItNode !== node; nLeft += oItNode.offsetLeft, nTop += oItNode.offsetTop, oItNode = oItNode.offsetParent);
     var margin = 10;
     node.scrollTop = nTop-margin;
-    node.scrollLeft = nLeft-margin;
+    node.scrollLeft = nLeft-margin*10;
 
     // highlight the node
     // oNode.classList.add("highlightRule");
@@ -162,8 +198,7 @@ var Visualization = React.createClass({
     if (this.state.traceIter) {
       var trace = this.state.traceIter.getCurrentTrace();
       if (trace) {
-        var rootEnv = trace.rootEnv;
-        var currentEnv = trace.currentEnv;
+        var {rootEnv, currentEnv} = trace;
         content = (function walkEnv(env, options) {
           if (!env) {
             return;
@@ -196,10 +231,10 @@ var Visualization = React.createClass({
             env: env,
             children: children,
             shouldAnimate: true,
-            showOnlyCompatible: showOnlyCompatible,
+            hideRulesWithIncompatibleName: showOnlyCompatible,
             shouldHighlightLatestGoals: !!currentEnv && !!parentEnv && parentEnv.getCurRuleIndex() === options.nthChild && parentEnv.envId === currentEnv.envId && trace.message === "3",
             trace: (!!currentEnv && env.envId === currentEnv.envId) ? trace : undefined,
-            lastFrame: !currentEnv,
+            isLastFrame: !currentEnv,
           }, options);
           return <Goal key={env.envId} {...goalProps} />;
         }).bind(this)(rootEnv, {});
@@ -208,7 +243,7 @@ var Visualization = React.createClass({
 
     var classes = this.getClasses('visualization', {});
     return (
-      <div className={classes}>{/*TODO: no longer needed*/}
+      <div className={classes}>
         <div ref="content" className="content">
           {content}
         </div>

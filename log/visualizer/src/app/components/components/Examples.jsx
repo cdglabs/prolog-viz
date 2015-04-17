@@ -2,7 +2,6 @@ var React = require('react');
 var Classable = require('../../mixins/classable.js');
 var assign = require('object-assign');
 var Router = require('react-router');
-// var Link = Router.Link;
 var urlencode = require('urlencode');
 
 var ExamplesStore = require('../../stores/ExamplesStore.js');
@@ -36,10 +35,6 @@ var Examples = React.createClass({
     this.setState(getStateFromStores());
   },
 
-  propTypes: {
-    // value: React.PropTypes.string.isRequired,
-  },
-
   onLinkClicked: function(name) {
     this.replaceWith('examples', {exampelName: urlencode.encode(name)});
   },
@@ -48,7 +43,6 @@ var Examples = React.createClass({
     var classes = this.getClasses('examples', {
     });
 
-    // <Link to="examples" params={{exampelName: urlencode.encode(example.name)}}></Link>
     var rows = this.state.examples.map(example =>
       <div key={example.name} className="example">
         <a onClick={this.onLinkClicked.bind(this, example.name)}>{example.name}</a>

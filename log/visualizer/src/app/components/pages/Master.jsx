@@ -6,10 +6,16 @@ var AppCanvas = mui.AppCanvas;
 var Menu = mui.Menu;
 var IconButton = mui.IconButton;
 RouteHandler = Router.RouteHandler;
+var Help = require('../components/Help.jsx');
+var Dialog = mui.Dialog;
+var marked = require('marked');
+
+// using brfs transform
+var fs = require('fs');
+var text = fs.readFileSync(__dirname + '/About.md', 'utf8');
 
 function getStateFromStores() {
   return {
-    // languages: EditorStore.getLanguages(),
   };
 }
 
@@ -22,14 +28,15 @@ var Demo = React.createClass({
     return getStateFromStores();
   },
 
-  propTypes: {
-    // single child
-    // children: React.PropTypes.element.isRequired
-  },
-
   componentDidMount: function() {
     // load grammar from script tag
     EditorActionCreators.didMount();
+    // http://patorjk.com/software/taag/#p=display&f=Ivrit&t=Prolog%20Visualizer!
+    console.log("  ____            _              __     ___                 _ _              _ \n |  _ \\ _ __ ___ | | ___   __ _  \\ \\   / (_)___ _   _  __ _| (_)_______ _ __| |\n | |_) | '__/ _ \\| |/ _ \\ / _` |  \\ \\ / /| / __| | | |/ _` | | |_  / _ \\ '__| |\n |  __/| | | (_) | | (_) | (_| |   \\ V / | \\__ \\ |_| | (_| | | |/ /  __/ |  |_|\n |_|   |_|  \\___/|_|\\___/ \\__, |    \\_/  |_|___/\\__,_|\\__,_|_|_/___\\___|_|  (_)\n                          |___/                                                ");
+  },
+
+  onHelpButtonTouchTap: function() {
+    this.refs.about.show();
   },
 
   render: function() {
@@ -40,7 +47,23 @@ var Demo = React.createClass({
         className="github-icon-button"
         iconClassName="muidocs-icon-custom-github"
         href="https://github.com/zhxnlai/printf"
-        linkButton={true} tooltip="GitHub"/>
+        linkButton={true}/>
+    );
+    var helpButton = (
+      <IconButton className="help-button" onTouchTap={this.onHelpButtonTouchTap}>
+        <Help/>
+      </IconButton>
+    );
+
+    //Standard Actions
+    var standardActions = [
+      { text: 'Close' },
+    ];
+    var rawMarkup = marked(text);
+    var about = (
+      <Dialog ref="about" title="About Prolog Visualizer" actions={standardActions}>
+        <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
+      </Dialog>
     );
 
     return (
@@ -50,13 +73,15 @@ var Demo = React.createClass({
           title={title}
           zDepth={1}
           showMenuIconButton={false}>
-          {githubButton}
+          <div className="appbar-icon-group">
+            {helpButton}
+            {githubButton}
+          </div>
         </AppBar>
 
         <RouteHandler key={"pv"} /*this.getPath()*/ />
-
+        {about}
       </AppCanvas>
-
     );
   }
 });

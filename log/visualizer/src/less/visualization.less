@@ -121,6 +121,10 @@
       margin-top: 1em;
     }
 
+    .ruleAndChild+.ruleAndChild > .goalWrapper.hideMargin {
+      margin-top: 1em;
+    }
+
     .ruleAndChild {
       flex: 0 0 auto;
       display: flex;
@@ -204,7 +208,7 @@
   }
 }
 
-.goal:not(.currentEnv) {
+.goal:not(.currentEnv):not(.isLastFrame) {
   > .labels > .contents {
     .goals.highlightCurrent {
       .currentGoal {
@@ -223,28 +227,10 @@
   }
 }
 
-.goal.solution {
+.solution {
   color: @green-600;
-
+  font-weight: bold;
   margin-left: 1em;
-
-  .labels {
-    border: none;
-  }
-
-  .labels > .contents > .goals {
-    display: none;
-  }
-
-  .subst {
-    // display: none;
-    border: none !important;
-    color: @green-600 !important;
-    font-weight: bold;
-  }
-  .rulesAndChildren {
-    display: none;
-  }
 }
 
 .goal.shouldHideRulesAndChildren {

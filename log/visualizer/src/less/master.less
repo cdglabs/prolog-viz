@@ -1,35 +1,58 @@
 .master {
   height: 100vh;
   width: 100vw;
-
   overflow: hidden;
-
   .demo-page {
     margin-top: @app-bar-height;
-
-    // margin-top: @navHeight;
-    height: calc(~"100% - "@app-bar-height);;
+    height: calc(~"100% - "@app-bar-height);
   }
-
-
-
 }
 .mui-app-canvas {
+  height: 100%;
+  .mui-app-bar {
+    .appbar-icon-group {
+      height: 100%;
+      float: right;
+      margin-right: -16px;
+      display: flex;
+      // align-items: baseline;
+      .github-icon-button {
+      }
+      .help-button {
+      }
+      .mui-icon-button-tooltip {
+        // margin-left: auto;
+        // margin-right: auto;
+        left: auto !important;
+        // right: auto !important;
+        // display: inline-block;
+        // text-align: center;
+        // transform: translate(-50%,50%);
+        // top: 0;  bottom: 0; right: 0;
+      }
+    }
+    // .github-icon-button {
+    //   float: right;
+    //   margin-right: -16px;
+    // }
+  }
 
-height: 100%;
-
-.mui-app-bar {
-  .github-icon-button {
-    float: right;
-    margin-right: -16px;
+  .mui-dialog-content {
+    ul, ol {
+      padding-left: 1em;
+      margin-bottom: 14px;
+    }
+    h6 {
+      margin-bottom: 0;
+    }
+    a {
+      color: @primary-1-color;
+    }
   }
 }
-}
-
 a {
   color: @accent-1-color;
   text-decoration: none;
-
   &:hover {
     text-decoration: underline;
   }

@@ -17,6 +17,8 @@ var uglify = require('gulp-uglify');
 var streamify = require('gulp-streamify');
 var gutil = require('gulp-util');
 var fs = require('fs');
+var uglify = require('gulp-uglify');
+var gulpif = require('gulp-if');
 
 gulp.task('browserify', function(callback) {
 
@@ -35,6 +37,19 @@ gulp.task('browserify', function(callback) {
       debug: config.debug
     });
 
+    var condition = function (file) {
+      return !config.debug;
+    };
+
+/*
+[
+  "reactify",
+  {
+    "es6": true
+  }
+],
+
+*/
     var bundle = function() {
       // Log when bundling starts
       bundleLogger.start(bundleConfig.outputName);
@@ -51,7 +66,20 @@ gulp.task('browserify', function(callback) {
         .pipe(source(bundleConfig.outputName))
 
         // uglify
-        // .pipe(gutil.env.type === 'production' ? streamify(uglify()) : gutil.noop())
+        // .pipe(config.debug ? gutil.noop() : streamify(uglify()))
+
+        .pipe(gulpif(condition,
+          streamify(uglify({
+            compress: {
+              unused: false
+            },
+            mangle: true,
+            // output: {
+            //   beautify: true,
+            //   max_line_len: 80
+            // }
+          }))
+        ))
 
         // Specify the output destination
         .pipe(gulp.dest(bundleConfig.dest))
@@ -63,11 +91,12 @@ gulp.task('browserify', function(callback) {
       bundler = watchify(bundler);
       // Rebundle on update
       bundler.on('update', bundle);
+      bundler.on('log', gutil.log); // output build logs to terminal
     }
 
     var reportFinished = function() {
       // Log when bundling completes
-      bundleLogger.end(bundleConfig.outputName)
+      bundleLogger.end(bundleConfig.outputName);
 
       if(bundleQueue) {
         bundleQueue--;

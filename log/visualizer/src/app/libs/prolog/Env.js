@@ -16,6 +16,8 @@ Env = {
 }
 */
 
+var {Program, Rule, Clause, Var, Subst} = require('./AST.js');
+
 var clone = options => {
   var clone = {};
   for (var key in options) {
@@ -27,7 +29,7 @@ var clone = options => {
 var envCount = 0;
 function Env(goals, rules, subst, options) {
   var sourceEnv;
-  if (arguments.length === 1 && goals.constructor.name === "Env") {
+  if (arguments.length === 1 && goals.constructor.name === Env.name) {
     sourceEnv = goals;
     goals = sourceEnv.goals;
     rules = sourceEnv.rules;
@@ -51,7 +53,7 @@ function Env(goals, rules, subst, options) {
     if (sourceEnv) {
       newRules = rules.map(rule => rule.makeCopy());
     } else {
-      var existingVarNames = goals.reduce((acc, goal) => goal.constructor.name === "Clause" ? acc.concat(goal.getQueryVarNames()) : acc ,[]);
+      var existingVarNames = goals.reduce((acc, goal) => goal.constructor.name === Clause.name ? acc.concat(goal.getQueryVarNames()) : acc ,[]);
       if (subst) {
         existingVarNames = existingVarNames.concat(Object.keys(subst.bindings));
       }
@@ -69,13 +71,13 @@ function Env(goals, rules, subst, options) {
     }
   }
 
-  this.goals = goals ? goals.slice() : undefined;
+  this.goals = Array.isArray(goals) ? goals.slice() : undefined;
   this.subst = subst ? subst.clone() : undefined;
   this.rules = newRules;
 }
 
 Env.prototype.getCurRule = function() {
-  return this.rules[this.options.ruleIndex];
+  return this.rules[this.getCurRuleIndex()];
 };
 Env.prototype.getCurRuleIndex = function() {
   return this.options.ruleIndex;
@@ -113,7 +115,11 @@ Env.prototype.addChild = function(env) {
 };
 
 Env.prototype.clone = function() {
-  return new Env(this);
+  return this.isFinal ? this : new Env(this);
+};
+
+Env.prototype.cloneTime = function() {
+  return count;
 };
 
 Env.prototype.toString = function() {

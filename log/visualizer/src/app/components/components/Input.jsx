@@ -5,7 +5,6 @@ var Router = require('react-router');
 var urlencode = require('urlencode');
 
 var CodeMirror = require('./ReactCodeMirror.jsx');
-// var ohm = require('../../libs/ohm.min.js');
 
 var EditorStore = require('../../stores/EditorStore.js');
 var EditorActionCreators = require('../../actions/EditorActionCreators.js');
@@ -14,8 +13,6 @@ var ExamplesStore = require('../../stores/ExamplesStore.js');
 function getStateFromStores() {
   return {
     text : EditorStore.getText(),
-    L: EditorStore.getInterpreter(),
-    program: EditorStore.getProgram(),
     traceIter: EditorStore.getTraceIter(),
     syntaxError: EditorStore.getSyntaxError(),
     examples : ExamplesStore.getExamples(),
@@ -25,10 +22,6 @@ function getStateFromStores() {
 var Input = React.createClass({
   mixins: [Classable, Router.State, Router.Navigation],
 
-  contextTypes: {
-    router: React.PropTypes.func
-  },
-
   getInitialState: function() {
     return getStateFromStores();
   },
@@ -36,56 +29,6 @@ var Input = React.createClass({
   componentDidMount: function() {
     EditorStore.addChangeListener(this._onChange);
     // this.refs.codeMirror.editor.on('cursorActivity', this.handleCursorActivity);
-
-    // var L = this.state.L;
-    // this.syntaxHighlight = L.grammar && L.grammar.semanticAction({
-    //   number: function(_) {
-    //     cm.doc.markText(
-    //       cm.doc.posFromIndex(this.interval.startIdx),
-    //       cm.doc.posFromIndex(this.interval.endIdx),
-    //       { className: "number" }
-    //     );
-    //   },
-    //   ident: function(_, _) {
-    //     cm.doc.markText(
-    //       cm.doc.posFromIndex(this.interval.startIdx),
-    //       cm.doc.posFromIndex(this.interval.endIdx),
-    //       { className: "ident" }
-    //     );
-    //   },
-    //   keyword: function(_) {
-    //     cm.doc.markText(
-    //       cm.doc.posFromIndex(this.interval.startIdx),
-    //       cm.doc.posFromIndex(this.interval.endIdx),
-    //       { className: "keyword" }
-    //     );
-    //   },
-    //   variable: function(_, _) {
-    //     cm.doc.markText(
-    //       cm.doc.posFromIndex(this.interval.startIdx),
-    //       cm.doc.posFromIndex(this.interval.endIdx),
-    //       { className: "variable" }
-    //     );
-    //   },
-    //   symbol: function(_, _) {
-    //     cm.doc.markText(
-    //       cm.doc.posFromIndex(this.interval.startIdx),
-    //       cm.doc.posFromIndex(this.interval.endIdx),
-    //       { className: "symbol" }
-    //     );
-    //   },
-    //   comment: function(_) {
-    //     cm.doc.markText(
-    //       cm.doc.posFromIndex(this.interval.startIdx),
-    //       cm.doc.posFromIndex(this.interval.endIdx),
-    //       { className: "comment" }
-    //     );
-    //   },
-    //   _list: ohm.actions.map,
-    //   _terminal: function() {},
-    //   _default: ohm.actions.passThrough
-    // });
-
   },
 
   componentWillUnmount: function() {
@@ -106,36 +49,24 @@ var Input = React.createClass({
     this.setState(newState);
   },
 
-  propTypes: {
-    // value: React.PropTypes.string.isRequired,
-  },
-
   componentDidUpdate: function() {
+    var cm = this.refs.codeMirror.editor;
 
     var exampleName = urlencode.decode(this.getParams().exampelName);
     if (exampleName) {
-      var text;
-      this.state.examples.forEach(function(example) {
-        if (example.name === exampleName) {
-          text = example.code;
-        }
-      });
-      if (text) {
-        var cm = this.refs.codeMirror.editor;
-        if (cm) {
-          if (text !== cm.getValue()) {
+      for (var {name: n, code: c } of this.state.examples) {
+        if (n === exampleName) {
+          if (cm && c !== cm.getValue()) {
             this.showingExample = true;
-            cm.setValue(text);
+            cm.setValue(c);
             this.showingExample = false;
           }
+          break;
         }
       }
     }
 
-    var traceIter = this.state.traceIter;
-    var syntaxError = this.state.syntaxError;
-    var syntaxHighlight = this.state.syntaxHighlight;
-
+    var {traceIter, syntaxError, syntaxHighlight} = this.state;
     if (traceIter) {
       var trace = traceIter.getCurrentTrace();
       if (trace.message && !syntaxError) {
@@ -159,7 +90,6 @@ var Input = React.createClass({
       }
     }
 
-    var cm = this.refs.codeMirror.editor;
     this.showSyntaxError(syntaxError, cm.getValue());
     if (syntaxHighlight) {
     }
@@ -214,9 +144,7 @@ var Input = React.createClass({
     }
 
     if (this.showingExample) {
-      // EditorActionCreators.changeText(e.target.value);
       EditorActionCreators.changeText(e.target.value);
-
     } else {
       // the change is caused by user input
       this.timeout = setTimeout(() => {

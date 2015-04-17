@@ -1,8 +1,6 @@
 var React = require('react');
 var Classable = require('../../mixins/classable.js');
 var tweenState = require('react-tween-state');
-var ReactTransitionGroup = React.addons.TransitionGroup;
-var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 var cx = React.addons.classSet;
 
 var Goal = React.createClass({
@@ -75,22 +73,17 @@ var Goal = React.createClass({
     // }
 
     // props
-    var parent = this.props.parent;
-    var env = this.props.env;
-    var childNodes = this.props.children;
-    var trace = this.props.trace;
-    var shouldHighlightLatestGoals = this.props.shouldHighlightLatestGoals;
-    var hideRulesWithIncompatibleName = this.props.showOnlyCompatible;
-
-    var longestSiblingLabel = this.props.longestSiblingLabel;
-
+    var {parent, env, children, trace,
+        shouldHighlightLatestGoals,
+        hideRulesWithIncompatibleName,
+        longestSiblingLabel, isLastFrame} = this.props;
     var isCurrentEnv = !!trace;
-    var isLastFrame = this.props.lastFrame;
 
     if (env.hasSolution()) {
-      // TODO
-      // return only subst
-      // return <div></div>;
+      var classes = cx({
+        'solution': true,
+      });
+      return <div className={classes}>{env.options.solution.toString()}</div>;
     }
     if (env.isEmpty()) {
       return <div></div>;
@@ -179,7 +172,6 @@ var Goal = React.createClass({
         showRewrittenRule = ruleStrings[i] !== rewrittenRuleStrings[i];
       }
 
-      // console.log(toSubscript(ruleStrings[i]));
       var originalRule;
       var substituting;
       var rewrittenRule;
@@ -197,7 +189,10 @@ var Goal = React.createClass({
         rewrittenRule = <div className="new">{toSubscript(rewrittenRuleStrings[i])}</div>;
       }
 
-      var duplicatedCurrentGoal = rule.hasSucceeded() ? <div className="duplicatedCurrentGoal">{env.goals[0] ? toSubscript(env.goals[0].toString()) : undefined}</div> : undefined;
+      var duplicatedCurrentGoal;
+      if (rule.hasSucceeded() && env.goals[0]) {
+        duplicatedCurrentGoal = <div className="duplicatedCurrentGoal">{toSubscript(env.goals[0].toString())}</div>;
+      }
       return <div key={"RandC#"+i} className="ruleAndChild">
               <div className="ruleWrapper">
                 {duplicatedCurrentGoal}
@@ -212,14 +207,14 @@ var Goal = React.createClass({
               </div>
               {showChildNode ? <div className={cx({goalWrapper: true, hideMargin: isLastFrame && showRewrittenRule})}>
                                 {isLastFrame && showRewrittenRule ? "\n\n" : undefined}
-                                {childNodes[i]}
+                                {children[i]}
                               </div> : undefined}
             </div>;
     })}</div>;
 
     // === labels ===
     // goals
-    var numLatestGoals = env.options.numLatestGoals;
+    var {numLatestGoals, solution} = env.options;
     var gcConfig = {
       'goals': true,
       'highlightLatest': shouldHighlightLatestGoals,
@@ -242,10 +237,7 @@ var Goal = React.createClass({
                 </div>;
 
     // subst
-    var substString;
-    if (env.options && env.options.solution) {
-      substString = env.options.solution.toString() === "yes" ? undefined : env.options.solution.toString();
-    }
+    var substString = !solution || solution.toString() === "yes" ? undefined : solution.toString();
     var subst = <div className="subst">{toSubscript(substString)}</div>;
 
     // label
@@ -266,7 +258,7 @@ var Goal = React.createClass({
     var goalClasses = cx({
       'goal': true,
       'currentEnv': isCurrentEnv,
-      'solution': env.hasSolution(),
+      'isLastFrame': isLastFrame,
       'shouldHideRulesAndChildren': shouldHighlightLatestGoals
     });
     var goalProps = {
