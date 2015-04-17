@@ -1,6 +1,6 @@
 {
   "firebase": "prolog",
-  "public": "log/visualizer/build",
+  "public": "build",
   "ignore": [
     "firebase.json",
     "**/.*",

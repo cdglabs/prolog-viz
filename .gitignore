@@ -28,4 +28,4 @@ node_modules
 .lock-wscript
 
 # build folder
-log/visualizer/build
+build
