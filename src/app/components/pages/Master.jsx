@@ -33,6 +33,7 @@ var Demo = React.createClass({
     EditorActionCreators.didMount();
     // http://patorjk.com/software/taag/#p=display&f=Ivrit&t=Prolog%20Visualizer!
     console.log("  ____            _              __     ___                 _ _              _ \n |  _ \\ _ __ ___ | | ___   __ _  \\ \\   / (_)___ _   _  __ _| (_)_______ _ __| |\n | |_) | '__/ _ \\| |/ _ \\ / _` |  \\ \\ / /| / __| | | |/ _` | | |_  / _ \\ '__| |\n |  __/| | | (_) | | (_) | (_| |   \\ V / | \\__ \\ |_| | (_| | | |/ /  __/ |  |_|\n |_|   |_|  \\___/|_|\\___/ \\__, |    \\_/  |_|___/\\__,_|\\__,_|_|_/___\\___|_|  (_)\n                          |___/                                                ");
+    // console.log("Join us at career.cdglabs.com");
   },
 
   onHelpButtonTouchTap: function() {
