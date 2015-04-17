@@ -16,7 +16,6 @@ var text = fs.readFileSync(__dirname + '/About.md', 'utf8');
 
 function getStateFromStores() {
   return {
-    // languages: EditorStore.getLanguages(),
   };
 }
 
@@ -27,11 +26,6 @@ var Demo = React.createClass({
 
   getInitialState: function() {
     return getStateFromStores();
-  },
-
-  propTypes: {
-    // single child
-    // children: React.PropTypes.element.isRequired
   },
 
   componentDidMount: function() {

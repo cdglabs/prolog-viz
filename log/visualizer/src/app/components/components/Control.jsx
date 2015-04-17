@@ -133,11 +133,11 @@ var Control = React.createClass({
 
     var forward = <IconButton className="right" onTouchTap={this.forward}>
             <ForwardIcon/>
-            </IconButton>
+            </IconButton>;
 
     var back = <IconButton className="left" onTouchTap={this.backward}>
             <BackwardIcon/>
-            </IconButton>
+            </IconButton>;
 
     return (
       <div className={classes}>

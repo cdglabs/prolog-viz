@@ -13,8 +13,6 @@ var ExamplesStore = require('../../stores/ExamplesStore.js');
 function getStateFromStores() {
   return {
     text : EditorStore.getText(),
-    L: EditorStore.getInterpreter(),
-    program: EditorStore.getProgram(),
     traceIter: EditorStore.getTraceIter(),
     syntaxError: EditorStore.getSyntaxError(),
     examples : ExamplesStore.getExamples(),

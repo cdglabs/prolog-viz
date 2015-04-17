@@ -92,11 +92,19 @@ var Prolog = function(grammar) {
     return output.join("");
   };
 
+  L.solve = function (text, showOnlyCompatible) {
+    var program = this.parse(text);
+    var TIME_LIMIT = 150;
+    var iter = program.solve(showOnlyCompatible, TIME_LIMIT, Env, Trace);
+    var startTime = Date.now();
+    while (iter.next() && Date.now() - startTime < TIME_LIMIT);
+    return iter.getTraceIter();
+  };
+
   return L;
 };
 
 module.exports = Prolog;
-
 
 var JS = {};
 JS.stringify =
@@ -133,122 +141,3 @@ Interpreter.prototype.eval = function(code) {
 // TODO: Think about providing a better pretty-printer by default, since I know
 // that parse trees will be arrays (though maybe it's better to keep things general).
 Interpreter.prototype.prettyPrintAST = Interpreter.prototype.stringify;
-
-var count = 0;
-Program.prototype.solve = function(hideRulesWithIncompatibleName, TIME_LIMIT) {
-  // console.log("=== solve#"+count+" ===");
-  count++;
-  // this limit is set by React: https://github.com/facebook/react/blob/dea7efbe16596bbab7965331e277de113aeaff27/src/core/ReactInstanceHandles.js#L25
-  var MAX_TREE_DEPTH = 100;
-  // each goal has 4 levels: goal > rulesAndChildren > ruleAndChild > goalWrapper > goal
-  var DEPTH_LIMIT = Math.floor(MAX_TREE_DEPTH/4-4);
-  var startTime = Date.now();
-
-  var queryVarNames = this.getQueryVarNames();
-  var trace = new Trace(new Env(this.query, this.rules, new Subst()));
-
-  var resolution = (body, goals, subst) => body.slice().concat(goals.slice(1)).map(term => term.rewrite(subst));
-
-  var solve = env => {
-    if (Date.now() - startTime > TIME_LIMIT || !env || env.constructor.name !== Env.name || env.getDepth() >= DEPTH_LIMIT) {
-      trace.logLastFrame();
-      return false;
-    } else if (env.hasSolution()) {
-      env.isFinal = true;
-      trace.setCurrentEnv(env.parent);
-      return env.subst;
-    } else if (env.isEmpty()) {
-      env.isFinal = true;
-      return solve(env.parent);
-    } else if (env.children.length >= env.rules.length) {
-      env.isFinal = true;
-      env.setCurRuleIndex(-1);
-      trace.setCurrentEnv(env);
-      trace.log();
-      return solve(env.parent);
-    } else {
-      var goal = env.goals[0];
-      var rule = env.rules[env.children.length];
-      var subst = env.subst.clone();
-
-      if (hideRulesWithIncompatibleName) {
-        if (goal.name !== rule.head.name) {
-          env.addChild(new Env());
-          return solve(env);
-        }
-      }
-
-      trace.setCurrentEnv(env);
-      env.setCurRuleIndex(-1);
-      trace.log();
-
-      env.setCurRuleIndex(env.children.length);
-
-      // Step 1
-      trace.log("1");
-
-      var newEnv;
-      try {
-        subst.unify(goal, rule.head);
-
-        // Step 2.1
-        rule.substituting = subst.filter(rule.getQueryVarNames().concat(goal.getQueryVarNames()));
-
-        // dedup equivalent vars in goals from rules
-        var reversedSubst = {};
-        goal.getQueryVarNames().forEach(varName => {
-          var value = subst.lookup(varName);
-          if (value.constructor.name === Var.name) {
-            reversedSubst[value.name] = varName;
-            subst.unbind(varName);
-          }
-        });
-        var dedupedRule = rule.makeCopy({ subst: reversedSubst });
-        // rewrite the rule and removed vars from subst
-        var newRule = dedupedRule.rewrite(subst);
-        var varNamesInNewRule = newRule.getQueryVarNames();
-        dedupedRule.getQueryVarNames()
-          .filter(varName => varNamesInNewRule.indexOf(varName) < 0)
-          .forEach(varName => {
-            if (queryVarNames.indexOf(varName) < 0) {
-              subst.unbind(varName);
-            }
-          });
-        rule.rewritten = newRule;
-
-        var newGoals = resolution(newRule.body, env.goals, subst);
-        newEnv = new Env(newGoals, env.rules, subst, { // TODO
-          "numLatestGoals": newRule.body.length,
-          "solution": subst.filter(queryVarNames), // this could be parital solution
-          });
-        env.addChild(newEnv);
-
-        // Step 2.1
-        trace.log("2.1");
-        // Step 3
-        trace.log("3");
-      } catch(e) {
-        if (e.message !== "unification failed") {
-          throw e;
-        }
-        rule.rewritten = null;
-
-        newEnv = new Env();
-        env.addChild(newEnv);
-
-        // Step 2.2
-        trace.log("2.2");
-      }
-      return solve(newEnv);
-    }
-  };
-
-  return {
-    next: function() {
-      return solve(trace.currentEnv);
-    },
-    getTraceIter: function() {
-      return trace.getIterator();
-    }
-  };
-};
