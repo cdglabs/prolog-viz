@@ -1,5 +1,4 @@
 var gulp = require('gulp'),
-  minifyCSS = require('gulp-minify-css'),
   less = require('gulp-less'),
   sourcemaps = require('gulp-sourcemaps'),
   handleErrors = require('../util/handleErrors'),
