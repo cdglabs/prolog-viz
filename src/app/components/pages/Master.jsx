@@ -47,7 +47,7 @@ var Demo = React.createClass({
       <IconButton
         className="github-icon-button"
         iconClassName="muidocs-icon-custom-github"
-        href="https://github.com/zhxnlai/printf"
+        href="https://github.com/zhxnlai/prolog"
         linkButton={true}/>
     );
     var helpButton = (

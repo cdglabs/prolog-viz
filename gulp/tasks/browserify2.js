@@ -7,6 +7,9 @@ var gutil = require('gulp-util');
 // var sourcemaps = require('gulp-sourcemaps');
 var assign = require('object-assign');
 var config       = require('../config').browserify;
+var uglify = require('gulp-uglify');
+var gulpif = require('gulp-if');
+var streamify = require('gulp-streamify');
 
 // add custom browserify options here
 var customOpts = {
@@ -21,9 +24,25 @@ b.on('update', bundle); // on any dep update, runs the bundler
 b.on('log', gutil.log); // output build logs to terminal
 
 function bundle() {
+  var condition = function (file) {
+    return !config.debug;
+  };
+
   return b.bundle()
     // log errors if they happen
     .on('error', gutil.log.bind(gutil, 'Browserify Error'))
     .pipe(source(config.bundleConfigs[0].outputName))
+    .pipe(gulpif(condition,
+      streamify(uglify({
+        compress: {
+          unused: false
+        },
+        // mangle: true,
+        // output: {
+        //   beautify: true,
+        //   max_line_len: 80
+        // }
+      }))
+    ))
     .pipe(gulp.dest(config.bundleConfigs[0].dest));
 }

@@ -1,6 +1,6 @@
 {
   "firebase": "prolog",
-  "public": "build",
+  "public": "miscellaneous/redirect/",
   "ignore": [
     "firebase.json",
     "**/.*",
