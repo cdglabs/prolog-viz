@@ -165,7 +165,7 @@ var Input = React.createClass({
       onChange: this.onEditorTextChange,
       defaultValue: this.state.text,
       height: "dynamic",
-      minHeight: 600,
+      minHeight: 200,
     };
 
     return (

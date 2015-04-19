@@ -21,7 +21,6 @@
 
     .input {
       flex: 0 0 auto;
-      // min-height: 350px;
     }
     .info {
       flex: 1 0 auto;
@@ -45,10 +44,18 @@
   }
 }
 
-@media all and (max-width: 1200px) {
+@media all and (max-width: 1300px) {
   .demo-page {
     .leftPanel {
       flex: 1;
+      .input {
+        .CodeMirror {
+          max-height: 12em;
+        }
+        .CodeMirror-scroll {
+          max-height: 12em;
+        }
+      }
     }
 
     .rightPanel {
@@ -84,32 +91,14 @@
   .demo-page {
 
     position: absolute;
-
-    // display: block;
     height: auto !important;
-    // overflow: auto;
 
     .leftPanel {
       display: block;
-      // float:left;
-      // flex: 1 0 auto;
       height: auto;
-      // border-right: 0;
-      // border-bottom: 1px solid @grey-200;
-
-      // .examples {
-      //   max-height: 200px;
-      //   overflow: auto;
-      // }
     }
 
     .rightPanel {
-      // display: block;
-      // float:left;
-
-      // flex: 1 0 auto;
-      // height: auto;
-
       > .visualization {
         >.content {
           overflow: visible;
