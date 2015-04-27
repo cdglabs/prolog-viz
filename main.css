@@ -371,7 +371,7 @@ hr{margin-top:0;margin-bottom:18px}.mui-predefined-layout-1 .mui-app-content-can
 .muidocs-icon-custom-github:before{content:"\e625"}.muidocs-icon-custom-arrow-drop-right:before{content:"\e60b"}
 .muidocs-icon-custom-pie:before{content:"\e610"}.master{height:100vh;width:100vw;overflow:hidden}
 .master .demo-page{margin-top:54px;height:calc(100% - 54px)}.mui-app-canvas{height:100%}
-.mui-app-canvas .mui-app-bar .appbar-icon-group{height:100%;float:right;margin-right:-16px;display:-webkit-flex;display:-ms-flexbox;display:flex}
+.mui-app-canvas .mui-app-bar{z-index:99}.mui-app-canvas .mui-app-bar .appbar-icon-group{height:100%;float:right;margin-right:-16px;display:-webkit-flex;display:-ms-flexbox;display:flex}
 .mui-app-canvas .mui-app-bar .appbar-icon-group .mui-icon-button-tooltip{left:auto !important}
 .mui-app-canvas .mui-dialog-content ul,.mui-app-canvas .mui-dialog-content ol{padding-left:1em;margin-bottom:14px}
 .mui-app-canvas .mui-dialog-content h6{margin-bottom:0}.mui-app-canvas .mui-dialog-content a{color:#1565c0}
@@ -382,7 +382,8 @@ a{color:#ff4081;text-decoration:none}a:hover{text-decoration:underline}.demo-pag
 .demo-page .leftPanel .control{border-bottom:1px solid #eee;-webkit-flex:0 0 auto;-ms-flex:0 0 auto;flex:0 0 auto}
 .demo-page .leftPanel .examples{-webkit-flex:1 1 auto;-ms-flex:1 1 auto;flex:1 1 auto;min-height:100px}
 .demo-page .rightPanel{-webkit-flex:4;-ms-flex:4;flex:4;height:100%;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column}
-@media all and (max-width:1200px){.demo-page .leftPanel{-webkit-flex:1;-ms-flex:1;flex:1}
+@media all and (max-width:1300px){.demo-page .leftPanel{-webkit-flex:1;-ms-flex:1;flex:1}
+.demo-page .leftPanel .input .CodeMirror{max-height:12em}.demo-page .leftPanel .input .CodeMirror-scroll{max-height:12em}
 .demo-page .rightPanel{-webkit-flex:1.5;-ms-flex:1.5;flex:1.5}}@media all and (max-width:1000px){.demo-page .leftPanel{-webkit-flex:1;-ms-flex:1;flex:1}
 .demo-page .leftPanel .input .CodeMirror{height:auto}.demo-page .rightPanel{-webkit-flex:1;-ms-flex:1;flex:1}
 }@media all and (max-width:640px){.demo-page{position:absolute;height:auto !important}
