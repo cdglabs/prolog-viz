@@ -1,0 +1,66 @@
+[
+    {
+        "name":"alice and bob are people",
+        "code":"person(alice).\nperson(bob).\nperson(X)?"
+    },
+    {
+        "name":"sick and tired",
+        "code":"sick(joe).\nsick(frank).\nsick(eddie).\ntired(joe).\ntired(eddie).\nsick(X), tired(X)?"
+    },
+    {
+        "name":"prereqs",
+        "code":"prereq(cs131, cs137a).\nprereq(cs137a, cs137b).\nprereqTrans(X, Y) :- prereq(X, Y).\nprereqTrans(X, Y) :- prereq(X, Z), prereqTrans(Z, Y).\nprereqTrans(P, cs137b)?"
+    },
+    {
+        "name":"nats",
+        "code":"nat(z).\nnat(s(X)) :- nat(X).\nnat(X)?"
+    },
+    {
+        "name":"evens",
+        "code":"nat(z).\nnat(s(X)) :- nat(X).\neven(z).\neven(s(s(X))) :- even(X).\neven(X)?"
+    },
+    {
+        "name":"plus (1/3)",
+        "code":"plus(z, X, X).\nplus(s(X), Y, s(Z)) :- plus(X, Y, Z).\nplus(s(z), s(s(z)), X)?\n"
+    },
+    {
+        "name":"plus (2/3)",
+        "code":"plus(z, X, X).\nplus(s(X), Y, s(Z)) :- plus(X, Y, Z).\nplus(X, s(s(z)), s(s(s(z))))?\n"
+    },
+    {
+        "name":"plus (3/3)",
+        "code":"plus(z, X, X).\nplus(s(X), Y, s(Z)) :- plus(X, Y, Z).\nplus(s(z), X, s(s(s(z))))?\n"
+    },
+    {
+        "name":"cons and car",
+        "code":"car(cons(X, Y), X).\ncar(cons(a, nil), X)?"
+    },
+    {
+        "name":"length",
+        "code":"length(nil, z).\nlength(cons(X, L), s(LL)) :- length(L, LL).\nlength(cons(a, cons(b, cons(c, nil))), X)?"
+    },
+    {
+        "name":"homer's children",
+        "code":"father(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\nparent(X, Y) :- father(X, Y).\nparent(homer, Y)?"
+    },
+    {
+        "name":"lisa's father",
+        "code":"father(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\nparent(X, Y) :- father(X, Y).\nparent(X, lisa)?"
+    },
+    {
+        "name":"parent",
+        "code":"father(abe, homer).\nfather(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\nparent(X, Y) :- father(X, Y).\nparent(X, Y)?"
+    },
+    {
+        "name":"grandfather",
+        "code":"father(orville, abe).\nfather(abe, homer).\nfather(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\ngrandfather(X, Y) :- father(X, Z), father(Z, Y).\ngrandfather(X, Y)?"
+    },
+    {
+        "name":"nats infinite loop",
+        "code":"nat(s(X)) :- nat(X).\nnat(z).\nnat(X)?"
+    },
+    {
+        "name":"infinite loop",
+        "code":"p(X):-q(X).\nq(X):-p(X).\nq(X)?"
+    }
+]

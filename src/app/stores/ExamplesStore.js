@@ -7,26 +7,6 @@ var ActionTypes = Constants.ActionTypes;
 
 var CHANGE_EVENT = 'change-examples';
 
-// Misc Helpers
-// ------------
-String.prototype.splice = function(idx, rem, s) {
-  return (this.slice(0, idx) + s + this.slice(idx + Math.abs(rem)));
-};
-
-function clone(obj) {
-  var result = {};
-  for (var k in obj) {
-    if (obj.hasOwnProperty(k))
-      result[k] = obj[k];
-  }
-  return result;
-}
-
-// HTML5 storage API
-var SOURCE_KEY = "printf_input";
-var ARGS_SOURCE_KEY = "printf_args";
-var storageAvailable = typeof(Storage) !== "undefined";
-
 var examples = [
   {
     name: 'alice and bob are people',
@@ -143,12 +123,24 @@ var examples = [
   },
 ];
 
-// TODO: setters should be private to file scope
 var store = function() {
-
   return {
     getExamples: function() {
       return examples;
+    },
+
+    loadExampleFromURL: function(url) {
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function() {
+          if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+              var newExamples = JSON.parse(xmlhttp.responseText);
+              if (Array.isArray(newExamples)) {
+                examples = newExamples;
+              }
+          }
+      };
+      xmlhttp.open("GET", url, true);
+      xmlhttp.send();
     }
   };
 };
@@ -172,50 +164,18 @@ var ExamplesStore = assign({}, EventEmitter.prototype, store(), {
 
 });
 
-// ExamplesStore.dispatchToken = AppDispatcher.register(function(payload) {
-//   var action = payload.action;
-//   switch (action.type) {
-//
-//     default:
-//       console.log("No implementation for action: "+action.type);
-//       break;
-//   }
-//
-// });
+ExamplesStore.dispatchToken = AppDispatcher.register(function(payload) {
+  var action = payload.action;
+  switch (action.type) {
+    case ActionTypes.DID_MOUNT:
+      // load json from the web
+      ExampleStore.loadExampleFromURL("https://raw.githubusercontent.com/cdglabs/prolog/master/resources/examples.json");
+      break;
+
+    default:
+      // console.log("No implementation for action: "+action.type);
+      break;
+  }
+});
 
 module.exports = ExamplesStore;
-
-/*
-male(james1).
-male(charles1).
-male(charles2).
-male(james2).
-male(george1).
-
-female(catherine).
-female(elizabeth).
-female(sophia).
-
-parent(charles1, james1).
-parent(elizabeth, james1).
-parent(charles2, charles1).
-parent(catherine, charles1).
-parent(james2, charles1).
-parent(sophia, elizabeth).
-parent(george1, sophia).
-
-mother(X, Y) :- parent(X, Y), female(X).
-father(X, Y) :- parent(X, Y), male(X).
-sibling(X, Y) :- parent(Z, X), parent(Z, Y).
-
-sister(X, Y) :- sibling(X, Y), female(X).
-brother(X, Y) :- sibling(X, Y), male(X).
-
-aunt(X, Y) :- sibling(Z, Y), parent(X, Z), female(X).
-uncle(X, Y) :- sibling(Z, Y), parent(X, Z), male(X).
-
-grandparent(X, Y) :- parent(X, Y), parent(Y, Z).
-cousin(X, Y) :- parent(Z, Y), sibling(S, Z), parent(S, X).
-
-grandparent(A, B)?
-*/
