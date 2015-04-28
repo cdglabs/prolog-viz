@@ -371,7 +371,9 @@ hr{margin-top:0;margin-bottom:18px}.mui-predefined-layout-1 .mui-app-content-can
 .muidocs-icon-custom-github:before{content:"\e625"}.muidocs-icon-custom-arrow-drop-right:before{content:"\e60b"}
 .muidocs-icon-custom-pie:before{content:"\e610"}.master{height:100vh;width:100vw;overflow:hidden}
 .master .demo-page{margin-top:54px;height:calc(100% - 54px)}.mui-app-canvas{height:100%}
-.mui-app-canvas .mui-app-bar{z-index:99}.mui-app-canvas .mui-app-bar .appbar-icon-group{height:100%;float:right;margin-right:-16px;display:-webkit-flex;display:-ms-flexbox;display:flex}
+.mui-app-canvas .mui-app-bar{z-index:99}.mui-app-canvas .mui-app-bar .mui-app-bar-title{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+.mui-app-canvas .mui-app-bar .mui-app-bar-title a{color:rgba(255,255,255,0.87);text-decoration:none}
+.mui-app-canvas .mui-app-bar .appbar-icon-group{height:100%;float:right;margin-right:-16px;display:-webkit-flex;display:-ms-flexbox;display:flex}
 .mui-app-canvas .mui-app-bar .appbar-icon-group .mui-icon-button-tooltip{left:auto !important}
 .mui-app-canvas .mui-dialog-content ul,.mui-app-canvas .mui-dialog-content ol{padding-left:1em;margin-bottom:14px}
 .mui-app-canvas .mui-dialog-content h6{margin-bottom:0}.mui-app-canvas .mui-dialog-content a{color:#1565c0}
