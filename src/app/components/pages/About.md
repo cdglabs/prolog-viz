@@ -1,6 +1,7 @@
 This Prolog visualizer is created by Zhixuan Lai and Alessandro Warth at CDG labs LA.
 
 ###### Usage:
+- Tutorial: [Slideshare](http://www.slideshare.net/ZhixuanLai/prolog-visualizer), [PDF](https://www.dropbox.com/s/21sbrw9lzhrszlf/prolog.pdf?dl=0), [keynote](https://www.dropbox.com/s/3476ruts1ae1vm2/prolog.key?dl=0)
 - Save the visualization to PDF by pressing ⌘+P
 
 ###### Made possible by:
