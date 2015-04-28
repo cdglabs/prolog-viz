@@ -220,6 +220,7 @@ var Visualization = React.createClass({
                 nthChild: i,
                 parentEnv: env,
                 longestSiblingLabel: max(longestSiblingGoal, longestSiblingSolution),
+                depth: options.depth+1
               })
             );
           }
@@ -237,7 +238,7 @@ var Visualization = React.createClass({
             isLastFrame: !currentEnv,
           }, options);
           return <Goal key={env.envId} {...goalProps} />;
-        }).bind(this)(rootEnv, {});
+        }).bind(this)(rootEnv, {depth: 0});
       }
     }
 

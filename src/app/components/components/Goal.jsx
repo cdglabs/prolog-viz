@@ -76,7 +76,7 @@ var Goal = React.createClass({
     var {parent, env, children, trace,
         shouldHighlightLatestGoals,
         hideRulesWithIncompatibleName,
-        longestSiblingLabel, isLastFrame} = this.props;
+        longestSiblingLabel, isLastFrame, depth} = this.props;
     var isCurrentEnv = !!trace;
 
     if (env.hasSolution()) {
