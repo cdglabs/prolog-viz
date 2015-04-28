@@ -11,6 +11,15 @@
   height: 100%;
   .mui-app-bar {
     z-index: 99;
+
+    .mui-app-bar-title {
+      user-select: none;
+      a {
+        color: @app-bar-text-color;
+        text-decoration: none;
+      }
+    }
+
     .appbar-icon-group {
       height: 100%;
       float: right;
