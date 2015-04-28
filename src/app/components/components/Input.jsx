@@ -28,11 +28,13 @@ var Input = React.createClass({
 
   componentDidMount: function() {
     EditorStore.addChangeListener(this._onChange);
+    ExamplesStore.addChangeListener(this._onChange);
     // this.refs.codeMirror.editor.on('cursorActivity', this.handleCursorActivity);
   },
 
   componentWillUnmount: function() {
     EditorStore.removeChangeListener(this._onChange);
+    ExamplesStore.removeChangeListener(this._onChange);
   },
 
   /**

@@ -2,6 +2,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher');
 var Constants = require('../constants/Constants');
 var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
+var request = require('superagent');
 
 var ActionTypes = Constants.ActionTypes;
 
@@ -129,18 +130,19 @@ var store = function() {
       return examples;
     },
 
-    loadExampleFromURL: function(url) {
-      var xmlhttp = new XMLHttpRequest();
-      xmlhttp.onreadystatechange = function() {
-          if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-              var newExamples = JSON.parse(xmlhttp.responseText);
-              if (Array.isArray(newExamples)) {
-                examples = newExamples;
-              }
+    loadExamplesFromURL: function(url) {
+      request
+      .get(url)
+      .end(function(err, res){
+        // Calling the end function will send the request
+        if (!err) {
+          var newExamples = JSON.parse(res.text);
+          if (Array.isArray(newExamples)) {
+            examples = newExamples;
+            ExamplesStore.emitChange();
           }
-      };
-      xmlhttp.open("GET", url, true);
-      xmlhttp.send();
+        }
+      });
     }
   };
 };
@@ -169,7 +171,8 @@ ExamplesStore.dispatchToken = AppDispatcher.register(function(payload) {
   switch (action.type) {
     case ActionTypes.DID_MOUNT:
       // load json from the web
-      ExampleStore.loadExampleFromURL("https://raw.githubusercontent.com/cdglabs/prolog/master/resources/examples.json");
+      // https://raw.githubusercontent.com/cdglabs/prolog/master/resources/examples.json
+      ExamplesStore.loadExamplesFromURL("https://cdn.rawgit.com/cdglabs/prolog/master/resources/examples.json");
       break;
 
     default:
