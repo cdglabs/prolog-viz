@@ -33,7 +33,17 @@
 
     Term
       = Clause
+      | List
       | variable
+
+    List
+      = '[' ']'           -- empty
+      | '[' Contents ']'  -- nonEmpty
+
+    Contents
+      = Term ',' Contents  -- cons1
+      | Term '|' Term      -- cons2
+      | Term               -- single
 
     variable  -- a variable
       = upper alnum*
