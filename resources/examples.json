@@ -40,6 +40,26 @@
         "code":"length(nil, z).\nlength(cons(X, L), s(LL)) :- length(L, LL).\nlength(cons(a, cons(b, cons(c, nil))), X)?"
     },
     {
+        "name":"append (1/3)",
+        "code":"append([], L, L).\nappend([H|T], L2, [H|L3]) :- append(T, L2, L3).\nappend([a, b], [c, d], X)?"
+    },
+    {
+        "name":"append (2/3)",
+        "code":"append([], L, L).\nappend([H|T], L2, [H|L3]) :- append(T, L2, L3).\nappend(X, [c, d], [a, b, c, d])?"
+    },
+    {
+        "name":"append (3/3)",
+        "code":"append([], L, L).\nappend([H|T], L2, [H|L3]) :- append(T, L2, L3).\nappend([a, b], X, [a, b, c, d])?"
+    },
+    {
+        "name":"reverse",
+        "code":"append([], L, L).\nappend([H|T], L2, [H|L3]) :- append(T, L2, L3).\nreverse([],[]).\nreverse([H|T],R) :- reverse(T,X), append(X,[H],R).\nreverse([a,b,c,d], R)?"
+    },
+    {
+        "name":"classic",
+        "code":"p(f(Y)) :- q(Y), r(Y).\np(b).\nq(h(Z)) :- t(Z).\nr(h(a)).\nt(a).\np(X)?"
+    },
+    {
         "name":"homer's children",
         "code":"father(homer, bart).\nfather(homer, lisa).\nfather(homer, maggie).\nparent(X, Y) :- father(X, Y).\nparent(homer, Y)?"
     },
