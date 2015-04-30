@@ -1,13 +1,14 @@
 var React = require('react');
 var Router = require('react-router');
+var RouteHandler = Router.RouteHandler;
 var mui = require('material-ui');
 var AppBar = mui.AppBar;
 var AppCanvas = mui.AppCanvas;
 var Menu = mui.Menu;
 var IconButton = mui.IconButton;
-RouteHandler = Router.RouteHandler;
-var Help = require('../components/Help.jsx');
 var Dialog = mui.Dialog;
+var Help = require('../components/Help.jsx');
+var Info = require('../components/Info.jsx');
 var marked = require('marked');
 
 // using brfs transform
@@ -43,6 +44,12 @@ var Demo = React.createClass({
   },
 
   onHelpButtonTouchTap: function() {
+    this.refs.about.dismiss();
+    this.refs.help.show();
+  },
+
+  onInfoButtonTouchTap: function() {
+    this.refs.help.dismiss();
     this.refs.about.show();
   },
 
@@ -61,6 +68,11 @@ var Demo = React.createClass({
         <Help/>
       </IconButton>
     );
+    var infoButton = (
+      <IconButton className="info-button" onTouchTap={this.onInfoButtonTouchTap}>
+        <Info/>
+      </IconButton>
+    );
 
     //Standard Actions
     var standardActions = [
@@ -72,6 +84,10 @@ var Demo = React.createClass({
         <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
       </Dialog>
     );
+    var help = (
+      <Dialog ref="help" title="Prolog Visualizer Tutorial" actions={standardActions}>
+        <iframe src="//www.slideshare.net/slideshow/embed_code/key/6OYeQsWj8blF6o" width="595" height="485" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style={{"border":"1px solid #CCC", "border-width":"1px", "margin-bottom":"5px", "max-width": "100%"}} allowfullscreen> </iframe>      </Dialog>
+    );
 
     return (
       <AppCanvas className="master" predefinedLayout={1}>
@@ -82,12 +98,14 @@ var Demo = React.createClass({
           showMenuIconButton={false}>
           <div className="appbar-icon-group">
             {helpButton}
+            {infoButton}
             {githubButton}
           </div>
         </AppBar>
 
         <RouteHandler key={"pv"} /*this.getPath()*/ />
-        {about}
+          {about}
+          {help}
       </AppCanvas>
     );
   }
