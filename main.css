@@ -377,7 +377,40 @@ hr{margin-top:0;margin-bottom:18px}.mui-predefined-layout-1 .mui-app-content-can
 .mui-app-canvas .mui-app-bar .appbar-icon-group .mui-icon-button-tooltip{left:auto !important}
 .mui-app-canvas .mui-dialog-content ul,.mui-app-canvas .mui-dialog-content ol{padding-left:1em;margin-bottom:14px}
 .mui-app-canvas .mui-dialog-content h6{margin-bottom:0}.mui-app-canvas .mui-dialog-content a{color:#1565c0}
-a{color:#ff4081;text-decoration:none}a:hover{text-decoration:underline}.demo-page{height:100%;width:100%;display:-webkit-flex;display:-ms-flexbox;display:flex;background-color:rgba(255,255,255,0.87)}
+a{color:#ff4081;text-decoration:none}a:hover{text-decoration:underline}#vizDiv{max-height:500px;overflow:auto;font-family:"PT Sans",Arial,Helvetica,sans-serif;font-size:12pt}
+#vizDiv super::before{opacity:.30;content:'\25C1';padding-left:3pt;padding-right:3pt}
+#vizDiv grammar{display:block}#vizDiv grammar>name{font-weight:bold}#vizDiv grammar>rules::before{content:' {';opacity:.30}
+#vizDiv grammar>rules::after{display:block;content:'}';opacity:.30}
+#vizDiv rule{display:block;margin-left:10pt}#vizDiv rule>name{color:maroon}#vizDiv description,#vizDiv caseName{opacity:.30;font-style:italic}
+#vizDiv description::before{content:'(';padding-left:10pt}
+#vizDiv description::after{content:')'}#vizDiv caseName::before{content:'\2014';padding-left:10pt;padding-right:4pt}
+#vizDiv rule{margin-top:12pt;margin-bottom:12pt}#vizDiv ruleDefineBody,#vizDiv ruleOverrideBody,#vizDiv ruleExtendBody{display:block}
+#vizDiv ruleDefineBody>alt,#vizDiv ruleOverrideBody>alt,#vizDiv ruleExtendBody>alt{display:table;border-collapse:collapse}
+#vizDiv ruleDefineBody>alt>choice,#vizDiv ruleOverrideBody>alt>choice,#vizDiv ruleExtendBody>alt>choice{display:table-row}
+#vizDiv ruleDefineBody>alt>choice>*,#vizDiv ruleOverrideBody>alt>choice>*,#vizDiv ruleExtendBody>alt>choice>*{display:table-cell}
+#vizDiv description{display:inline-block}#vizDiv ruleDefineBody>alt::before,#vizDiv ruleOverrideBody>alt::before,#vizDiv ruleExtendBody>alt::before{display:none}
+#vizDiv ruleDefineBody>*:first-child::before,#vizDiv ruleOverrideBody>*:first-child::before,#vizDiv ruleExtendBody>*:first-child::before,#vizDiv ruleDefineBody>alt>choice:first-child::before,#vizDiv ruleOverrideBody>alt>choice:first-child::before,#vizDiv ruleExtendBody>alt>choice:first-child::before{display:inline-block;font-family:Monaco;text-align:right;width:20pt;margin-right:6pt}
+#vizDiv ruleDefineBody>alt:first-child::before,#vizDiv ruleOverrideBody>alt:first-child::before,#vizDiv ruleExtendBody>alt:first-child::before{display:none}
+#vizDiv ruleDefineBody>*:first-child::before,#vizDiv ruleDefineBody>alt>choice:first-child::before{content:'='}
+#vizDiv ruleOverrideBody>*:first-child::before,#vizDiv ruleOverrideBody>alt>choice:first-child::before{content:':='}
+#vizDiv ruleExtendBody>*:first-child::before,#vizDiv ruleExtendBody>alt>choice:first-child::before{content:'+='}
+#vizDiv ruleDefineBody>alt>choice::before,#vizDiv ruleOverrideBody>alt>choice::before,#vizDiv ruleExtendBody>alt>choice::before{display:inline-block;text-align:right;width:20pt;margin-left:0;margin-right:6pt}
+#vizDiv choice:first-child::before{content:'';margin-left:0;margin-right:0}
+#vizDiv choice::before{content:'|';margin-left:2pt;margin-right:2pt}
+#vizDiv bind>name{margin-left:1pt;vertical-align:sub;font-size:75%;opacity:.30}#vizDiv seq{display:inline-block}
+#vizDiv seq>*{margin-left:2pt;margin-right:2pt}#vizDiv seq>*::first-child{margin-left:0}
+#vizDiv seq>*::last-child{margin-right:0}#vizDiv star::after{content:'*'}
+#vizDiv plus::after{font-size:75%;vertical-align:super;content:'+'}
+#vizDiv lookahead::before{content:'&'}#vizDiv not::before{content:'~'}
+#vizDiv paren::before{content:'('}#vizDiv paren::after{content:')'}
+#vizDiv arr::before,#vizDiv arr::after{font-family:Monaco}#vizDiv arr::before{content:'['}
+#vizDiv arr::after{content:']'}#vizDiv str::before{content:'``'}
+#vizDiv str::after{content:"''"}#vizDiv prim{font-family:Monaco;_font-size:85%}
+#vizDiv string::before,#vizDiv string::after,#vizDiv str::before,#vizDiv str::after{font-family:"PT Sans",Arial,Helvetica,sans-serif;opacity:.30}
+#vizDiv string::before{content:'"'}#vizDiv string::after{content:'"'}
+#vizDiv string{font-family:Monaco}#vizDiv specialChar{color:slateblue}#vizDiv charClass{font-family:Monaco;_font-size:85%}
+#vizDiv charClass::after{font-family:"PT Sans",Arial,Helvetica,sans-serif;font-size:50%;font-style:italic;vertical-align:super;content:'RE'}
+.demo-page{height:100%;width:100%;display:-webkit-flex;display:-ms-flexbox;display:flex;background-color:rgba(255,255,255,0.87)}
 .demo-page .leftPanel{-webkit-flex:2;-ms-flex:2;flex:2;max-width:600px;height:100%;overflow-y:auto;border-right:1px solid #eee;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;-ms-flex-align:start;align-items:flex-start}
 .demo-page .leftPanel .input{-webkit-flex:0 0 auto;-ms-flex:0 0 auto;flex:0 0 auto}
 .demo-page .leftPanel .info{-webkit-flex:1 0 auto;-ms-flex:1 0 auto;flex:1 0 auto}
