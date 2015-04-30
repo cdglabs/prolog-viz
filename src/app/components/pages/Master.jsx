@@ -8,12 +8,14 @@ var Menu = mui.Menu;
 var IconButton = mui.IconButton;
 var Dialog = mui.Dialog;
 var Help = require('../components/Help.jsx');
+var Spellcheck = require('../components/Spellcheck.jsx');
 var Info = require('../components/Info.jsx');
 var marked = require('marked');
 
 // using brfs transform
 var fs = require('fs');
 var text = fs.readFileSync(__dirname + '/About.md', 'utf8');
+var grammarHtml = fs.readFileSync(__dirname + '/grammar.html', 'utf8');
 
 function getStateFromStores() {
   return {
@@ -45,27 +47,33 @@ var Demo = React.createClass({
 
   onHelpButtonTouchTap: function() {
     this.refs.about.dismiss();
+    this.refs.grammar.dismiss();
     this.refs.help.show();
+  },
+
+  onGrammarButtonTouchTap: function() {
+    this.refs.help.dismiss();
+    this.refs.about.dismiss();
+    this.refs.grammar.show();
   },
 
   onInfoButtonTouchTap: function() {
     this.refs.help.dismiss();
+    this.refs.grammar.dismiss();
     this.refs.about.show();
   },
 
   render: function() {
     var title = "Prolog Visualizer";
 
-    var githubButton = (
-      <IconButton
-        className="github-icon-button"
-        iconClassName="muidocs-icon-custom-github"
-        href="https://github.com/cdglabs/prolog"
-        linkButton={true}/>
-    );
     var helpButton = (
       <IconButton className="help-button" onTouchTap={this.onHelpButtonTouchTap}>
         <Help/>
+      </IconButton>
+    );
+    var grammarButton = (
+      <IconButton className="spellcheck-button" onTouchTap={this.onGrammarButtonTouchTap}>
+        <Spellcheck/>
       </IconButton>
     );
     var infoButton = (
@@ -73,20 +81,31 @@ var Demo = React.createClass({
         <Info/>
       </IconButton>
     );
+    var githubButton = (
+      <IconButton
+        className="github-icon-button"
+        iconClassName="muidocs-icon-custom-github"
+        href="https://github.com/cdglabs/prolog"
+        linkButton={true}/>
+    );
 
     //Standard Actions
     var standardActions = [
       { text: 'Close' },
     ];
-    var rawMarkup = marked(text);
-    var about = (
-      <Dialog ref="about" title="About Prolog Visualizer" actions={standardActions}>
-        <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
-      </Dialog>
-    );
     var help = (
       <Dialog ref="help" title="Prolog Visualizer Tutorial" actions={standardActions}>
         <iframe src="//www.slideshare.net/slideshow/embed_code/key/6OYeQsWj8blF6o" width="595" height="485" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style={{"border":"1px solid #CCC", "border-width":"1px", "margin-bottom":"5px", "max-width": "100%"}} allowfullscreen> </iframe>      </Dialog>
+    );
+    var grammar = (
+      <Dialog ref="grammar" title="Grammar" actions={standardActions}>
+        <span dangerouslySetInnerHTML={{__html: grammarHtml}} />
+      </Dialog>
+    );
+    var about = (
+      <Dialog ref="about" title="About Prolog Visualizer" actions={standardActions}>
+        <span dangerouslySetInnerHTML={{__html: marked(text)}} />
+      </Dialog>
     );
 
     return (
@@ -98,6 +117,7 @@ var Demo = React.createClass({
           showMenuIconButton={false}>
           <div className="appbar-icon-group">
             {helpButton}
+            {grammarButton}
             {infoButton}
             {githubButton}
           </div>
@@ -105,6 +125,7 @@ var Demo = React.createClass({
 
         <RouteHandler key={"pv"} /*this.getPath()*/ />
           {about}
+          {grammar}
           {help}
       </AppCanvas>
     );
