@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Prolog Visualizer</title>
-  <meta name="description" content="An interactive prolog visualizer.">
+  <meta name="description" content="An interactive Prolog visualizer.">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,51 +13,58 @@
 
   <script type="text/ohm-js" id="arithmetic">
 
-  L {
-    Program
-      = Rule* Query
+    L {
+      Program
+        = Rule* Query
 
-    Rule  -- a rule
-      = Clause ':-' Clauses '.'  -- body
-      | Clause '.'               -- noBody
+      Rule  -- a rule
+        = Clause ':-' Clauses '.'  -- body
+        | Clause '.'               -- noBody
 
-    Query  -- a query
-      = Clauses '?'
+      Query  -- a query
+        = Clauses '?'
 
-    Clause  -- a clause
-      = symbol '(' Term (',' Term)* ')'  -- args
-      | symbol                           -- noArgs
+      Clause  -- a clause
+        = symbol '(' Term (',' Term)* ')'  -- args
+        | symbol                           -- noArgs
 
-    Clauses
-      = Clause (',' Clause)*
+      Clauses
+        = Clause (',' Clause)*
 
-    Term
-      = Clause
-      | List
-      | variable
+      Term
+        = Clause
+        | List
+        | variable
 
-    List
-      = '[' ']'           -- empty
-      | '[' Contents ']'  -- nonEmpty
+      List
+        = '[' ']'           -- empty
+        | '[' Contents ']'  -- nonEmpty
 
-    Contents
-      = Term ',' Contents  -- cons1
-      | Term '|' Term      -- cons2
-      | Term               -- single
+      Contents
+        = Term ',' Contents  -- cons1
+        | Term '|' Term      -- cons2
+        | Term               -- single
 
-    variable  -- a variable
-      = upper alnum*
+      variable  -- a variable
+        = upper alnum*
 
-    symbol -- a symbol
-      = lower alnum*
+      symbol -- a symbol
+        = lower alnum*
 
-    tokens
-      = (variable | symbol | _)*
-  }
-</script>
+      tokens
+        = (variable | symbol | _)*
+    }
+  </script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
+    ga('create', 'UA-62534301-1', 'auto');
+    ga('send', 'pageview');
+  </script>
 </head>
-
 <body>
   <script src="app.js"></script>
 </body>
