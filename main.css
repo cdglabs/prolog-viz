@@ -2855,6 +2855,14 @@ hr {
 .mui-app-canvas .mui-app-bar {
   z-index: 99;
 }
+.mui-app-canvas .mui-app-bar .mui-paper-container {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-justify-content: space-between;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
 .mui-app-canvas .mui-app-bar .mui-app-bar-title {
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -2867,11 +2875,11 @@ hr {
 }
 .mui-app-canvas .mui-app-bar .appbar-icon-group {
   height: 100%;
-  float: right;
   margin-right: -16px;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
+  overflow: auto;
 }
 .mui-app-canvas .mui-app-bar .appbar-icon-group .mui-icon-button-tooltip {
   left: auto !important;
