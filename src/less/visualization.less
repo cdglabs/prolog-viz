@@ -158,6 +158,15 @@
           flex-direction: column;
           align-items: baseline;
 
+          .originalRule {
+            display: flex;
+            position: relative;
+
+            .originalRuleBody {
+              position: absolute;
+              // top: 0;
+            }
+          }
           > .substituting {
             color: @thirdTextColor;
           }

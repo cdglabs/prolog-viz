@@ -77,10 +77,11 @@ var Input = React.createClass({
             this.highlight(trace, 'highlightRuleBefore');
             break;
           case "2.1":
-          case "3":
+          case "2.2":
+          case "2.3":
             this.highlight(trace, 'highlightRuleSuccess');
             break;
-          case "2.2":
+          case "3":
             this.highlight(trace, 'highlightRuleFailure');
             break;
           default:

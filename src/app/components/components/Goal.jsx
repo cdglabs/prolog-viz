@@ -11,7 +11,7 @@ var Goal = React.createClass({
   },
 
   propTypes: {
-    parent: React.PropTypes.object.isRequired,
+    visualizationComponent: React.PropTypes.object.isRequired,
     env: React.PropTypes.object.isRequired,
     shouldAnimate: React.PropTypes.bool.isRequired,
   },
@@ -72,40 +72,6 @@ var Goal = React.createClass({
     //   // console.log("width: "+style.width +" actualWidth: "+parseFloat(window.getComputedStyle(this.getDOMNode()).width));
     // }
 
-    // props
-    var {parent, env, children, trace,
-        shouldHighlightLatestGoals,
-        hideRulesWithIncompatibleName,
-        longestSiblingLabel, isLastFrame, depth} = this.props;
-    var isCurrentEnv = !!trace;
-
-    if (env.hasSolution()) {
-      var classes = cx({
-        'solution': true,
-      });
-      return <div className={classes}>{env.options.solution.toString()}</div>;
-    }
-    if (env.isEmpty()) {
-      return <div></div>;
-    }
-
-    // === rule labels ===
-    var rules = env.rules;
-    if (hideRulesWithIncompatibleName) {
-      rules = rules.map(rule => env.goals[0] && env.goals[0].name === rule.head.name ? rule : "");
-    }
-
-    var ruleStrings = rules.map((rule) => rule.toString(true, true));
-    var rewrittenRuleStrings = rules.map((rule, i) => rule.rewritten ? rule.rewritten.toString(true, isCurrentEnv && env.getCurRuleIndex() === i && trace.message !== "3") : "");
-    var substStrings = rules.map((rule) => rule.substituting ? "↓ subst: "+rule.substituting.toString()+" " : "");
-
-    var max = (a, b) => a.length > b.length ? a : b;
-    var arrayMax = arr => arr.reduce((a, b) => max(a.toString(), b.toString()), "")
-
-    var longestRuleStrings = arrayMax(ruleStrings);
-    var longestRewrittenRuleStrings = arrayMax(rewrittenRuleStrings);
-    var longestSubstStrings = arrayMax(substStrings);
-
     var toSubscript = (string) => {
       if (string === undefined) {
         return;
@@ -119,6 +85,40 @@ var Goal = React.createClass({
         }
       });
     };
+
+    // props
+    var {visualizationComponent, env, children, parentEnv, nthChild, trace,
+        shouldHighlightLatestGoals,
+        hideRulesWithIncompatibleName,
+        longestSiblingLabel, isLastFrame, depth} = this.props;
+    var isCurrentEnv = !!trace;
+
+    if (env.hasSolution()) {
+      var classes = cx({
+        'solution': true,
+      });
+      return <div className={classes}>{toSubscript(env.options.solution.toString())}</div>;
+    }
+    if (env.isEmpty()) {
+      return <div></div>;
+    }
+
+    // === rule labels ===
+    var rules = env.rules;
+    if (hideRulesWithIncompatibleName) {
+      rules = rules.map(rule => env.goals[0] && env.goals[0].name === rule.head.name ? rule : "");
+    }
+
+    var ruleStrings = rules.map((rule, i) => rule.toString(!trace || !(isCurrentEnv && env.getCurRuleIndex() === i && trace.message === "2.2"), !(isLastFrame && !rule.hasFailed())));
+    var rewrittenRuleStrings = rules.map((rule, i) => rule.rewritten ? rule.rewritten.toString(!trace || trace.message !== "2.2", isCurrentEnv && env.getCurRuleIndex() === i && trace.message !== "2.3") : "");
+    var substStrings = rules.map((rule) => rule.substituting ? "↓ subst: "+rule.substituting.toString()+" " : "");
+
+    var max = (a, b) => a.length > b.length ? a : b;
+    var arrayMax = arr => arr.reduce((a, b) => max(a.toString(), b.toString()), "")
+
+    var longestRuleStrings = arrayMax(ruleStrings);
+    var longestRewrittenRuleStrings = arrayMax(rewrittenRuleStrings);
+    var longestSubstStrings = arrayMax(substStrings);
 
     var rulesAndChildren = <div className="rulesAndChildren">{rules.map(function(rule, i) {
       if (!rule) {
@@ -147,11 +147,16 @@ var Goal = React.createClass({
             showSubstituting = true;
             showRewrittenRule = ruleStrings[i] !== rewrittenRuleStrings[i];
             break;
-          case "3":
+          case "2.2":
+            showOriginalRule = true;
+            showSubstituting = true;
+            showRewrittenRule = ruleStrings[i] !== rewrittenRuleStrings[i];
+            break;
+          case "2.3":
             showRewrittenRule = true;
             showChildNode = true;
             break;
-          case "2.2":
+          case "3":
             showOriginalRule = true;
             break;
           default:
@@ -193,7 +198,13 @@ var Goal = React.createClass({
       if (rule.hasSucceeded() && env.goals[0]) {
         duplicatedCurrentGoal = <div className="duplicatedCurrentGoal">{toSubscript(env.goals[0].toString())}</div>;
       }
-      return <div key={"RandC#"+i} className="ruleAndChild">
+
+      if (isLastFrame && !rule.hasFailed()) {
+        var originalRuleBody = <div className="originalRuleBody">{toSubscript(rule.body.map(r => r.toString()).join(", "))}</div>
+        originalRule = <div className="originalRule">{originalRule}{originalRuleBody}</div>
+      }
+
+      return <div key={"RAndC#"+i} className="ruleAndChild">
               <div className="ruleWrapper">
                 {duplicatedCurrentGoal}
                 <div className={ruleClasses}>
@@ -245,9 +256,9 @@ var Goal = React.createClass({
       'labels': true,
     });
     var labelsProps = {
-      // onMouseEnter: parent.onMouseOverPExpr.bind(parent, node),
-      // onMouseLeave: parent.onMouseOutPExpr,
-      // onClick: parent.onClickPExpr.bind(parent, node),
+      // onMouseEnter: visualizationComponent.onMouseOverPExpr.bind(parent, node),
+      // onMouseLeave: visualizationComponent.onMouseOutPExpr,
+      // onClick: visualizationComponent.onClickPExpr.bind(parent, node),
     };
     var labels = <div key={"labels"} className={labelsClasses} {...labelsProps}>
         <div className="contents">{goals}{subst}</div>

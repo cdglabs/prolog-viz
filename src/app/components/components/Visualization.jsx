@@ -228,7 +228,7 @@ var Visualization = React.createClass({
           var parentEnv = options.parentEnv;
 
           var goalProps = assign({
-            parent: this,
+            visualizationComponent: this,
             env: env,
             children: children,
             shouldAnimate: true,
