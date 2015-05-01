@@ -2864,6 +2864,9 @@ hr {
           justify-content: space-between;
 }
 .mui-app-canvas .mui-app-bar .mui-app-bar-title {
+  -webkit-flex: 1 0 auto;
+      -ms-flex: 1 0 auto;
+          flex: 1 0 auto;
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
