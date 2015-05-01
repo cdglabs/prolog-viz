@@ -2882,7 +2882,6 @@ hr {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  overflow: auto;
 }
 .mui-app-canvas .mui-app-bar .appbar-icon-group .mui-icon-button-tooltip {
   left: auto !important;
