@@ -199,7 +199,7 @@ var Goal = React.createClass({
         duplicatedCurrentGoal = <div className="duplicatedCurrentGoal">{toSubscript(env.goals[0].toString())}</div>;
       }
 
-      if (isLastFrame && !rule.hasFailed()) {
+      if (isLastFrame && !rule.hasFailed() && showRewrittenRule) {
         var originalRuleBody = <div className="originalRuleBody">{toSubscript(rule.body.map(r => r.toString()).join(", "))}</div>
         originalRule = <div className="originalRule">{originalRule}{originalRuleBody}</div>
       }
