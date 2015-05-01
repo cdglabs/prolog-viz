@@ -12,7 +12,13 @@
   .mui-app-bar {
     z-index: 99;
 
+    .mui-paper-container {
+      display: flex;
+      justify-content: space-between;
+    }
+
     .mui-app-bar-title {
+      flex: 1 0 auto;
       user-select: none;
       a {
         color: @app-bar-text-color;
@@ -21,10 +27,11 @@
     }
 
     .appbar-icon-group {
+
       height: 100%;
-      float: right;
       margin-right: -16px;
       display: flex;
+      // overflow-x: auto;
       // align-items: baseline;
       .github-icon-button {
       }
