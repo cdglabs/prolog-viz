@@ -55,7 +55,7 @@ Prolog {
 Credit
 ---
 
-### Authors:
+#### Authors:
 - Zhixuan Lai
 - Alessandro Warth
 
