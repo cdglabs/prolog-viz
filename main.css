@@ -3449,6 +3449,15 @@ a:hover {
       -ms-flex-align: baseline;
           align-items: baseline;
 }
+.goal > .rulesAndChildren .ruleAndChild .ruleWrapper > .rule .originalRule {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+}
+.goal > .rulesAndChildren .ruleAndChild .ruleWrapper > .rule .originalRule .originalRuleBody {
+  position: absolute;
+}
 .goal > .rulesAndChildren .ruleAndChild .ruleWrapper > .rule > .substituting {
   color: #616161;
 }
