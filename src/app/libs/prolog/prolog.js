@@ -10,8 +10,8 @@ var Prolog = function(grammar) {
   var g = grammar;//ohm.grammar("L");
   var toAST = g.synthesizedAttribute({
     Program:         function(rules, query)        { return new Program(toAST(rules), toAST(query)); },
-    Rule_body:       function(head, _, body, _)    { return new Rule(toAST(head), toAST(body)); },
-    Rule_noBody:     function(head, _)             { return new Rule(toAST(head)); },
+    Rule_body:       function(head, _, body, _)    { return new Rule(toAST(head), toAST(body), this.interval); },
+    Rule_noBody:     function(head, _)             { return new Rule(toAST(head), undefined, this.interval); },
     Query:           function(c, _)                { return toAST(c); },
     Clause_args:     function(sym, _, a, _, as, _) { return new Clause(toAST(sym), [toAST(a)].concat(toAST(as))); },
     Clause_noArgs:   function(sym)                 { return new Clause(toAST(sym)); },
