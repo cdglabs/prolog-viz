@@ -36,6 +36,10 @@
         "code":"car(cons(X, Y), X).\ncar(cons(a, nil), X)?"
     },
     {
+        "name":"fib",
+        "code":"plus(z, X, X).\nplus(s(X), Y, s(Z)) :- plus(X, Y, Z).\n\nfib(s(z), s(z)).\nfib(s(s(z)), s(s(z))).\nfib(s(s(X)), Y) :- fib(s(X), Y1), fib(X, Y2), plus(Y1, Y2, Y).\nfib(s(s(s(s(z)))), Y)?\n"
+    },
+    {
         "name":"length",
         "code":"length(nil, z).\nlength(cons(X, L), s(LL)) :- length(L, LL).\nlength(cons(a, cons(b, cons(c, nil))), X)?"
     },

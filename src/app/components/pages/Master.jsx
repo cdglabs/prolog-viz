@@ -95,7 +95,8 @@ var Demo = React.createClass({
     ];
     var help = (
       <Dialog ref="help" title="Prolog Visualizer Tutorial" actions={standardActions}>
-        <iframe src="//www.slideshare.net/slideshow/embed_code/key/6OYeQsWj8blF6o" width="595" height="485" frameBorder="0" marginWidth="0" marginHeight="0" scrolling="no" style={{"border":"1px solid #CCC", "borderWidth":"1px", "marginBottom":"5px", "maxWidth": "100%"}} allowFullScreen> </iframe>      </Dialog>
+        <iframe src="//www.slideshare.net/slideshow/embed_code/key/6OYeQsWj8blF6o" width="595" height="485" frameBorder="0" marginWidth="0" marginHeight="0" scrolling="no" style={{"border":"1px solid #CCC", "borderWidth":"1px", "marginBottom":"0", "maxWidth": "100%"}} allowFullScreen> </iframe>
+      </Dialog>
     );
     var grammar = (
       <Dialog ref="grammar" title="Grammar" actions={standardActions}>
