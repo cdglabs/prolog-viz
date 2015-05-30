@@ -5,6 +5,7 @@ This Prolog visualizer is created by Zhixuan Lai and Alessandro Warth at CDG lab
 - Save the visualization to PDF by pressing ⌘+P
 
 ###### Made possible by:
+- [Ohm](https://github.com/cdglabs/ohm)
 - [React](http://facebook.github.io/react/)
 - [react-router](https://github.com/rackt/react-router/)
 - [flux](http://material-ui.com/#/)
