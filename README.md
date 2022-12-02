@@ -1,5 +1,5 @@
 # prolog
-The best Prolog visualizer http://www.cdglabs.org/prolog
+The best Prolog visualizer https://cdglabs.github.io/prolog-viz
 
 Usage
 ---
